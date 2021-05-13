@@ -2119,6 +2119,7 @@ addLayer("slog", {
       }]
     ],
     update(diff){
+      if (player.sp.unlocked) player.slog.unlocked = true
       let slog = tmp.slog.getNonFreeSlogPoints.add(tmp.slog.getFreeSlogPoints)
       let slogP = tmp.slog.getNonFreeSlogPrestigePoints
       if (!player.slog.unlocked) player.slog.points = new Decimal(0)
