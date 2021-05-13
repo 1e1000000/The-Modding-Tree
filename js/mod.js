@@ -1,13 +1,13 @@
 let modInfo = {
 	name: "Tetration Tree",
 	id: "tetration",
-	author: "nobody",
+	author: "User_2.005e220",
 	pointsName: "points",
 	discordName: "",
 	discordLink: "",
 	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	
-	offlineLimit: 1,  // In hours
+	offlineLimit: 24,  // In hours
 }
 
 // Set your version in num and name
@@ -71,6 +71,7 @@ function getPointGainSCStart(){
   if (hasChallenge("e", 22)) scstart = scstart.pow(challengeEffect("e", 22))
   scstart = scstart.mul(layers.slog.effectP(false))
   if (hasChallenge("e", 32)) scstart = scstart.pow(challengeEffect("e", 32))
+  if (hasUpgrade("hp", 44)) scstart = scstart.mul(upgradeEffect("hp", 44))
   if (inChallenge("e", 22)) scstart = scstart.pow(0.1)
   if (inChallenge("e", 41)) scstart = scstart.pow(0.03)
   if (inChallenge("i", 52)) scstart = new Decimal(10)
@@ -83,12 +84,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-  "Endgame: 84 Infinity Points"
+  "Endgame: 85 Non-Free Infinity Points (around 1.00e215,220 Points)"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return false
+	return player.i.points.gte(85)
 }
 
 
@@ -97,7 +98,7 @@ function isEndgame() {
 
 // You can change this if you have things that can be messed up by long tick lengths
 function maxTickLength() {
-	return(31536000) // Default is 1 hour which is just arbitrarily large
+	return(86400) // Default is 1 hour which is just arbitrarily large
 }
 
 // Use this if you need to undo inflation from an older version. If the version is older than the version that fixed the issue,

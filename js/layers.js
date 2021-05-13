@@ -65,6 +65,7 @@ addLayer("p", {
       if (hasChallenge("i", 11)) scstart = scstart.mul(challengeEffect("i", 11)[0])
       if (hasUpgrade("hp", 24)) scstart = scstart.mul(upgradeEffect("hp", 24))
       scstart = scstart.mul(layers.slog.effectP(false))
+      if (hasUpgrade("hp", 44)) scstart = scstart.mul(upgradeEffect("hp", 44))
       if (inChallenge("i", 32)) scstart = scstart.pow(0.02)
       if (inChallenge("e", 22)) scstart = scstart.pow(0.1)
       
@@ -752,10 +753,7 @@ addLayer("i", {
     },
     effect(){
       if (inChallenge("i", 31)) return [new Decimal(1), new Decimal(1)]
-      let exp = tmp.i.totalIP
-      if (exp.gte(100)) exp = exp.sub(100).div(2).add(100) // start at 100
-      if (exp.gte(400)) exp = exp.div(400).pow(0.5).mul(400) // start at 700
-      if (exp.gte(1600)) exp = exp.div(100).log(2).pow(2).mul(100) // start at 12700
+      let exp = new Decimal(tmp.i.effectiveIP[0])
       if (hasUpgrade("i", 13)) exp = exp.pow(upgradeEffect("i", 13))
       if (hasUpgrade("sp", 43)) exp = exp.pow(upgradeEffect("sp", 43))
       let eff = [new Decimal(1e5).pow(exp), new Decimal(10).pow(exp)]
@@ -764,8 +762,7 @@ addLayer("i", {
       return eff
     },
     effectDescription(){
-      return " which make PP gain softcap starts " + format(layers.i.effect()[0]) + "x later and multiply SP gain by " + format(layers.i.effect()[1]) + `<br>` + 
-        "(Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), effect softcap start: 100)"
+      return " which make PP gain softcap starts " + format(layers.i.effect()[0]) + "x later and multiply SP gain by " + format(layers.i.effect()[1])
     },
     freeIP(){
       let freeAmt = new Decimal(0)
@@ -776,6 +773,15 @@ addLayer("i", {
     },
     totalIP(){
       return player.i.points.add(tmp.i.freeIP)
+    },
+    effectiveIP(){
+      let IP = tmp.i.totalIP
+      let a = new Decimal(90) // base
+      let x = new Decimal(3) // mul
+      if (IP.gte(a)) IP = IP.sub(a).div(2).add(a) // after a effect /2
+      if (IP.gte(a.mul(x))) IP = IP.div(a.mul(x)).pow(0.5).mul(a.mul(x)) // after a*x effect ^0.5
+      if (IP.gte(a.mul(x).mul(x))) IP = IP.div(a.mul(x).mul(x)).log(2).add(1).pow(2).mul(a.mul(x).mul(x)) // after a*x^2 effect log2
+      return [IP,a]
     },
     doReset(resettingLayer) {
 			let keep = ["auto"];
@@ -788,6 +794,12 @@ addLayer("i", {
       "Upgrades": {
         content:[
           "main-display",
+          ["display-text", function(){
+            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
+          }],
+          ["display-text", function(){
+            return "IP effect softcap start: " + format(tmp.i.effectiveIP[1]) + ", effective IP: " + format(tmp.i.effectiveIP[0])
+          }],
           "blank",
           "prestige-button",
           "resource-display",
@@ -800,6 +812,12 @@ addLayer("i", {
       "Challenges": {
         content:[
           "main-display",
+          ["display-text", function(){
+            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
+          }],
+          ["display-text", function(){
+            return "IP effect softcap start: " + format(tmp.i.effectiveIP[1]) + ", effective IP: " + format(tmp.i.effectiveIP[0])
+          }],
           "blank",
           "prestige-button",
           "resource-display",
@@ -1699,15 +1717,15 @@ addLayer("hp", {
         }
       },
       44: {
-        description: "???",
-        cost: new Decimal(1/0),
+        description: "slog PP boost effect 1 make Points and PP gain softcap starts later",
+        cost: new Decimal(1e123),
         effect(){
           if (inChallenge("i", 62)) return new Decimal(1)
-          let eff = new Decimal(1)
+          let eff = new Decimal(10).pow(layers.slog.effectP(false).log(10).pow(1.5))
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("hp", 44))
+          return format(upgradeEffect("hp", 44)) +"x"
         },
         unlocked(){
           return hasMilestone("e", 3)
@@ -1764,9 +1782,6 @@ addLayer("e", {
     },
     effect(){
       let exp = player.e.points
-      if (exp.gte(100)) exp = exp.sub(100).div(2).add(100) // start at 100
-      if (exp.gte(400)) exp = exp.div(400).pow(0.5).mul(400) // start at 700
-      if (exp.gte(1600)) exp = exp.div(100).log(2).pow(2).mul(100) // start at 12700
       if (hasUpgrade("hp", 33)) exp = exp.pow(upgradeEffect("hp", 33))
       let eff = [new Decimal(1e11).pow(exp), new Decimal(10).pow(exp)]
       if (hasChallenge("i", 51)) eff[0] = eff[0].pow(challengeEffect("i", 51))
