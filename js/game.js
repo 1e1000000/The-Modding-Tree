@@ -218,7 +218,7 @@ function doReset(layer, force=false) {
 		tmp[layer].baseAmount = decimalZero // quick fix
 	}
 
-	if (tmp[layer].resetsNothing) return
+	if (tmp[layer].resetsNothing && !force) return
 
 
 	for (layerResetting in layers) {
