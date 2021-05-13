@@ -3,12 +3,9 @@ var needCanvasUpdate = true;
 var gameEnded = false;
 var scrolled = false;
 
-const ly = new Decimal(9460528436447504.64) // 9.46e15
-const uni = new Decimal(879980513044601091594240000) // 8.80e26
-
 // Don't change this
 const TMT_VERSION = {
-	tmtNum: "2.π",
+	tmtNum: "2.π.1",
 	tmtName: "Incrementally Updated"
 }
 
@@ -213,7 +210,7 @@ function doReset(layer, force=false) {
 		tmp[layer].baseAmount = new Decimal(0) // quick fix
 	}
 
-	if (tmp[layer].resetsNothing) return
+	if (tmp[layer].resetsNothing && !force) return
 
 
 	for (layerResetting in layers) {

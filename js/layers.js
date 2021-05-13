@@ -1,962 +1,2217 @@
 addLayer("p", {
-    name: "prestige",
-    symbol: "P",
-    position: 0,
+    name: "prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
-        unlocked: true,
-		points: new Decimal(0),
+      unlocked: true,
+		  points: new Decimal(0),
+      total: new Decimal(0),
     }},
-    color: "#31aeb0",
-    requires(){ 
-      let base = new Decimal(1)
-      base = base.div(layers.l.effect()[0])
-      return base
+    color: "#F66",
+    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    resource: "prestige points", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "custom", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    canReset(){
+      return player.points.gte(10)
     },
-    resource: "prestige points",
-    baseResource: "meters",
-    baseAmount() {return player.points},
-    type: "normal",
-    effectDescription(){
-      return ""
+    getBaseResetGain(){
+      if (inChallenge("e", 31)) return new Decimal(1)
+      let base = new Decimal(10)
+      let tetr = new Decimal(1.5)
+      if (hasUpgrade("p", 21)) base = upgradeEffect("p", 21)[0]
+      base = new Decimal(base)
+      if (hasUpgrade("e", 13)) base = base.pow(upgradeEffect("e", 13))
+      base = base.max(1.1)
+      
+      if (hasUpgrade("p", 21)) tetr = upgradeEffect("p", 21)[1]
+      if (hasUpgrade("p", 34)) tetr = new Decimal(tetr).add(upgradeEffect("p", 34))
+      if (hasUpgrade("i", 24)) tetr = new Decimal(tetr).add(upgradeEffect("i", 24))
+      if (inChallenge("i", 42)) tetr = new Decimal(1.1)
+      if (inChallenge("i", 61)) tetr = new Decimal(1)
+      
+      let gain = player.points.max(1).log(base).tetrate(tetr)
+      return gain
     },
-    exponent(){
-      let base = new Decimal(0.5)
-      return base
+    getResetGain(){
+      let gain = tmp.p.getBaseResetGain
+      
+      gain = gain.mul(layers.slog.effect())
+      if (!inChallenge("i", 42)){
+        if (hasUpgrade("p", 13)) gain = gain.mul(upgradeEffect("p", 13))
+        if (hasUpgrade("sp", 11)) gain = gain.mul(upgradeEffect("sp", 11))
+        if (hasChallenge("i", 21)) gain = gain.mul(challengeEffect("i", 21))
+        if (hasUpgrade("p", 22)) gain = gain.pow(upgradeEffect("p", 22)[1])
+      }
+      
+      if (gain.gte(tmp.p.getSCStart)) gain = new Decimal(10).pow(gain.log(10).mul(tmp.p.getSCStart.log(10)).pow(0.5))
+      
+      if (!inChallenge("i", 42)){
+        if (hasUpgrade("p", 31)) gain = gain.mul(upgradeEffect("p", 31))
+        if (hasUpgrade("hp", 11)) gain = gain.mul(upgradeEffect("hp", 11)[0])
+        if (hasUpgrade("hp", 11)) gain = gain.pow(upgradeEffect("hp", 11)[1])
+      }
+      if (inChallenge("e", 42)) gain = gain.max(10).log(10).pow(10)
+      if (inChallenge("e", 31)) gain = new Decimal(10).pow(gain.log(10).pow(0.75))
+      if (inChallenge("i", 11)) gain = gain.pow(0.01)
+      if (inChallenge("e", 11)) gain = gain.min(player.points)
+      return gain.floor()
     },
-    gainMult() {
-      mult = new Decimal(1)
-      if (hasUpgrade("p", 21)) mult = mult.mul(upgradeEffect("p",21))
-      if (hasUpgrade("p", 22)) mult = mult.mul(upgradeEffect("p",22))
-      if (hasUpgrade("p", 23)) mult = mult.mul(upgradeEffect("p",23))
-      mult = mult.mul(layers.b.effect()[0])
-      if (hasUpgrade("g", 12)) mult = mult.mul(upgradeEffect("g",12))
-      return mult
+    getSCStart(){
+      let scstart = new Decimal(1e9)
+      scstart = scstart.mul(layers.i.effect()[0])
+      if (hasUpgrade("i", 11)) scstart = scstart.mul(upgradeEffect("i", 11))
+      if (hasChallenge("i", 11)) scstart = scstart.mul(challengeEffect("i", 11)[0])
+      if (hasUpgrade("hp", 24)) scstart = scstart.mul(upgradeEffect("hp", 24))
+      scstart = scstart.mul(layers.slog.effectP(false))
+      if (inChallenge("i", 32)) scstart = scstart.pow(0.02)
+      if (inChallenge("e", 22)) scstart = scstart.pow(0.1)
+      
+      return scstart
     },
-    gainExp() {
-      let exp = new Decimal(1)
-      if (lightPowerActive(2)) exp = exp.mul(tmp.l.lightPowBoost[2])
-      return exp
+    getNextAt(canMax=false){
+      return
     },
-    softcap(){let base = new Decimal(10)
-            if (hasUpgrade("p", 31)) base = base.mul(upgradeEffect("p",31))
-            if (hasMilestone("l", 2)) base = base.mul(player.b.points.add(1).pow(2))
-            if (hasUpgrade("l", 21)) base = base.pow(upgradeEffect("l",21))
-            return base
-           },
-    softcapPower(){return new Decimal(0.5)},
-    row: 0,
+    prestigeButtonText(){
+      return "Reset for " + formatWhole(getResetGain("p")) + " Prestige Points." + `<br>` + "(Base reset gain: " + format(tmp.p.getBaseResetGain) + ")"
+    },
+    row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-      {key: "p", description: "Press P to Prestige", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true},
-    passiveGeneration(){ return (hasMilestone("g", 1))?1:0},
-		doReset(resettingLayer) {
+    passiveGeneration(){ return (hasMilestone("sp", 2))?1:0},
+    doReset(resettingLayer) {
 			let keep = [];
-			if (hasMilestone("b", 3) && (resettingLayer== "b" || resettingLayer== "g")) keep.push("upgrades")
-      if (hasMilestone("l", 7) && (resettingLayer== "l" || resettingLayer== "u" || resettingLayer== "sb")) keep.push("upgrades")
+      if (hasMilestone("sp", 1) && (resettingLayer== "sp" || resettingLayer=="i")) keep.push("upgrades")
+      if (hasMilestone("hp", 1) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("upgrades")
       if (layers[resettingLayer].row > this.row) layerDataReset("p", keep)
     },
     tabFormat:[
       "main-display",
-      ["display-text", function(){
-        return (!player.b.unlocked ? "Reach 1,024 Prestige Points to unlock Boosters" : "")}],
-      "prestige-button",
-      ["display-text", function(){
-        return "Your prestige points gain past " + format(tmp.p.softcap) + " are raised to the power of " + format(tmp.p.softcapPower)}],
       "blank",
+      "prestige-button",
       "resource-display",
+      "blank",
+      ["display-text", function() {
+        return "PP gain softcap start: " + format(tmp.p.getSCStart)
+      }],
       "blank",
       "upgrades"
     ],
+    upgrades: {
+      rows: 4,
+      cols: 4,
+      11: {
+        description: "Your Prestige Points boost Points gain",
+        cost: new Decimal(1),
+        effect(){
+          let eff = player.p.points.add(1).pow(0.75)
+          if (hasUpgrade("p", 12)) eff = eff.pow(upgradeEffect("p", 12))
+          if (hasChallenge("i", 31)) eff = eff.pow(challengeEffect("i", 31))
+          
+          let scstart = new Decimal(1e100)
+          if (hasChallenge("i", 22)) scstart = scstart.mul(challengeEffect("i", 22))
+          if (hasUpgrade("p", 33)) scstart = scstart.mul(upgradeEffect("p", 33))
+          if (inChallenge("i", 32)) scstart = scstart.pow(0.02)
+          
+          if (eff.gte(this.effSCStart())) eff = new Decimal(10).pow(eff.log(10).mul(this.effSCStart().log(10)).pow(0.5))
+          return eff
+        },
+        effSCStart(){
+          let scstart = new Decimal(1e100)
+          if (hasChallenge("i", 22)) scstart = scstart.mul(challengeEffect("i", 22))
+          if (hasUpgrade("p", 33)) scstart = scstart.mul(upgradeEffect("p", 33))
+          if (hasUpgrade("hp", 42)) scstart = scstart.mul(upgradeEffect("hp", 42))
+          if (inChallenge("i", 32)) scstart = scstart.pow(0.02)
+          return scstart
+        },        
+        effectDisplay(){
+          return format(upgradeEffect("p", 11)) + "x (softcap start: " + format(this.effSCStart()) + "x)"
+        }
+      },
+      12: {
+        description: "Upgrade to the left is stronger based on Bought Prestige Upgrades",
+        cost: new Decimal(10).pow(1.5).ceil(),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = new Decimal(1).add(player.p.upgrades.length/2)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 12))
+        }
+      },
+      13: {
+        description: "Boost PP gain based on Bought Prestige Upgrades",
+        cost: new Decimal(1000),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let exp = new Decimal(player.p.upgrades.length)
+          if (hasUpgrade("p", 14)) exp = exp.pow(upgradeEffect("p", 14))
+          let eff = new Decimal(2).pow(exp)
+          if (hasChallenge("i", 31)) eff = eff.pow(challengeEffect("i", 31))
+          if (eff.gte(1e300)) eff = new Decimal(10).pow(eff.log(10).mul(300).pow(0.5))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 13)) + "x"
+        }
+      },
+      14: {
+        description: "Upgrade to the left exponent is powered based on Bought Prestige Upgrades",
+        cost: new Decimal(1e6),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let div = 14
+          if (hasUpgrade("p", 23)) div = 3.5
+          let eff = new Decimal(1).add(player.p.upgrades.length/div)
+          if (eff.gte(4)) eff = eff.log(2).add(2)
+          if (eff.gte(4.2025)) eff = eff.log(2.05).add(2.2025)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 14))
+        }
+      },
+      21: {
+        description: "PP gain formula is better based on Bought Prestige Upgrades",
+        cost: new Decimal(1e15),
+        effect(){
+          if (inChallenge("i", 22)) return [new Decimal(10), new Decimal(1.5)]
+          let eff = [new Decimal(10).sub(player.p.upgrades.length).max(2), new Decimal(1.5).add(Math.min(player.p.upgrades.length, 12)/50).add((2 - 2 ** (Math.min(13-player.p.upgrades.length, 1)))/100).add(Math.max(player.p.upgrades.length-15, 0)/800).min(1.76)]
+          return eff
+        },
+        effectDisplay(){
+          return "log" + `<sub>` + "10" + `</sub>` + "(x) → log" + `<sub>` + formatWhole(upgradeEffect("p", 21)[0]) + `</sub>` + "(x), ^^1.50 → ^^" + format(upgradeEffect("p", 21)[1], 3)
+        },
+        unlocked(){
+          return hasMilestone("sp", 0)
+        }
+      },
+      22: {
+        description: "Raise Points and PP gain based on Superlogarithm Points",
+        cost: new Decimal(1e45).pow(0.5),
+        effect(){
+          if (inChallenge("i", 22)) return [new Decimal(1), new Decimal(1)]
+          let eff = [player.slog.points.max(1).pow(0.5), player.slog.points.max(1).pow(0.25)]
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 22)[0], 3) + " Points gain, ^" + format(upgradeEffect("p", 22)[1], 3) + " Prestige Points gain"
+        },
+        unlocked(){
+          return hasMilestone("sp", 0)
+        }
+      },
+      23: {
+        description: "Boost SP gain based on Bought Prestige/Super Prestige Upgrades, and Prestige Upgrade 14 is stronger",
+        cost: new Decimal(1e77).pow(0.5),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let exp = new Decimal(player.sp.upgrades.length)
+          let eff = new Decimal(player.p.upgrades.length).pow(exp)
+          return eff.max(1)
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 23)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("sp", 0)
+        }
+      },
+      24: {
+        description: "Superlogarithm Points make Super Prestige Upgrade 11 stronger",
+        cost: new Decimal(1e60),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = player.slog.points.max(1)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 24), 3)
+        },
+        unlocked(){
+          return hasMilestone("sp", 0)
+        }
+      },
+      31: {
+        description: "Infinity Points boost PP gain (unaffected by softcap)",
+        cost: new Decimal(1e260),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let exp = tmp.i.totalIP
+          if (hasChallenge("e", 12)) exp = exp.pow(challengeEffect("e", 12)[0])
+          let eff = new Decimal(1e10).pow(exp)
+          if (eff.gte("1e10000")) eff = new Decimal(10).pow(eff.log(10).mul(10000).pow(0.5))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 31)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("i", 1)
+        }
+      },
+      32: {
+        description: "Super Prestige Upgrade 12 is stronger based on Superlogarithm Points",
+        cost: new Decimal(10).pow(484),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(0.5)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 32), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 1)
+        }
+      },
+      33: {
+        description: "SP make Prestige Upgrade 11 softcap starts later",
+        cost: new Decimal(10).pow(1891),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = player.sp.points.pow(0.57).max(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 33)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("i", 1)
+        }
+      },
+      34: {
+        description: "Increase PP gain tetrate based on IP",
+        cost: new Decimal(10).pow(3114),
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(0)
+          let amount = tmp.i.totalIP
+          if (amount.gte(20)) amount = amount.mul(20).pow(0.5)
+          let eff = amount.div(1000)
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("p", 34), 4)
+        },
+        unlocked(){
+          return hasMilestone("i", 1)
+        }
+      },
+      41: {
+        description: "Points gain softcap starts later based on SP, You can buy this upgrade while you are in I Challenge 1",
+        cost(){return inChallenge("i", 11) ? new Decimal(10).pow(469) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = player.sp.points.max(1).pow(1.1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 41)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      42: {
+        description: "slog points boost make I Challenge 7 reward softcap starts later, You can buy this upgrade while you are in I Challenge 8",
+        cost(){return inChallenge("i", 42) ? new Decimal(10).pow(2601) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = layers.slog.effect().pow(0.1).max(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("p", 42)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      43: {
+        description: "Infinity Upgrade 14 boost ^1.25, You can buy this upgrade while you are in I Challenge 6",
+        cost(){return inChallenge("i", 32) ? new Decimal(10).pow(22008) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = new Decimal(1.25)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      44: {
+        description: "slog points raise first 2 slog PP boost, You can buy this upgrade while you are in E Challenge 4",
+        cost(){return inChallenge("e", 22) ? new Decimal(10).pow(4263) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 22)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(0.57)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("p", 44), 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+    }
+})
+
+addLayer("sp", {
+    name: "super prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "SP", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+      unlocked: false,
+		  points: new Decimal(0),
+      total: new Decimal(0),
+    }},
+    color: "#F33",
+    requires: new Decimal(1e10), // Can be a function that takes requirement increases into account
+    resource: "super prestige points", // Name of prestige currency
+    baseResource: "prestige points", // Name of resource prestige is based on
+    baseAmount() {return player.p.points}, // Get the current amount of baseResource
+    type: "custom", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    branches: ["p"],
+    canReset(){
+      return player.p.points.gte(1e10) && !inChallenge("e", 11)
+    },
+    getBaseResetGain(){
+      if (inChallenge("e", 31)) return new Decimal(1)
+      if (inChallenge("e", 11)) return new Decimal(0)
+      let base = new Decimal(10)
+      let tetr = new Decimal(1.5)
+      if (hasUpgrade("p", 21) && hasChallenge("i", 12) && !inChallenge("i", 31)) base = upgradeEffect("p", 21)[0]
+      if (hasUpgrade("p", 21) && hasChallenge("i", 12) && !inChallenge("i", 31)) tetr = upgradeEffect("p", 21)[1]
+      if (hasChallenge("i", 12)) tetr = new Decimal(tetr).add(challengeEffect("i", 12))
+      if (hasUpgrade("hp", 31)) tetr = tetr.add(upgradeEffect("hp", 31))
+      
+      let gain = player.p.points.max(1).log(base).max(1).log(base).tetrate(tetr)
+      return gain
+    },
+    getResetGain(){
+      let gain = tmp.sp.getBaseResetGain
+      
+      gain = gain.mul(layers.slog.effect())
+      if (hasUpgrade("sp", 12)) gain = gain.mul(upgradeEffect("sp", 12))
+      if (hasUpgrade("p", 23)) gain = gain.mul(upgradeEffect("p", 23))
+      gain = gain.mul(layers.i.effect()[1])
+      
+      if (gain.gte(tmp.sp.getSCStart)) gain = new Decimal(10).pow(gain.log(10).mul(tmp.sp.getSCStart.log(10)).pow(0.5))
+      
+      if (hasUpgrade("sp", 23)) gain = gain.pow(upgradeEffect("sp", 23))
+      if (hasUpgrade("hp", 13)) gain = gain.mul(upgradeEffect("hp", 13))
+      if (inChallenge("e", 31)) gain = new Decimal(10).pow(gain.log(10).pow(0.75))
+      return gain.floor()
+    },
+    getSCStart(){
+      let scstart = new Decimal(1e25)      
+      if (hasChallenge("i", 11)) scstart = scstart.mul(challengeEffect("i", 11)[1])
+      if (hasUpgrade("i", 21)) scstart = scstart.mul(upgradeEffect("i", 21))
+      if (hasUpgrade("sp", 33)) scstart = scstart.pow(upgradeEffect("sp", 33))
+      scstart = scstart.mul(layers.e.effect()[0])
+      if (hasChallenge("i", 22) && hasChallenge("e", 11)) scstart = scstart.mul(challengeEffect("e", 11))
+      if (hasUpgrade("i", 42)) scstart = scstart.mul(upgradeEffect("i", 42))
+      scstart = scstart.mul(layers.slog.effectP(false))
+      if (inChallenge("e", 22)) scstart = scstart.pow(0.1)
+      return scstart
+    },
+    getNextAt(canMax=false){
+      return
+    },
+    prestigeButtonText(){
+      return "Reset for " + formatWhole(getResetGain("sp")) + " Super Prestige Points." + `<br>` + "(Base reset gain: " + format(tmp.sp.getBaseResetGain) + ")"
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "s", description: "S: Reset for super prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return player.p.upgrades.length >= 4 || player.sp.unlocked},
+    passiveGeneration(){ return hasMilestone("hp", 3)?1:0},
+    doReset(resettingLayer) {
+			let keep = [];
+      if (hasMilestone("hp", 2) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("upgrades")
+      if (layers[resettingLayer].row > this.row) layerDataReset("sp", keep)
+    },
+    tabFormat:[
+      "main-display",
+      "blank",
+      "prestige-button",
+      "resource-display",
+      "blank",
+      ["display-text", function() {
+        return "SP gain softcap start: " + format(tmp.sp.getSCStart)
+      }],
+      "blank",
+      "milestones",
+      "blank",
+      "upgrades"
+    ],
+    milestonePopups: false,
+    milestones: {
+        0: {
+          requirementDescription: "500 Total Super Prestige Points",
+          effectDescription: "Unlock a new row of Prestige Upgrades",
+          done() { return player.sp.total.gte(500) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+      },
+        1: {
+          requirementDescription: "50,000 Total Super Prestige Points",
+          effectDescription: "Keep Prestige Upgrades on row 2 reset",
+          done() { return player.sp.total.gte(50000) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+      },
+        2: {
+          requirementDescription: "500,000,000 Total Super Prestige Points",
+          effectDescription: "Gain 100% of Prestige Point gain every second",
+          done() { return player.sp.total.gte(5e8) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+      },
+    },
+    upgrades: {
+      rows: 4,
+      cols: 4,
+      11: {
+        description: "Your Super Prestige Points boost Points and Prestige Points gain",
+        cost: new Decimal(160),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.sp.points.add(1).pow(2)
+          if (hasUpgrade("p", 24)) eff = eff.pow(upgradeEffect("p", 24))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("sp", 11)) + "x"
+        }
+      },
+      12: {
+        description: "Your Prestige Points boost Super Prestige Points gain",
+        cost: new Decimal(3200),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.p.points.add(1).log(10).add(1)
+          if (hasUpgrade("sp", 14)) eff = eff.pow(upgradeEffect("sp", 14))
+          if (hasUpgrade("p", 32)) eff = eff.pow(upgradeEffect("p", 32))
+          if (hasUpgrade("i", 31)) eff = eff.pow(upgradeEffect("i", 31))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("sp", 12)) + "x"
+        }
+      },
+      13: {
+        description: "Multiply Superlogarithm Points boost exponent by 2",
+        cost: new Decimal(6.4e5),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = new Decimal(2)
+          return eff
+        },
+      },
+      14: {
+        description: "Super Prestige Upgrade 12 is stronger based on Bought Super Prestige Upgrades",
+        cost: new Decimal(1.28e12),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = new Decimal(player.sp.upgrades.length).pow(0.5)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("sp", 14))
+        }
+      },
+      21: {
+        description: "Multiply Superlogarithm Points boost exponent by 1.5",
+        cost: new Decimal(1e18),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = new Decimal(1.5)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("i", 0)
+        }
+      },
+      22: {
+        description: "Raise Superlogarithm Points boost based on Infinity Points",
+        cost: new Decimal(1e32),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.5)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("sp", 22))
+        },
+        unlocked(){
+          return hasMilestone("i", 0)
+        }
+      },
+      23: {
+        description: "Raise SP gain based on Superlogarithm Points (unaffected by softcap)",
+        cost: new Decimal(1e48),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(0.155)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("sp", 23), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 0)
+        }
+      },
+      24: {
+        description: "Raise Superlogarithm Points boost based on SP",
+        cost: new Decimal(1e100),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let base = new Decimal(17).sub(tmp.i.totalIP.div(2)).max(10)
+          let eff = player.sp.points.max(1).log(base).max(1).log(base).max(1)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("sp", 24), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 0)
+        }
+      },
+      31: {
+        description: "Raise IP gain scaling to the power of 0.928",
+        cost: new Decimal(1e186),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = new Decimal(0.928)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      32: {
+        description: "Your Super Prestige Points boost Hyper Prestige Points gain",
+        cost: new Decimal(1e221),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.sp.points.add(1).log(10).add(1)
+          if (hasUpgrade("i", 33)) eff = eff.max(player.sp.points.add(1).pow(0.003))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("sp", 32)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      33: {
+        description: "Superlogarithm Points make SP gain softcap starts later",
+        cost: new Decimal(1e275),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(0.273)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("sp", 33), 3)
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      34: {
+        description: "I Challenge 8 reward is stronger based on slog points",
+        cost: new Decimal(10).pow(386),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(0.63)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("sp", 34), 3) + "x"
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      41: {
+        description: "Reduce slog points base based on IP (max -0.4)",
+        cost: new Decimal(10).pow(2171),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(0)
+          let eff = tmp.i.totalIP.div(500)
+          return eff.min(0.4)
+        },
+        effectDisplay(){
+          return "-" + format(upgradeEffect("sp", 41), 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      42: {
+        description: "IP gain scaling exponent -0.0083, You can buy this upgrade while you are in E Challenge 2",
+        cost(){return inChallenge("e", 12) ? new Decimal(10).pow(628) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(0)
+          let eff = new Decimal(0.0083)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      43: {
+        description: "Raise all IP boost exponent to the power of 1.11",
+        cost: new Decimal(10).pow(3094),
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(1)
+          let eff = new Decimal(1.11)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+      44: {
+        description: "Reduce slog points base based on slog PP (max -0.4) and E Challenge 2 reward uses a better formula, You can buy this upgrade while you are in E Challenge 5",
+        cost(){return inChallenge("e", 31) ? new Decimal(10).pow(153.5) : new Decimal(1/0)},
+        effect(){
+          if (inChallenge("i", 12)) return new Decimal(0)
+          let eff = player.slog.prestigePoints.div(19.75)
+          return eff.min(0.4)
+        },
+        effectDisplay(){
+          return "-" + format(upgradeEffect("sp", 44), 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 2)
+        }
+      },
+    }
+})
+
+addLayer("i", {
+    name: "infinity", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "I", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+      unlocked: false,
+		  points: new Decimal(0),
+      best: new Decimal(0),
+      auto: false,
+    }},
+    color: "#CCCC00",
+    requires(){
+      if (inChallenge("e", 12)) return new Decimal(Infinity)
+      let req = new Decimal(2).pow(1024)
+      req = req.pow(1.35)
+      if (!inChallenge("e", 41)){
+        if (hasChallenge("i", 41)) req = req.div(challengeEffect("i", 41))
+        if (hasUpgrade("hp", 21)) req = req.div(upgradeEffect("hp", 21))
+      }
+      return req
+    }, // Can be a function that takes requirement increases into account
+    base(){
+      let base = new Decimal(2).pow(1024)
+      base = base.pow(0.15)
+      if (hasUpgrade("sp", 31)) base = base.pow(upgradeEffect("sp", 31))
+      if (hasUpgrade("hp", 32)) base = base.pow(upgradeEffect("hp", 32))
+      return base
+    },
+    exponent(){
+      let exp = new Decimal(2)
+      if (hasUpgrade("sp", 42)) exp = exp.sub(upgradeEffect("sp", 42))
+      if (inChallenge("e", 22)) exp = exp.pow(2)
+      return exp
+    },
+    resource: "infinity points", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    branches: ["p"],
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "i", description: "I: Reset for infinity points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return player.sp.upgrades.length >= 4 || player.i.unlocked},
+    canBuyMax(){
+      return hasMilestone("hp", 1)
+    },
+    autoPrestige(){
+      return player.i.auto
+    },
+    resetsNothing(){
+      return hasMilestone("hp", 4)
+    },
+    effect(){
+      if (inChallenge("i", 31)) return [new Decimal(1), new Decimal(1)]
+      let exp = tmp.i.totalIP
+      if (exp.gte(100)) exp = exp.sub(100).div(2).add(100) // start at 100
+      if (exp.gte(400)) exp = exp.div(400).pow(0.5).mul(400) // start at 700
+      if (exp.gte(1600)) exp = exp.div(100).log(2).pow(2).mul(100) // start at 12700
+      if (hasUpgrade("i", 13)) exp = exp.pow(upgradeEffect("i", 13))
+      if (hasUpgrade("sp", 43)) exp = exp.pow(upgradeEffect("sp", 43))
+      let eff = [new Decimal(1e5).pow(exp), new Decimal(10).pow(exp)]
+      if (hasUpgrade("i", 12)) eff[0] = eff[0].pow(upgradeEffect("i", 12))
+      if (hasUpgrade("i", 12)) eff[1] = eff[1].pow(upgradeEffect("i", 12))
+      return eff
+    },
+    effectDescription(){
+      return " which make PP gain softcap starts " + format(layers.i.effect()[0]) + "x later and multiply SP gain by " + format(layers.i.effect()[1]) + `<br>` + 
+        "(Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), effect softcap start: 100)"
+    },
+    freeIP(){
+      let freeAmt = new Decimal(0)
+      if (hasUpgrade("i", 43)) freeAmt = freeAmt.add(upgradeEffect("i", 43)[0])
+      if (hasUpgrade("e", 14)) freeAmt = freeAmt.add(upgradeEffect("e", 14))
+      if (player.e.activeChallenge) freeAmt = freeAmt.min(0)
+      return freeAmt
+    },
+    totalIP(){
+      return player.i.points.add(tmp.i.freeIP)
+    },
+    doReset(resettingLayer) {
+			let keep = ["auto"];
+      if (hasMilestone("hp", 2) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("challenges")
+      if (hasMilestone("hp", 2) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("milestones")
+      if (hasMilestone("hp", 3) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("upgrades")
+      if (layers[resettingLayer].row > this.row) layerDataReset("i", keep)
+    },
+    tabFormat: {
+      "Upgrades": {
+        content:[
+          "main-display",
+          "blank",
+          "prestige-button",
+          "resource-display",
+          "blank",
+          "milestones",
+          "blank",
+          "upgrades",
+        ]
+      },
+      "Challenges": {
+        content:[
+          "main-display",
+          "blank",
+          "prestige-button",
+          "resource-display",
+          "blank",
+          "milestones",
+          "blank",
+          "challenges",
+        ],
+        unlocked() {return hasMilestone("i",2)}
+      },
+    },
+    milestonePopups: false,
+    milestones: {
+        0: {
+          requirementDescription: "2 Infinity Points",
+          effectDescription: "Unlock a new row of Super Prestige Upgrades",
+          done() { return tmp.i.totalIP.gte(2) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+        },
+        1: {
+          requirementDescription: "3 Infinity Points",
+          effectDescription: "Unlock a new row of Prestige Upgrades",
+          done() { return tmp.i.totalIP.gte(3) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+        },
+        2: {
+          requirementDescription: "5 Infinity Points",
+          effectDescription: "Unlock Challenge 1-8",
+          done() { return tmp.i.totalIP.gte(5) || hasMilestone("hp", 0)},
+          unlocked(){return true}
+        },
+        3: {
+          requirementDescription: "33 Infinity Points",
+          effectDescription: "Unlock Challenge 9-12",
+          done() { return tmp.i.totalIP.gte(33) && player.e.points.gte(3)},
+          unlocked(){return player.e.points.gte(3)}
+        },
+        101: {
+          requirementDescription: "1.00e1,218 Points",
+          effectDescription: "Unlock Challenge 1",
+          done() { return (player.points.gte("1e1218") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2)}
+        },
+        102: {
+          requirementDescription: "1.00e1,445 Points",
+          effectDescription: "Unlock Challenge 2",
+          done() { return (player.points.gte("1e1445") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 101)}
+        },
+        103: {
+          requirementDescription: "1.00e1,622 Points",
+          effectDescription: "Unlock Challenge 3",
+          done() { return (player.points.gte("1e1622") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 102)}
+        },
+        104: {
+          requirementDescription: "1.00e2,350 Points",
+          effectDescription: "Unlock Challenge 4",
+          done() { return (player.points.gte("1e2350") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 103)}
+        },
+        105: {
+          requirementDescription: "1.00e3,545 Points",
+          effectDescription: "Unlock Challenge 5",
+          done() { return (player.points.gte("1e3545") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 104)}
+        },
+        106: {
+          requirementDescription: "1.00e4,434 Points",
+          effectDescription: "Unlock Challenge 6",
+          done() { return (player.points.gte("1e4434") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 105)}
+        },
+        107: {
+          requirementDescription: "1.00e6,413 Points",
+          effectDescription: "Unlock Challenge 7",
+          done() { return (player.points.gte("1e6413") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 106)}
+        },
+        108: {
+          requirementDescription: "1.00e7,247 Points",
+          effectDescription: "Unlock Challenge 8",
+          done() { return (player.points.gte("1e7247") && hasMilestone("i", 2))},
+          unlocked(){return hasMilestone("i", 2) && hasMilestone("i", 107)}
+        },
+        109: {
+          requirementDescription: "1.00e34,924 Points",
+          effectDescription: "Unlock Challenge 9",
+          done() { return (player.points.gte("1e34924") && hasMilestone("i", 3))},
+          unlocked(){return hasMilestone("i", 3) && hasMilestone("i", 108)}
+        },
+        110: {
+          requirementDescription: "1.00e39,958 Points",
+          effectDescription: "Unlock Challenge 10",
+          done() { return (player.points.gte("1e39958") && hasMilestone("i", 3))},
+          unlocked(){return hasMilestone("i", 3) && hasMilestone("i", 109)}
+        },
+        111: {
+          requirementDescription: "1.00e43,505 Points",
+          effectDescription: "Unlock Challenge 11",
+          done() { return (player.points.gte("1e43505") && hasMilestone("i", 3))},
+          unlocked(){return hasMilestone("i", 3) && hasMilestone("i", 110)}
+        },
+        112: {
+          requirementDescription: "1.00e48,220 Points",
+          effectDescription: "Unlock Challenge 12",
+          done() { return (player.points.gte("1e48220") && hasMilestone("i", 3))},
+          unlocked(){return hasMilestone("i", 3) && hasMilestone("i", 111)}
+        },
+    },
+    upgrades: {
+      rows: 4,
+      cols: 4,
+      11: {
+        description: "SP make PP gain softcap starts later",
+        cost: new Decimal(3),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.sp.points.add(1)
+          if (hasChallenge("i", 32)) eff = eff.pow(challengeEffect("i", 32))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("i", 11)) + "x"
+        },
+      },
+      12: {
+        description: "Superlogarithm Points make all IP boost stronger",
+        cost: new Decimal(4),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.slog.points.max(1)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("i", 12), 3)
+        }
+      },
+      13: {
+        description: "Raise all IP boost exponent to the power of 1.5",
+        cost: new Decimal(7),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(1.5)
+          return eff
+        },
+      },
+      14: {
+        description: "I Challenge 1 second reward is stronger based on IP",
+        cost: new Decimal(11),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.5)
+          if (hasUpgrade("p", 43)) eff = eff.pow(upgradeEffect("p", 43))
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("i", 14))
+        }
+      },
+      21: {
+        description: "SP gain softcap starts later based on HP",
+        cost: new Decimal(20),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.hp.points.add(1).pow(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("i", 21)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      22: {
+        description: "Increase HP gain base from IP based on slog points, and multiply HP gain based on IP",
+        cost: new Decimal(22),
+        effect(){
+          if (inChallenge("i", 31)) return [new Decimal(0), new Decimal(1)]
+          let eff = [player.slog.points.sub(2).max(0), tmp.i.totalIP.add(1)]
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("i", 22)[0], 3) + " base, " + format(upgradeEffect("i", 22)[1]) + "x gain" 
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      23: {
+        description: "Boost HP gain based on PP, and HP gain uses a better formula",
+        cost: new Decimal(24),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.p.points.add(1).log(10).pow(0.5)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("i", 23)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      24: {
+        description: "Increase PP gain tetrate based on PP",
+        cost: new Decimal(26),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = player.p.points.add(1).log(10).add(1).log(10).div(200)
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("i", 24), 4)
+        },
+        unlocked(){
+          return hasMilestone("hp", 5)
+        }
+      },
+      31: {
+        description: "Super Prestige Upgrade 12 is stronger based on IP",
+        cost: new Decimal(33),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.9)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("i", 31))
+        },
+        unlocked(){
+          return hasMilestone("e", 1)
+        }
+      },
+      32: {
+        description: "Raise HP gain from IP exponent to the power of 1.19",
+        cost: new Decimal(36),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(1.19)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 1)
+        }
+      },
+      33: {
+        description: "IP make Points gain softcap starts later, and Super Prestige Upgrade 32 uses a better formula",
+        cost: new Decimal(40),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(10).pow(tmp.i.totalIP.mul(20))
+          if (hasChallenge("e", 31)) eff = eff.pow(challengeEffect("e", 31)[0])
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("i", 33)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 1)
+        }
+      },
+      34: {
+        description: "+1 base HP gain before tetrate, and HP gain formula is better based on EP (max -8)",
+        cost: new Decimal(42),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = player.e.points.pow(0.75)
+          return eff.min(8)
+        },
+        effectDisplay(){
+          return "-" + format(upgradeEffect("i", 34))
+        },
+        unlocked(){
+          return hasMilestone("e", 1)
+        }
+      },
+      41: {
+        description: "I Challenge 4 reward uses a better formula past 40",
+        cost: new Decimal(53),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(1.5)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      42: {
+        description: "Points make SP gain softcap starts later",
+        cost: new Decimal(61),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(10).pow(player.points.max(10).log(10).pow(0.3135))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("i", 42)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      43: {
+        description: "Give Free IP amount based on HP, and reduce EP cost scaling based on slog PP",
+        cost: new Decimal(71),
+        effect(){
+          if (inChallenge("i", 31)) return [new Decimal(0), new Decimal(1)]
+          let eff = [player.hp.points.max(10).log(10).log(10), player.slog.prestigePoints.max(1).pow(-0.2268)]
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("i", 43)[0]) + ", ^" + format(upgradeEffect("i", 43)[1], 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      44: {
+        description: "Increase last 2 slog PP boost exponent based on IP",
+        cost: new Decimal(79),
+        effect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = tmp.i.totalIP.div(500).max(0)
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("i", 44), 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+    },
+    challenges: {
+      rows: 8,
+      cols: 2,
+      11: {
+        name: "Challenge 1",
+        challengeDescription: "Prestige Points gain is raised to the power of 0.01. (after softcaps)",
+        goal: new Decimal(2).pow(1024*1.35),
+        rewardDescription: "Points make PP/SP gain softcap starts later.",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return [new Decimal(1), new Decimal(1)]
+          let eff = [player.points.max(1).pow(0.1), player.points.max(10).log(10)]
+          if (hasUpgrade("i", 14)) eff[1] = eff[1].pow(upgradeEffect("i", 14))
+          if (hasChallenge("e", 42)) eff[1] = eff[1].pow(challengeEffect("e", 42))
+          
+          if (eff[0].gte(tmp.i.challenges[11].rewardSCStart_PP)) eff[0] = new Decimal(10).pow(eff[0].log(10).mul(tmp.i.challenges[11].rewardSCStart_PP.log(10)).pow(0.5))
+          return eff
+        },
+        rewardSCStart_PP(){
+          let scstart = new Decimal(10).pow(9000)
+          if (hasUpgrade("hp", 43)) scstart = scstart.mul(upgradeEffect("hp", 43))
+          return scstart
+        },
+        rewardDisplay(){
+          return format(challengeEffect("i", 11)[0]) + "x PP gain softcap start, " + format(challengeEffect("i", 11)[1]) + "x SP gain softcap start. (Reward 1 Softcap start: " + format(tmp.i.challenges[11].rewardSCStart_PP) + "x)"
+        },
+        unlocked(){
+          return hasMilestone("i", 101)
+        },
+      },
+      12: {
+        name: "Challenge 2",
+        challengeDescription: "All Super Prestige Upgrades do nothing.",
+        goal: new Decimal(10).pow(902),
+        rewardDescription: "Prestige Upgrade 5 affect Super Prestige Points gain, and Superlogarithm Points increase SP gain tetrate amount.",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = player.slog.points.sub(2).max(0).div(2)
+          return eff
+        },
+        rewardDisplay(){
+          return "+" + format(challengeEffect("i", 12), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 102)
+        }
+      },
+      21: {
+        name: "Challenge 3",
+        challengeDescription: "You always have no non-free Superlogarithm Points.",
+        goal: new Decimal(10).pow(623),
+        rewardDescription: "Multiply Points and PP gain based on Superlogarithm Points.",
+        rewardEffect(){
+          if (inChallenge("i", 21) || inChallenge("i", 31) || inChallenge("i", 51) || inChallenge("e", 21)) return new Decimal(1)
+          let eff = new Decimal(10).pow(new Decimal(10).pow(player.slog.points.mul(tmp.i.challenges[21].rewardMul)))
+          return eff
+        },
+        rewardMul(){
+          let mul = new Decimal(1.005)
+          if (hasChallenge("i", 42)) mul = mul.add(challengeEffect("i", 42))
+          if (mul.gte(1.2)) mul = mul.mul(1.2).pow(0.5)
+          return mul
+        },
+        rewardDisplay(){
+          return format(challengeEffect("i", 21)) + "x (Multi: " + format(tmp.i.challenges[21].rewardMul, 3) + ", softcap at 1.200)"
+        },
+        unlocked(){
+          return hasMilestone("i", 103)
+        }
+      },
+      22: {
+        name: "Challenge 4",
+        challengeDescription: "All Prestige Upgrades except first one do nothing.",
+        goal: new Decimal(10).pow(653),
+        rewardDescription: "IP make Prestige Upgrade 1 softcap starts later.",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let IP = tmp.i.totalIP
+          if (hasUpgrade("i", 41) && IP.gte(40)) IP = IP.div(40).pow(upgradeEffect("i", 41)).mul(40)
+          let eff = new Decimal(1e6).pow(IP).mul(10)
+          return eff
+        },
+        rewardDisplay(){
+          return format(challengeEffect("i", 22)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("i", 104)
+        }
+      },
+      31: {
+        name: "Challenge 5",
+        challengeDescription: "IP boost, Infinity Upgrades and Challenges reward do nothing.",
+        goal: new Decimal(10).pow(1404),
+        rewardDescription: "IP make Prestige Upgrade 11 and 13 stronger.",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = new Decimal(1).add(tmp.i.totalIP.div(22.5))
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("i", 31))
+        },
+        unlocked(){
+          return hasMilestone("i", 105)
+        }
+      },
+      32: {
+        name: "Challenge 6",
+        challengeDescription: "PP gain softcap and Prestige Upgrade 11 softcap start ^0.02.",
+        goal: new Decimal(10).pow(1204),
+        rewardDescription: "Superlogarithm Points make Infinity Upgrade 1 stronger",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.slog.points.max(1)
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("i", 32), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 106)
+        }
+      },
+      41: {
+        name: "Challenge 7",
+        challengeDescription: "Prestige Upgrade 11 is the only things that boost Point generation.",
+        goal: new Decimal(10).pow(2456),
+        rewardDescription: "Divide Infinity require based on PP",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = player.p.points.pow(0.2815).max(1)
+          
+          if (eff.gte(tmp.i.challenges[41].rewardSCStart)) eff = new Decimal(10).pow(eff.log(10).mul(tmp.i.challenges[41].rewardSCStart.log(10)).pow(0.5))
+          return eff
+        },
+        rewardSCStart(){
+          let scstart = new Decimal(10).pow(1e4)
+          if (hasUpgrade("p", 42)) scstart = scstart.mul(upgradeEffect("p", 42))
+          if (hasUpgrade("hp", 43)) scstart = scstart.mul(upgradeEffect("hp", 43))
+          return scstart
+        },
+        rewardDisplay(){
+          return "/" + format(challengeEffect("i", 41)) + " (Softcap start: /" + format(tmp.i.challenges[41].rewardSCStart) + ")"
+        },
+        unlocked(){
+          return hasMilestone("i", 107)
+        }
+      },
+      42: {
+        name: "Challenge 8",
+        challengeDescription: "Superlogarithm Points is the only things that boost PP gain, and PP gain tetrate is always 1.1",
+        goal: new Decimal(10).pow(2505),
+        rewardDescription: "I Challenge 3 reward is better based on IP",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = tmp.i.totalIP.div(112)
+          if (hasUpgrade("sp", 34)) eff = eff.mul(upgradeEffect("sp", 34))
+          return eff
+        },
+        rewardDisplay(){
+          return "+" + format(challengeEffect("i", 42), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 108)
+        }
+      },
+      51: {
+        name: "Challenge 9",
+        challengeDescription: "Challenge 2 and 4 are applied at once, Challenge 3 reward do nothing.",
+        goal: new Decimal(10).pow(50),
+        rewardDescription: "Infinity Points make all EP boost stronger.",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.18)
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("i", 51))
+        },
+        unlocked(){
+          return hasMilestone("i", 109)
+        },
+        countsAs: [12,22]
+      },
+      52: {
+        name: "Challenge 10",
+        challengeDescription: "Points gain softcap start at 10 and exponent raised to the power of 0.75",
+        goal: new Decimal(10).pow(47).mul(2),
+        rewardDescription: "Points boosts Points gain while outside I Challenges.",
+        rewardEffect(){
+          if (player.i.activeChallenge) return new Decimal(1)
+          let eff = player.points.max(1).pow(0.1)
+          if (hasChallenge("e", 41)) eff = eff.pow(challengeEffect("e", 41))
+          return eff
+        },
+        rewardDisplay(){
+          return format(challengeEffect("i", 52)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("i", 110)
+        },
+        countsAs: []
+      },
+      61: {
+        name: "Challenge 11",
+        challengeDescription: "Challenge 3, 7 and 8 are applied at once, PP gain tetrate is always 1",
+        goal: new Decimal(10).pow(55),
+        rewardDescription: "Increase slog points boost exponent based on IP",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = tmp.i.totalIP.div(185)
+          return eff
+        },
+        rewardDisplay(){
+          return "+" + format(challengeEffect("i", 61), 3)
+        },
+        unlocked(){
+          return hasMilestone("i", 111)
+        },
+        countsAs: [21,41,42]
+      },
+      62: {
+        name: "Challenge 12",
+        challengeDescription: "Challenge 2, 4 and 5 are applied at once, Hyper Prestige Upgrades do nothing",
+        goal: new Decimal(10).pow(9),
+        rewardDescription: "Reduce slog points base by 0.6",
+        rewardEffect(){
+          if (inChallenge("i", 31)) return new Decimal(0)
+          let eff = new Decimal(0.6)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("i", 112)
+        },
+        countsAs: [12,22,31]
+      },
+    }
+})
+
+addLayer("hp", {
+    name: "hyper prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "HP", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+      unlocked: false,
+		  points: new Decimal(0),
+      total: new Decimal(0),
+    }},
+    color: "#F00",
+    requires: new Decimal(11.4).pow(new Decimal(11.4).pow(2)), // Can be a function that takes requirement increases into account
+    resource: "hyper prestige points", // Name of prestige currency
+    baseResource: "super prestige points", // Name of resource prestige is based on
+    baseAmount() {return player.sp.points}, // Get the current amount of baseResource
+    type: "custom", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    branches: ["sp"],
+    canReset(){
+      return player.sp.points.gte(new Decimal(11.4).pow(new Decimal(11.4).pow(2)))
+    },
+    getBaseResetGain(){
+      let base = new Decimal(11.4)
+      let tetr = new Decimal(2)
+      if (hasUpgrade("i", 23) && !inChallenge("i", 31)) base = base.sub(1.4)
+      if (hasUpgrade("i", 34) && !inChallenge("i", 31)) base = base.sub(upgradeEffect("i", 34))
+      
+      let gain = player.sp.points.max(1).log(base).max(1).log(base).sub(1)
+      if (hasUpgrade("i", 34) && !inChallenge("i", 31)) gain = gain.add(1)
+      return gain.tetrate(tetr)
+    },
+    getResetGainMulFromIP(){
+      let IPbase = new Decimal(2)
+      if (hasUpgrade("i", 22)) IPbase = IPbase.add(upgradeEffect("i", 22)[0])
+      
+      let IPamount = tmp.i.totalIP.sub(15).max(0)
+      if (hasUpgrade("i", 32)) IPamount = IPamount.pow(upgradeEffect("i", 32))
+      
+      let mul = IPbase.pow(IPamount)
+      return mul
+    },
+    getResetGain(){
+      let gain = tmp.hp.getBaseResetGain.mul(tmp.hp.getResetGainMulFromIP)
+      
+      if (hasUpgrade("hp", 12)) gain = gain.mul(upgradeEffect("hp", 12))
+      if (hasUpgrade("sp", 32)) gain = gain.mul(upgradeEffect("sp", 32))
+      if (hasUpgrade("i", 22)) gain = gain.mul(upgradeEffect("i", 22)[1])
+      if (hasUpgrade("i", 23)) gain = gain.mul(upgradeEffect("i", 23))
+      gain = gain.mul(layers.e.effect()[1])
+      
+      if (gain.gte(tmp.hp.getSCStart)) gain = new Decimal(10).pow(gain.log(10).mul(tmp.hp.getSCStart.log(10)).pow(0.5))
+      if (hasChallenge("e", 31)) gain = gain.pow(challengeEffect("e", 31)[1])
+      return gain.floor()
+    },
+    getSCStart(){
+      let scstart = new Decimal(1e49)
+      if (hasUpgrade("hp", 41)) scstart = scstart.mul(upgradeEffect("hp", 41))
+      scstart = scstart.mul(layers.slog.effectP(true))
+      return scstart
+    },
+    getNextAt(canMax=false){
+      return
+    },
+    prestigeButtonText(){
+      return "Reset for " + formatWhole(getResetGain("hp")) + " Hyper Prestige Points." + `<br>` + "(Base reset gain: " + format(tmp.hp.getBaseResetGain) + ", multiplier from IP: " + format(tmp.hp.getResetGainMulFromIP) + ")"
+    },
+    row: 2, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "h", description: "H: Reset for hyper prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return tmp.i.totalIP.gte(15) || player.hp.unlocked},
+    passiveGeneration(){ return 0},
+    doReset(resettingLayer) {
+			let keep = [];
+      if (layers[resettingLayer].row > this.row) layerDataReset("sp", keep)
+    },
+    tabFormat:[
+      "main-display",
+      "blank",
+      "prestige-button",
+      "resource-display",
+      "blank",
+      ["display-text", function() {
+        return "HP gain softcap start: " + format(tmp.hp.getSCStart)
+      }],
+      "blank",
+      "milestones",
+      "blank",
+      "upgrades"
+    ],
+    milestonePopups: false,
+    milestones: {
+        0: {
+          requirementDescription: "300 Total Hyper Prestige Points",
+          effectDescription: "Keep Super Prestige/Infinity Milestones on row 3 reset.",
+          done() { return player.hp.total.gte(300)},
+          unlocked(){return true}
+        },
+        1: {
+          requirementDescription: "920 Total Hyper Prestige Points",
+          effectDescription: "Keep Prestige Upgrades on row 3 reset and you can buy max Infinity Points.",
+          done() { return player.hp.total.gte(920)},
+          unlocked(){return true}
+        },
+        2: {
+          requirementDescription: "95,000 Total Hyper Prestige Points",
+          effectDescription: "Keep Super Prestige Upgrades and Challenge completions on row 3 reset.",
+          done() { return player.hp.total.gte(95000)},
+          unlocked(){return true}
+        },
+        3: {
+          requirementDescription: "650,000 Total Hyper Prestige Points",
+          effectDescription: "Keep Infinity Upgrades on row 3 reset and gain 100% of Super Prestige Point gain every second.",
+          done() { return player.hp.total.gte(6.5e5)},
+          unlocked(){return true}
+        },
+        4: {
+          requirementDescription: "2,000,000 Total Hyper Prestige Points",
+          effectDescription: "Unlock auto Infinity and they resets nothing.",
+          done() { return player.hp.total.gte(2e6)},
+          unlocked(){return true},
+          toggles: [["i", "auto"]]
+        },
+        5: {
+          requirementDescription: "50,000,000 Total Hyper Prestige Points",
+          effectDescription: "Unlock a new row of Super Prestige/Infinity Upgrades",
+          done() { return player.hp.total.gte(5e7)},
+          unlocked(){return true}
+        },
+    },
+    upgrades: {
+      rows: 4,
+      cols: 4,
+      11: {
+        description: "Multiply Points and PP gain by 100, then raise Points and PP gain to the power of 1.0415 (unaffected by softcap)",
+        cost: new Decimal(1),
+        effect(){
+          if (inChallenge("i", 62)) return [new Decimal(1), new Decimal(1)]
+          let eff = [new Decimal(100), new Decimal(1.0415)]
+          return eff
+        },
+      },
+      12: {
+        description: "Superlogarithm Points boost affect HP gain with reduced effect",
+        cost: new Decimal(2),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = layers.slog.effect().max(1).log(10).add(1)
+          if (hasUpgrade("hp", 14)) eff = eff.pow(upgradeEffect("hp", 14))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 12)) + "x"
+        }
+      },
+      13: {
+        description: "Boost SP gain based on HP (unaffected by softcap)",
+        cost: new Decimal(600),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.hp.points.add(1).pow(0.5)
+          if (hasUpgrade("hp", 23)) eff = eff.pow(upgradeEffect("hp", 23))
+          if (eff.gte(1e300)) eff = new Decimal(10).pow(eff.log(10).mul(300).pow(0.5))
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 13)) + "x"
+        }
+      },
+      14: {
+        description: "Hyper Prestige Upgrade 12 is stronger based on IP",
+        cost: new Decimal(1250),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.25)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("hp", 14))
+        }
+      },
+      21: {
+        description: "Divide Infinity require based on SP",
+        cost: new Decimal(2.25e5),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.sp.points.pow(5).max(1)
+          if (eff.gte("1e18000")) eff = new Decimal(10).pow(eff.log(10).mul(18000).pow(0.5))
+          return eff
+        },
+        effectDisplay(){
+          return "/" + format(upgradeEffect("hp", 21))
+        }
+      },
+      22: {
+        description: "Raise Superlogarithm Points boost based on Hyper Prestige Points",
+        cost: new Decimal(2.5e6),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.hp.points.max(1).log(10).max(1).log(10).add(1)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("hp", 22), 3)
+        }
+      },
+      23: {
+        description: "Hyper Prestige Upgrade 13 is stronger based on IP",
+        cost: new Decimal(3e11),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = tmp.i.totalIP.max(1).pow(0.425)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("hp", 23))
+        }
+      },
+      24: {
+        description: "HP make PP gain softcap starts later",
+        cost: new Decimal(5e17),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.hp.points.add(1).pow(64)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 24)) + "x"
+        }
+      },
+      31: {
+        description: "Increase SP gain tetrate by 0.22",
+        cost: new Decimal(8e23),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(0)
+          let eff = new Decimal(0.22)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 0)
+        }
+      },
+      32: {
+        description: "Reduce IP gain scaling based on slog points",
+        cost: new Decimal(2e41),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.slog.points.max(1).pow(-0.0638)
+          return eff
+        },
+        effectDisplay(){
+          return "^" + format(upgradeEffect("hp", 32), 3)
+        },
+        unlocked(){
+          return hasMilestone("e", 0)
+        }
+      },
+      33: {
+        description: "Raise all EP boost exponent to the power of 1.2",
+        cost: new Decimal(2.5e47),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = new Decimal(1.2)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 0)
+        }
+      },
+      34: {
+        description: "Give 0.025 free slog points",
+        cost: new Decimal(1.5e53),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(0)
+          let eff = new Decimal(0.025)
+          return eff
+        },
+        unlocked(){
+          return hasMilestone("e", 0)
+        }
+      },
+      41: {
+        description: "HP gain softcap starts later based on Points",
+        cost: new Decimal(1e67),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.points.max(10).log(10)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 41)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      42: {
+        description: "HP make Prestige Upgrade 11 softcap starts later",
+        cost: new Decimal(1e79),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.hp.points.pow(3.06).max(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 42)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      43: {
+        description: "I Challenge 1 and 7 reward softcap starts later based on SP",
+        cost: new Decimal(2e100),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = player.sp.points.pow(0.102).max(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 43)) + "x"
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+      44: {
+        description: "???",
+        cost: new Decimal(1/0),
+        effect(){
+          if (inChallenge("i", 62)) return new Decimal(1)
+          let eff = new Decimal(1)
+          return eff
+        },
+        effectDisplay(){
+          return format(upgradeEffect("hp", 44))
+        },
+        unlocked(){
+          return hasMilestone("e", 3)
+        }
+      },
+    }
+})
+
+addLayer("e", {
+    name: "eternity", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "E", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+      unlocked: false,
+		  points: new Decimal(0),
+      best: new Decimal(0),
+      auto: false,
+    }},
+    color: "#6600CC",
+    requires(){
+      let req = new Decimal(2).pow(1024)
+      req = req.pow(1.35)
+      if (hasChallenge("e", 12)) req = req.div(challengeEffect("e", 12)[1])
+      return req
+    }, // Can be a function that takes requirement increases into account
+    base(){
+      let base = new Decimal(2).pow(1024)
+      base = base.pow(0.15)
+      if (hasUpgrade("i", 43)) base = base.pow(upgradeEffect("i", 43)[1])
+      return base
+    },
+    exponent(){
+      let exp = new Decimal(2)
+      return exp
+    },
+    resource: "eternity points", // Name of prestige currency
+    baseResource: "super prestige points", // Name of resource prestige is based on
+    baseAmount() {return player.sp.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    branches: ["i"],
+    row: 2, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "e", description: "E: Reset for eternity points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return player.hp.upgrades.length >= 8 || player.e.unlocked},
+    canBuyMax(){
+      return false
+    },
+    autoPrestige(){
+      return player.e.auto
+    },
+    resetsNothing(){
+      return false
+    },
+    effect(){
+      let exp = player.e.points
+      if (exp.gte(100)) exp = exp.sub(100).div(2).add(100) // start at 100
+      if (exp.gte(400)) exp = exp.div(400).pow(0.5).mul(400) // start at 700
+      if (exp.gte(1600)) exp = exp.div(100).log(2).pow(2).mul(100) // start at 12700
+      if (hasUpgrade("hp", 33)) exp = exp.pow(upgradeEffect("hp", 33))
+      let eff = [new Decimal(1e11).pow(exp), new Decimal(10).pow(exp)]
+      if (hasChallenge("i", 51)) eff[0] = eff[0].pow(challengeEffect("i", 51))
+      if (hasChallenge("i", 51)) eff[1] = eff[1].pow(challengeEffect("i", 51))
+      return eff
+    },
+    effectDescription(){
+      return " which make SP gain softcap starts " + format(layers.e.effect()[0]) + "x later and multiply HP gain by " + format(layers.e.effect()[1])
+    },
+    doReset(resettingLayer) {
+			let keep = ["auto"];
+      if (layers[resettingLayer].row > this.row) layerDataReset("i", keep)
+    },
+    tabFormat: {
+      "Upgrades": {
+        content:[
+          "main-display",
+          "blank",
+          "prestige-button",
+          "resource-display",
+          "blank",
+          "milestones",
+          "blank",
+          "upgrades",
+        ]
+      },
+      "Challenges": {
+        content:[
+          "main-display",
+          "blank",
+          "prestige-button",
+          "resource-display",
+          "blank",
+          "milestones",
+          "blank",
+          ["display-text", function(){
+            return "If you are in a Eternity tier Challenges, you will have a maximum of 0 free slog points, no slog prestige points and maximum of 0 free Infinity Points."
+          }],
+          "blank",
+          "challenges",
+        ],
+        unlocked() {return hasMilestone("e",2)}
+      },
+    },
+    milestonePopups: false,
+    milestones: {
+        0: {
+          requirementDescription: "2 Eternity Points",
+          effectDescription: "Unlock a new row of Hyper Prestige Upgrades",
+          done() { return player.e.points.gte(2)},
+          unlocked(){return true}
+        },
+        1: {
+          requirementDescription: "3 Eternity Points",
+          effectDescription: "Unlock a new row of Infinity Upgrades and more Infinity Milestones",
+          done() { return player.e.points.gte(3)},
+          unlocked(){return true}
+        },
+        2: {
+          requirementDescription: "6 Eternity Points",
+          effectDescription: "Unlock Challenges and a new row of Prestige/Super Prestige Upgrades",
+          done() { return player.e.points.gte(6)},
+          unlocked(){return true}
+        },
+        3: {
+          requirementDescription: "8 Eternity Points",
+          effectDescription: "Unlock a new row of Hyper Prestige/Infinity Upgrades",
+          done() { return player.e.points.gte(8)},
+          unlocked(){return true}
+        },
+        4: {
+          requirementDescription: "10 Eternity Points",
+          effectDescription: "Unlock Superlogarithm Prestige Points and square E Challenge 2 second reward",
+          done() { return player.e.points.gte(10)},
+          unlocked(){return true}
+        },
+        101: {
+          requirementDescription: "1.00e53,077 Points",
+          effectDescription: "Unlock Challenge 1",
+          done() { return player.points.gte("1e53077") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2)}
+        },
+        102: {
+          requirementDescription: "1.00e54,842 Points",
+          effectDescription: "Unlock Challenge 2",
+          done() { return player.points.gte("1e54842") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 101)}
+        },
+        103: {
+          requirementDescription: "1.00e65,124 Points",
+          effectDescription: "Unlock Challenge 3",
+          done() { return player.points.gte("1e65124") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 102)}
+        },
+        104: {
+          requirementDescription: "1.00e76,982 Points",
+          effectDescription: "Unlock Challenge 4",
+          done() { return player.points.gte("1e76982") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 103)}
+        },
+        105: {
+          requirementDescription: "1.00e96,463 Points",
+          effectDescription: "Unlock Challenge 5",
+          done() { return player.points.gte("1e96463") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 104)}
+        },
+        106: {
+          requirementDescription: "1.00e120,162 Points",
+          effectDescription: "Unlock Challenge 6",
+          done() { return player.points.gte("1e120162") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 105)}
+        },
+        107: {
+          requirementDescription: "1.00e165,642 Points",
+          effectDescription: "Unlock Challenge 7",
+          done() { return player.points.gte("1e165642") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 106)}
+        },
+        108: {
+          requirementDescription: "1.00e189,909 Points",
+          effectDescription: "Unlock Challenge 8",
+          done() { return player.points.gte("1e189909") && hasMilestone("e", 2)},
+          unlocked(){return hasMilestone("e", 2) && hasMilestone("e", 107)}
+        },
+    },
     upgrades: {
       rows: 3,
       cols: 4,
       11: {
-        description: "Boost Meter speed based on Prestige Points",
-        cost: new Decimal(2),
+        description: "slog points effect make Points gain softcap starts later",
+        cost: new Decimal(3),
         effect(){
-          let base = player.p.points.add(1).pow(0.5)
-          if (base.gte(100) && !hasMilestone("b", 1)) base = base.log(10).mul(50)
-          if (hasUpgrade("l", 22)) base = base.pow(upgradeEffect("l",22)[1])
-          return base
+          let eff = layers.slog.effect().pow(0.5).max(1)
+          return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",11)) + "x"
-        },
-        unlocked(){
-          return player.p.total.gte(1) || hasMilestone("b", 3) || hasMilestone("l", 7)
+          return format(upgradeEffect("e", 11)) + "x"
         }
       },
       12: {
-        description: "Boost Meter speed based on Meters",
-        cost: new Decimal(8),
+        description: "Multiply Superlogarithm Points boost exponent by 1.1115",
+        cost: new Decimal(4),
         effect(){
-          let base = player.points.add(1).log(10).add(1)
-          if (hasUpgrade("p", 14)) base = base.pow(upgradeEffect("p",14))
-          return base
+          let eff = new Decimal(1.1115)
+          return eff
         },
-        effectDisplay(){
-          return format(upgradeEffect("p",12)) + "x"
-        },
-        unlocked(){
-          return hasUpgrade("p", 11)
-        }
       },
       13: {
-        description: "Boost Meter speed based on Bought Prestige Upgrades",
-        cost: new Decimal(128),
+        description: "PP gain formula is better based on EP",
+        cost: new Decimal(9),
         effect(){
-          let base = new Decimal(1.2).pow(player.p.upgrades.length)
-          if (hasMilestone("l", 8)) base = base.pow(2)
-          return base
+          let eff = new Decimal(0.99).pow(player.e.points)
+          return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",13)) + "x"
-        },
-        unlocked(){
-          return hasUpgrade("p", 22)
+          return "log" + `<sub>` + format(upgradeEffect("p", 21)[0], 0) + `</sub>`+ "(x) → log" + `<sub>` + format(upgradeEffect("p", 21)[0].pow(upgradeEffect("e", 13)), 3) + `</sub>` + "(x) (cap at log" + `<sub>` + "1.1" + `</sub>` + "(x))"
         }
       },
       14: {
-        description: "Raise Prestige Upgrade 2 effect to the power of 4",
-        cost: new Decimal(2).pow(48),
+        description: "Give Free IP amount based on slog points, and E Challenge 3 reward is better",
+        cost: new Decimal(13),
         effect(){
-          let base = new Decimal(4)
-          return base
+          let eff = player.slog.points.max(0)
+          return eff
+        },
+        effectDisplay(){
+          return "+" + format(upgradeEffect("e", 14))
+        }
+      },
+    },
+    challenges: {
+      rows: 8,
+      cols: 2,
+      11: {
+        name: "Challenge 1",
+        challengeDescription: "You can't gain any SP, PP gain is hardcapped at your points.",
+        goal: new Decimal(10).pow(14183),
+        rewardDescription: "I Challenge 4 reward affect SP gain softcap start at reduced effect.",
+        rewardEffect(){
+          let eff = challengeEffect("i", 22).pow(0.2)
+          return eff
+        },
+        rewardDisplay(){
+          return format(challengeEffect("e", 11)) + "x"
         },
         unlocked(){
-          return hasMilestone("l", 11)
-        }
+          return hasMilestone("e", 101)
+        },
+      },
+      12: {
+        name: "Challenge 2",
+        challengeDescription: "You can't gain any IP.",
+        goal: new Decimal(10).pow(15245),
+        rewardDescription: "Prestige Upgrade 31 boost from IP ^1.705, and Divide EP require based on slog points.",
+        rewardEffect(){
+          let eff = [new Decimal(1.705), new Decimal(10).pow(player.slog.points.mul(6.5)).max(1)]
+          if (hasUpgrade("sp", 44)) eff[1] = eff[1].max(new Decimal(10).pow(player.slog.points.max(1).pow(5.21)))
+          if (hasMilestone("e", 4)) eff[1] = eff[1].pow(2)
+          return eff
+        },
+        rewardDisplay(){
+          return "/" + format(challengeEffect("e", 12)[1])
+        },
+        unlocked(){
+          return hasMilestone("e", 102)
+        },
       },
       21: {
-        description: "Boost Prestige Points gain based on Prestige Points",
-        cost: new Decimal(16),
-        effect(){
-          let base = player.p.points.add(1).pow(0.2)
-          if (base.gte(10) && !hasMilestone("b", 1)) base = base.log(10).mul(10)
-          return base
-        },
-        effectDisplay(){
-          return format(upgradeEffect("p",21)) + "x"
+        name: "Challenge 3",
+        challengeDescription: "You always have -5 free slog points, which may make slog points nerf Points, PP and SP gain, slog points boost power is always 10.",
+        goal: new Decimal(10).pow(5400),
+        rewardDescription(){return "Gain " + format(challengeEffect("e", 21).mul(100), 3) + "% more slog points from non-free slog points." + (hasUpgrade("e", 14) ? " (based on slog PP)" : "")} ,
+        rewardEffect(){
+          let eff = new Decimal(0.0125)
+          if (hasUpgrade("e", 14) && player.slog.prestigePoints.gte(1.25)) eff = player.slog.prestigePoints.div(100)
+          return eff
         },
         unlocked(){
-          return hasUpgrade("p", 12)
-        }
+          return hasMilestone("e", 103)
+        },
       },
       22: {
-        description: "Boost Prestige Points gain based on Meters",
-        cost: new Decimal(32),
-        effect(){
-          let base = player.points.add(1).log(10).add(1)
-          return base
+        name: "Challenge 4",
+        challengeDescription: "Points, PP and SP gain softcap start ^0.1, IP gain scaling exponent is squared.",
+        goal: new Decimal(10).pow(4736),
+        rewardDescription: "Points gain softcap starts later based on slog points.",
+        rewardEffect(){
+          let eff = player.slog.points.max(1).pow(0.087)
+          return eff
         },
-        effectDisplay(){
-          return format(upgradeEffect("p",22)) + "x"
-        },
-        unlocked(){
-          return hasUpgrade("p", 12)
-        }
-      },
-      23: {
-        description: "Boost Prestige Points gain based on Bought Prestige Upgrades",
-        cost: new Decimal(512),
-        effect(){
-          let base = new Decimal(1).add(player.p.upgrades.length/5)
-          if (hasMilestone("l", 8)) base = base.pow(2)
-          return base
-        },
-        effectDisplay(){
-          return format(upgradeEffect("p",23)) + "x"
+        rewardDisplay(){
+          return "^" + format(challengeEffect("e", 22), 3)
         },
         unlocked(){
-          return hasUpgrade("p", 22)
-        }
-      },
-      24: {
-        description: "Boost Light gain based on Prestige Points",
-        cost: new Decimal(2).pow(60),
-        effect(){
-          let base = player.p.points.add(10).log(10)
-          return base
+          return hasMilestone("e", 104)
         },
-        effectDisplay(){
-          return format(upgradeEffect("p",24)) + "x"
-        },
-        unlocked(){
-          return hasMilestone("l", 11)
-        }
       },
       31: {
-        description: "Prestige Points gain softcap starts 10x later",
-        cost: new Decimal(16384),
-        effect(){
-          return new Decimal(10)
+        name: "Challenge 5",
+        challengeDescription: "Base PP and SP gain are always 1 and gain exponent ^0.75, slog points base is tetrated 1.5.",
+        goal: new Decimal(10).pow(3237),
+        rewardDescription: "Infinity Upgrade 33 is stronger based on EP, and gain more HP based on your points if you have more than 1.00e100,000 points (unaffected by softcap)",
+        rewardEffect(){
+          let eff = [player.e.points.pow(0.365), (player.points.gte("ee5") ? player.points.max(10).log(10).log(10).div(100).add(1) : new Decimal(1))]
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("e", 31)[0]) + " to Infinity Upgrade 33, ^" + format(challengeEffect("e", 31)[1], 3) + " to HP gain"
         },
         unlocked(){
-          return hasUpgrade("b", 11)
-        }
+          return hasMilestone("e", 105)
+        },
       },
       32: {
-        description: "Booster Boosts second effect is raised to the power of 4",
-        cost: new Decimal(65536),
-        effect(){
-          return new Decimal(4)
+        name: "Challenge 6",
+        challengeDescription: "E Challenge 1, 2 are applied at once, Points gain is square rooted.",
+        goal: new Decimal(10).pow(2358),
+        rewardDescription: "Raise points gain and it's softcap start based on slog prestige points.",
+        rewardEffect(){
+          let eff = player.slog.prestigePoints.max(1).pow(0.1232)
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("e", 32), 3)
         },
         unlocked(){
-          return hasUpgrade("b", 11)
-        }
+          return hasMilestone("e", 106)
+        },
+        countsAs: [11,12]
       },
-      33: {
-        description: "Meter speed is 10x faster (Unaffected by first stage softcap)",
-        cost: new Decimal(131072),
-        effect(){
-          return new Decimal(10)
+      41: {
+        name: "Challenge 7",
+        challengeDescription: "Points gain past softcap become logarithmic and the softcap start ^0.03, all IP cost divider have no effect.",
+        goal: new Decimal(10).pow(1508.5),
+        rewardDescription: "I Challenge 10 reward is stronger based on slog PP.",
+        rewardEffect(){
+          let eff = player.slog.prestigePoints.max(1).pow(2.021)
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("e", 41), 3)
         },
         unlocked(){
-          return hasUpgrade("b", 11)
-        }
+          return hasMilestone("e", 107)
+        },
       },
-      34: {
-        description: "Upgrade to the left are no longer affect by second stage softcap, and Booster Boosts second effect ^1.5",
-        cost: new Decimal(2).pow(78),
-        effect(){
-          let base = new Decimal(1.5)
-          return base
+      42: {
+        name: "Challenge 8",
+        challengeDescription: "Points gain are hardcapped at SP+1, PP gain become log10(x)^10.",
+        goal: new Decimal(10).pow(1170),
+        rewardDescription: "I Challenge 1 second reward is stronger based on slog PP.",
+        rewardEffect(){
+          let eff = player.slog.prestigePoints.max(1).pow(2.37)
+          return eff
+        },
+        rewardDisplay(){
+          return "^" + format(challengeEffect("e", 42), 3)
         },
         unlocked(){
-          return hasMilestone("l", 11)
-        }
-      },
-    },
-})
-
-addLayer("b", {
-    name: "booster", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "B", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-        unlocked: false,
-		    points: new Decimal(0),
-        auto: false,
-    }},
-    color: "#6e64c4",
-    requires() {
-      let base = new Decimal(1024)
-      if (hasUpgrade("g", 11)) base = base.div(upgradeEffect("g",11))
-      if (hasMilestone("l", 4)) base = base.div(16)
-      if (hasMilestone("l", 7)) base = base.div(layers.l.effect()[0])
-      if (hasUpgrade("l", 13)) base = base.div(upgradeEffect("l",13))
-      if (lightPowerActive(4)) base = base.div(tmp.l.lightPowBoost[4])
-      return base
-    }, // Can be a function that takes requirement increases into account
-    resource: "boosters", // Name of prestige currency
-    baseResource: "meters", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    branches: ["p"],
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    effect(){
-      let base = [new Decimal(1).add(player.b.points), new Decimal(1).add(player.b.points)] // 0: Prestige Points gain, 1: Meter Speed
-      if (hasUpgrade("l", 12)) base[0] = base[0].pow(upgradeEffect("l",12))
-      
-      if (hasUpgrade("p", 32)) base[1] = base[1].pow(upgradeEffect("p",32))
-      if (hasUpgrade("p", 34)) base[1] = base[1].pow(upgradeEffect("p",34))
-      if (hasUpgrade("l", 12)) base[1] = base[1].pow(upgradeEffect("l",12))
-      return base
-    },
-    effectDescription(){
-      return "which multiply Prestige Points gain by " + format(layers.b.effect()[0]) + (hasMilestone("b", 0) ? " and Meter speed by " + format(layers.b.effect()[1]) : "")
-    },
-    base() {
-      let base = new Decimal(4)
-      return base
-    },
-    exponent(){ 
-      let base = new Decimal(1.5)
-      if (hasMilestone("l", 5)) base = base.mul(0.9)
-      return base
-    }, // Prestige currency exponent
-    row: 1, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-      {key: "b", description: "Press B to perform a booster reset", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return player.p.points.gte(1024) || player.b.unlocked ? true : "ghost"},
-    canBuyMax(){return hasMilestone("l", 4)},
-    autoPrestige(){return player.b.auto && hasMilestone("l", 6)},
-    resetsNothing(){return hasMilestone("l", 9)},
-		doReset(resettingLayer) {
-			let keep = ["auto"];
-      if (hasMilestone("l", 3) && (resettingLayer== "l" || resettingLayer== "u" || resettingLayer== "sb")) keep.push("upgrades")
-      if (layers[resettingLayer].row > this.row) layerDataReset("b", keep)
-    },
-    tabFormat:[
-      "main-display",
-      ["display-text", function(){
-        return (!player.g.unlocked ? "Reach 4 Boosters to unlock Generators" : "")}],
-      "prestige-button",
-      "resource-display",
-      "blank",
-      "milestones",
-      "blank",
-      "upgrades"
-    ],
-    milestonePopups: false,
-    milestones: {
-      0: {
-          requirementDescription: "2 Boosters",
-          effectDescription: "Boosters boost Meter Speed",
-          done() { return player.b.points.gte(2) || hasMilestone("l", 1)},
-          unlocked(){return player.b.unlocked}
-      },
-      1: {
-          requirementDescription: "4 Boosters",
-          effectDescription: "Remove the softcap of Prestige Upgrade 1 and 4",
-          done() { return player.b.points.gte(4) || hasMilestone("l", 1)},
-          unlocked(){return player.b.unlocked}
-      },
-      2: {
-          requirementDescription: "6 Boosters",
-          effectDescription: "Generator Power boosts multiplier ^1.5",
-          done() { return player.b.points.gte(6) || hasMilestone("l", 1)},
-          unlocked(){return player.b.unlocked}
-      },
-      3: {
-          requirementDescription: "7 Boosters",
-          effectDescription: "Keep Prestige Upgrades on all row 2 resets",
-          done() { return (player.b.points.gte(7) && player.l.unlocked) || hasMilestone("l", 5)},
-          unlocked(){return player.l.unlocked}
-      },
-    },
-    upgrades: {
-      rows: 1,
-      cols: 3,
-      11: {
-        description: "Unlock 3 new Prestige Upgrades, and 5x Meter Speed",
-        cost: new Decimal(3),
-        unlocked(){
-          return player.b.best.gte(2) || hasMilestone("l", 3)
-        }
-      },
-      12: {
-        description: "Generators are cheaper based on Boosters",
-        cost: new Decimal(5),
-        effect(){
-          return player.b.points.add(1)
+          return hasMilestone("e", 108)
         },
-        effectDisplay(){
-          return "/" + format(upgradeEffect("b",12))
-        },
-        unlocked(){
-          return hasUpgrade("b", 11)
-        }
-      },
-      13: {
-        description: "Gain more light based on Boosters",
-        cost: new Decimal(12),
-        effect(){
-          return new Decimal(1).add(player.b.points.div(8))
-        },
-        effectDisplay(){
-          return format(upgradeEffect("b",13)) + "x"
-        },
-        unlocked(){
-          return hasMilestone("l", 10) && hasUpgrade("b", 12)
-        }
       },
     }
 })
 
-addLayer("g", {
-    name: "generator", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "G", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-      unlocked: false,
-		  points: new Decimal(0),
-      power: new Decimal(0),
-      auto: false,
-    }},
-    color: "#a3d9a5",
-    requires() {
-      let base = new Decimal(4194304)
-      if (hasUpgrade("b", 12)) base = base.div(upgradeEffect("b",12))
-      if (hasMilestone("l", 1)) base = base.div(16)
-      if (hasMilestone("l", 7)) base = base.div(layers.l.effect()[0])
-      if (hasUpgrade("l", 13)) base = base.div(upgradeEffect("l",13))
-      if (lightPowerActive(4)) base = base.div(tmp.l.lightPowBoost[4])
-      return base
-    }, // Can be a function that takes requirement increases into account
-    resource: "generator", // Name of prestige currency
-    baseResource: "meters", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    branches: ["p"],
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    effect(){
-      let base = [player.g.points, player.g.power.mul(0.01).add(1)] // 0: Generator Power speed, 1: Generator Power boost
-      if (hasMilestone("l", 6)) base[0] = base[0].pow(2)
-      if (hasMilestone("g", 0)) base[0] = base[0].mul(player.points.add(10).log(10).pow(0.5))
-      if (hasUpgrade("l", 11)) base[0] = base[0].mul(upgradeEffect("l",11))
-      if (hasUpgrade("l", 22)) base[0] = base[0].pow(upgradeEffect("l",22)[0])
-      
-      if (hasMilestone("b", 2)) base[1] = base[1].pow(1.5)
-      if (base[1].gte(2000)) base[1] = base[1].mul(8e9).pow(0.25)
-      return base
-    },
-    effectDescription(){
-      return "which generating " + format(layers.g.effect()[0]) + " generator power per second"
-    },
-    base() {
-      let base = new Decimal(8)
-      return base
-    },
-    exponent(){ 
-      let base = new Decimal(1.5)
-      if (hasMilestone("l", 5)) base = base.mul(0.9)
-      return base
-    }, // Prestige currency exponent
-    row: 1, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-      {key: "g", description: "Press G to perform a generator reset", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return player.b.best.gte(4) || player.g.unlocked ? true : "ghost"},
-    canBuyMax(){return hasMilestone("l", 4)},
-    autoPrestige(){return player.g.auto && hasMilestone("l", 6)},
-    resetsNothing(){return hasMilestone("l", 9)},
-		doReset(resettingLayer) {
-			let keep = ["auto"];
-      if (hasMilestone("l", 3) && (resettingLayer== "l" || resettingLayer== "u" || resettingLayer== "sb")) keep.push("upgrades")
-      if (layers[resettingLayer].row > this.row) layerDataReset("g", keep)
-    },
-    tabFormat:[
-      "main-display",
-      ["display-text", function(){
-        return "You have " + format(player.g.power) + " Generator Power, multiply Meter Speed by " + format(layers.g.effect()[1]) + " (unaffected by softcap)" }],
-      "blank",
-      ["display-text", function(){
-        return (!player.l.unlocked ? "Reach 6 Boosters and 3 Generators to unlock Light" : "")}],
-      "blank",
-      "prestige-button",
-      "resource-display",
-      "blank",
-      "milestones",
-      "blank",
-      "upgrades"
-    ],
-    update(diff){
-      player.g.power = player.g.power.add(layers.g.effect()[0].mul(diff))
-    },
-    milestonePopups: false,
-    milestones: {
-      0: {
-          requirementDescription: "2 Generators",
-          effectDescription: "Meters boost Generator Power speed",
-          done() { return player.g.points.gte(2) || hasMilestone("l", 2)},
-          unlocked(){return player.g.unlocked}
-      },
-      1: {
-          requirementDescription: "4 Generators",
-          effectDescription: "Gain 100% of Prestige Point gain every second",
-          done() { return (player.g.points.gte(4) && player.l.unlocked) || hasMilestone("l", 5)},
-          unlocked(){return player.l.unlocked}
-      },
-    },
-    upgrades: {
-      rows: 1,
-      cols: 3,
-      11: {
-        description: "Boosters are cheaper based on Generators",
-        cost: new Decimal(3),
-        effect(){
-          return player.g.points.add(1).pow(2)
-        },
-        effectDisplay(){
-          return "/" + format(upgradeEffect("g",11))
-        },
-        unlocked(){
-          return player.g.best.gte(2) || hasMilestone("l", 3)
-        }
-      },
-      12: {
-        description: "Generator Powers boost Prestige Points gain",
-        cost: new Decimal(7),
-        effect(){
-          return player.g.power.add(1).pow(0.5)
-        },
-        effectDisplay(){
-          return format(upgradeEffect("g",12)) + "x"
-        },
-        unlocked(){
-          return hasMilestone("l", 10) && hasUpgrade("g", 11)
-        }
-      },
-      13: {
-        description: "Gain more light based on Generators",
-        cost: new Decimal(10),
-        effect(){
-          return player.g.points.add(1).pow(0.5)
-        },
-        effectDisplay(){
-          return format(upgradeEffect("g",13)) + "x"
-        },
-        unlocked(){
-          return hasMilestone("l", 10) && hasUpgrade("g", 12)
-        }
-      },
-    }
-})
-
-addLayer("l", {
-    name: "light", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "L", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-      unlocked: false,
-		  points: new Decimal(0),
-      power: new Decimal(0),
-    }},
-    color: "#ffffff",
-    requires() {
-      return new Decimal(299792458)
-    }, // Can be a function that takes requirement increases into account
-    resource: "light", // Name of prestige currency
-    baseResource: "meter/s", // Name of resource prestige is based on
-    baseAmount() {return getPointGen()}, // Get the current amount of baseResource
-    branches: ["b", "g"],
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    effect(){
-      let base = [(player.l.points.lte(9) ? player.l.points.add(1) : new Decimal(1.1).pow(player.l.points.sub(9)).mul(10).min(1000)), (player.l.total.lte(9) ? player.l.total.add(1) : player.l.total.add(1).mul(10).pow(0.5))] // 0: Prestige Require, 1: Meter Speed
-      if (lightPowerActive(3)) base[0] = base[0].pow(tmp.l.lightPowBoost[3])
-      if (lightPowerActive(3)) base[1] = base[1].pow(tmp.l.lightPowBoost[3])
-      if (base[1].gte(1e12)) base[1] = new Decimal(1e12).mul(base[1].div(1e12).pow(1/3))
-      return base
-    },
-    effectDescription(){
-      return "Divide Prestige Require by " + format(layers.l.effect()[0]) + " (cap at /" + format(new Decimal(1000)) + `)` + (hasMilestone("l", 3) ? " and multiply Meter Speed by " + format(layers.l.effect()[1]) + " (unaffected by first stage softcap)" : "")
-    },
-    exponent: 0.2, // Prestige currency exponent
-    gainMult() { // Calculate the multiplier for main currency from bonuses
-      mult = new Decimal(1)
-      if (hasUpgrade("b", 13)) mult = mult.mul(upgradeEffect("b",13))
-      if (hasUpgrade("g", 13)) mult = mult.mul(upgradeEffect("g",13))
-      if (lightPowerActive(1)) mult = mult.mul(tmp.l.lightPowBoost[1])
-      if (hasUpgrade("p", 24)) mult = mult.mul(upgradeEffect("p",24))
-      return mult
-    },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        return new Decimal(1)
-    },
-    softcap(){let base = new Decimal(2e7)
-            return base
-           },
-    softcapPower(){return new Decimal(0.5)},
-    row: 2, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-      {key: "l", description: "Press L to light reset", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return (player.b.best.gte(6) && player.g.best.gte(3)) || player.l.unlocked},
-		doReset(resettingLayer) {
-			let keep = [];
-      if (layers[resettingLayer].row > this.row) layerDataReset("l", keep)
-    },
-    tabFormat:{
-      "Light Prestige": {
-        content:[
-        "main-display",
-        ["display-text", function(){
-        return "You have make a total of " + formatWhole(player.l.total) + " light"}],
-        ["display-text", function(){
-        return (!player.u.unlocked ? "Reach " + format(ly.pow(0.5).ceil()) + " Total Light to unlock Universes" : "")}],
-        "blank",
-        "prestige-button",
-        ["display-text", function(){
-        return "Your light gain past " + format(tmp.l.softcap) + " are raised to the power of " + format(tmp.l.softcapPower)}],
-        "blank",
-        "resource-display",
-        "blank",
-        ["milestones", 11],
-        "blank",
-        "upgrades"
-      ]},
-      "Light Power": {
-        unlocked() { return hasMilestone("l", 11) },
-        content:[
-        "main-display",
-        ["display-text", function(){
-        return "Your meters is " + format(player.points.div(ly)) + " light years (+" + format(getPointGen().div(ly)) + " ly/s), giving you " + formatWhole(player.l.power) + " light powers"
-        }],
-        ["display-text", function(){
-        return "(next at " + format(tmp.l.calcNextLightPow) + " light years or " + format(tmp.l.calcNextLightPow.mul(ly)) + " meters)"
-        }],
-        "blank",
-        ["display-text", function(){
-        return "Boosts: (All follow boost are based on Light Powers)"
-        }],
-        ["display-text", function(){
-        return player.l.power.gte(1) ? "Meters increase " + format(tmp.l.lightPowBoost[0]) + "x faster (weaker at 4 Light Powers and softcap at 8 Light Powers)" : "Reach 1 Light Power to unlock"
-        }],
-        ["display-text", function(){
-        return player.l.power.gte(3) ? "Gain " + format(tmp.l.lightPowBoost[1]) + "x more Light (weaker at 20 Light Powers)" : "Reach 3 Light Powers to unlock"
-        }],
-        ["display-text", function(){
-        return player.l.power.gte(6) ? "Prestige Points gain is raised to the power of " + format(tmp.l.lightPowBoost[2], 3) + " (softcap at 25 Light Powers)": "Reach 6 Light Powers to unlock"
-        }],
-        ["display-text", function(){
-        return player.l.power.gte(10) ? "All Light Boost is raised to the power of " + format(tmp.l.lightPowBoost[3], 3) + " (Unaffected by caps)": "Reach 10 Light Powers to unlock"
-        }],
-        ["display-text", function(){
-        return player.l.power.gte(28) ? "Divide Boosters/Generators require by " + format(tmp.l.lightPowBoost[4]) + " (start at 25 Light Powers, softcap at 37 Light Powers)": "Reach 28 Light Powers to unlock"
-        }],
-        ]}
-    },
-    lightPowBoost(){
-      let base = [
-        new Decimal(100).pow((player.l.power.gte(4) ? (player.l.power.gte(8) ? new Decimal(3).mul(player.l.power.pow(1/3)) : new Decimal(2).add(player.l.power.div(2))) : player.l.power)), 
-        new Decimal(1).add((player.l.power.gte(20) ? player.l.power.div(2).add(10) : player.l.power).div(10)),
-        new Decimal(1).add(player.l.power.pow(0.5).div(20)),
-        player.l.power.add(1).log(10).add(1),
-        new Decimal(10).pow((player.l.power.gte(37) ? player.l.power.sub(25).pow(0.5).mul(new Decimal(12).pow(0.5)) : player.l.power.sub(25)).max(0))
-      ]
-      if (base[2].gte(1.25)) base[2] = base[2].mul(100).pow(1/3).div(4)
-      if (hasUpgrade("l", 23)) base[0] = base[0].pow(upgradeEffect("l",23)[0])
-      if (hasUpgrade("l", 23)) base[1] = base[1].pow(upgradeEffect("l",23)[1])
-      return base
-    },
-    lightPowBaseReq(){
-      let base = ly
-      return base
-    },
-    lightPowScaling(){
-      let base = new Decimal(2)
-      return base
-    },
-    calcLightPow(){
-      let base = player.points.div(tmp.l.lightPowBaseReq).max(1).log(tmp.l.lightPowScaling).add(1).floor().max(0)
-      if (base.gte(41)) base = new Decimal(41).add(base.sub(41).div(2))
-      return base.floor()
-    },
-    calcNextLightPow(){ // in light year
-      let base = player.l.power
-      if (player.l.power.gte(40)) base = new Decimal(40).add(base.sub(40).mul(2))
-      return tmp.l.lightPowScaling.pow(base).mul(tmp.l.lightPowBaseReq).div(ly)
-    },
-    update(diff){
-      if (hasMilestone("l", 11)) player.l.power = tmp.l.calcLightPow.max(player.l.power)
-    },
-    milestonePopups: false,
-    milestones: {
-      0: {
-          requirementDescription: "1 Total Light",
-          effectDescription: "Always can produce meters and unlock more Boosters/Generators milestone",
-          done() { return player.l.total.gte(1) },
-          unlocked(){return true}
-      },
-      1: {
-          requirementDescription: "2 Total Light",
-          effectDescription: "Divide Generators Require by 16 and Keep first 3 Booster milestones on all row 3 resets",
-          done() { return player.l.total.gte(2) },
-          unlocked(){return hasMilestone("l", 0)}
-      },
-      2: {
-          requirementDescription: "3 Total Light",
-          effectDescription: "Prestige Points gain softcap starts later based on Boosters and Keep first Generator milestone on all row 3 resets",
-          done() { return player.l.total.gte(3) },
-          unlocked(){return hasMilestone("l", 0)}
-      },
-      3: {
-          requirementDescription: "4 Total Light",
-          effectDescription: "Total light multiply Meter Speed and Keep Booster/Generator Upgrades on all row 3 resets",
-          done() { return player.l.total.gte(4) },
-          unlocked(){return hasMilestone("l", 0)}
-      },
-      4: {
-          requirementDescription: "5 Total Light",
-          effectDescription: "Divide Boosters Require by 16 and You can buy Max Boosters/Generators",
-          done() { return player.l.total.gte(5) },
-          unlocked(){return hasMilestone("l", 0)}
-      },
-      5: {
-          requirementDescription: "6 Total Light",
-          effectDescription: "Reduce Booster/Generator Require exponent by 10% and Keep all Boosters/Generators milestones on all row 3 resets",
-          done() { return player.l.total.gte(6) },
-          unlocked(){return hasMilestone("l", 0)},
-      },
-      6: {
-          requirementDescription: "7 Total Light",
-          effectDescription: "Base Generator Power speed ^2 and Unlock Auto-Boosters/Generators",
-          done() { return player.l.total.gte(7) },
-          unlocked(){return hasMilestone("l", 0)},
-          toggles: [["b", "auto"],["g", "auto"]],
-      },
-      7: {
-          requirementDescription: "8 Total Light",
-          effectDescription: "Light boost first effect affect Boosters/Generator cost and Keep Prestige Upgrades on all row 3 resets",
-          done() { return player.l.total.gte(8) },
-          unlocked(){return hasMilestone("l", 0)},
-      },
-      8: {
-          requirementDescription: "9 Total Light",
-          effectDescription: "Square Prestige Upgrade 3 and 6 effect",
-          done() { return player.l.total.gte(9) },
-          unlocked(){return hasMilestone("l", 0)},
-      },
-      9: {
-          requirementDescription: "10 Total Light",
-          effectDescription(){ return "You can go past Light Speed (" + format(299792458) + " m/s) and Boosters/Generators resets nothing"},
-          done() { return player.l.total.gte(10) },
-          unlocked(){return hasMilestone("l", 0)},
-      },
-      10: {
-          requirementDescription: "20 Total Light",
-          effectDescription: "Unlock Light Upgrades and more Boosters/Generators Upgrade",
-          done() { return player.l.total.gte(20) },
-          unlocked(){return hasMilestone("l", 9)},
-      },
-      11: {
-          requirementDescription(){return formatWhole(ly.log(10).mul(100).ceil()) + " Total Light & " + format(ly) + " meters"},
-          effectDescription: "Unlock Light Power and more Prestige/Light Upgrade",
-          done() { return player.l.total.gte(ly.log(10).mul(100).ceil()) && player.points.gte(ly)},
-          unlocked(){return hasMilestone("l", 9)},
-      },
-    },
-    upgrades: {
-      rows: 2,
-      cols: 3,
-      11: {
-        description: "Boosters boost Generator Power speed",
-        cost: new Decimal(20),
-        effect(){
-          return player.b.points.add(1)
-        },
-        effectDisplay(){
-          return format(upgradeEffect("l",11)) + "x"
-        },
-        unlocked(){
-          return hasMilestone("l", 10)
-        }
-      },
-      12: {
-        description: "Generators raise all Boosters effect",
-        cost: new Decimal(100),
-        effect(){
-          return player.g.points.add(1).log(10).add(1)
-        },
-        effectDisplay(){
-          return "^" + format(upgradeEffect("l",12))
-        },
-        unlocked(){
-          return hasMilestone("l", 10)
-        }
-      },
-      13: {
-        description: "Prestige Points divide Boosters & Generators require",
-        cost: new Decimal(400),
-        effect(){
-          return player.p.points.add(1).pow(0.3)
-        },
-        effectDisplay(){
-          return "/" + format(upgradeEffect("l",13))
-        },
-        unlocked(){
-          return hasMilestone("l", 10)
-        }
-      },
-      21: {
-        description: "Prestige Points gain softcap starts ^1.5",
-        cost() {return ly.log(10).pow(3).mul(0.75).ceil()},
-        effect(){
-          return new Decimal(1.5)
-        },
-        unlocked(){
-          return hasMilestone("l", 11)
-        }
-      },
-      22: {
-        description: "Generators Power speed ^1.6 and Prestige Upgrade 1 effect ^1.2",
-        cost() {return ly.log(10).pow(5).ceil()},
-        effect(){
-          return [new Decimal(1.6), new Decimal(1.2)]
-        },
-        unlocked(){
-          return hasMilestone("l", 11)
-        }
-      },
-      23: {
-        description: "Raise first 2 Light Power boost to the power of 2 ",
-        cost() {return ly.log(10).pow(6).mul(1.5).ceil()},
-        effect(){
-          return [new Decimal(2), new Decimal(2)]
-        },
-        unlocked(){
-          return hasMilestone("l", 11)
-        }
-      },
-    },
-})
-
-function forceLightResetAndResetLightPowers(x){
-  doReset("l", true)
-  player.l.power = new Decimal(x)
-}
-
-function lightPowerActive(x){
-  let req = [new Decimal(1), new Decimal(3), new Decimal(6), new Decimal(10), new Decimal(28)]
-  if (req[x] == undefined || isNaN(player.l.power)) return false
-  return player.l.power.gte(req[x])
-}
-
-addLayer("u", {
-    name: "universe", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "U", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    startData() { return {
-        unlocked: false,
-		    points: new Decimal(0),
-        auto: false,
-    }},
-    color: "#430082",
-    requires() {
-      let base = uni
-      base = base.mul(1/0)
-      return base
-    }, // Can be a function that takes requirement increases into account
-    resource: "universes", // Name of prestige currency
-    baseResource: "meters", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    branches: ["g"],
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    effect(){
-      let base = [new Decimal(1)]
-      return base
-    },
-    effectDescription(){
-      return ""
-    },
-    base() {
-      let base = uni.pow(1/4)
-      return base
-    },
-    exponent(){ 
-      let base = new Decimal(1.5).max(new Decimal(1).add(player.u.points.div(100)))
-      return base
-    }, // Prestige currency exponent
-    row: 2, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-      {key: "u", description: "Press U to perform a universe reset", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return player.l.total.gte(ly.pow(0.5).ceil()) || player.u.unlocked ? true : "ghost"},
-    canBuyMax(){return false},
-    autoPrestige(){return false},
-    resetsNothing(){return false},
-		doReset(resettingLayer) {
-			let keep = ["auto"];
-      if (layers[resettingLayer].row > this.row) layerDataReset("u", keep)
-    },
-    tabFormat:[
-      "main-display",
-      ["display-text", function(){
-        return (false ? "Reach ? to unlock ?" : "")}],
-      "prestige-button",
-    ],
-    milestonePopups: false,
-})
-
-addLayer("sb", {
-    name: "super-booster", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "SB", // This appears on the layer's node. Default is the id with the first letter capitalized
+addLayer("slog", {
+    name: "superlogarithm", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "SL", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
-        unlocked: false,
-		    points: new Decimal(0),
-        auto: false,
+      unlocked: false,
+		  points: new Decimal(0),
+      prestigePoints: new Decimal(0),
     }},
-    color: "#6e64c4",
-    requires() {
-      let base = new Decimal(1/0)
-      return base
-    }, // Can be a function that takes requirement increases into account
-    resource: "super boosters", // Name of prestige currency
-    baseResource: "boosters", // Name of resource prestige is based on
-    baseAmount() {return player.b.points}, // Get the current amount of baseResource
-    branches: ["b"],
-    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    effect(){
-      let base = [new Decimal(1)]
-      return base
-    },
-    effectDescription(){
-      return ""
-    },
-    base: 1e100,
-    exponent(){ 
-      let base = 1.5
-      return base
-    }, // Prestige currency exponent
-    row: 2, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-      {key: "B", description: "Press Shift+B to perform a super booster reset", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return player.u.total.gte(1/0) || player.sb.unlocked ? true : "ghost"},
-    canBuyMax(){return false},
-    autoPrestige(){return false},
-    resetsNothing(){return false},
-		doReset(resettingLayer) {
-			let keep = ["auto"];
-      if (layers[resettingLayer].row > this.row) layerDataReset("sb", keep)
-    },
-    tabFormat:[
-      "main-display",
+    color: "#FFFFFF",
+    resource: "superlogarithm", // Name of prestige currency
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return player.sp.unlocked},
+    tooltip(){return format(player.slog.points, 6) + " slog points"},
+    tabFormat: [
       ["display-text", function(){
-        return (false ? "Reach ? to unlock ?" : "")}],
-      "prestige-button",
+        return "You have " + format(tmp.slog.getNonFreeSlogPoints, 6) + (tmp.slog.getFreeSlogPoints.eq(0) ? "" : (tmp.slog.getFreeSlogPoints.gt(0) ? " + " : " - ") + format(tmp.slog.getFreeSlogPoints.abs(), 6)) + " superlogarithm points. " + `<br>` + "(based on points with a base of " + format(tmp.slog.getBase, 3) + ")"
+        + `<br>` + "Which " + (player.slog.points.gt(0) ? "multiply" : "divide")  + " Points, PP and SP gain by " + format(layers.slog.effect().pow(player.slog.points.gt(0) ? 1 : -1)) + "." + `<br>` + "(Formula: 10" + `<sup>` + format(tmp.slog.effectPow.abs(), 3) + "×" + format(player.slog.points.abs(), 3) + `<sup>` + format(tmp.slog.effectExp, 3) + `</sup></sup>` + ")"
+      }],
+      "blank",
+      ["display-text", function(){
+        return hasMilestone("e", 4) ? "You have " + format(tmp.slog.getNonFreeSlogPrestigePoints, 6) + " superlogarithm prestige points. " + `<br>` + "(based on prestige points with a base of " + format(tmp.slog.getBase.tetrate(tmp.slog.getSlogPPTetrate), 3) + " (" + format(tmp.slog.getBase, 3) + "^^" + format(tmp.slog.getSlogPPTetrate, 3) + "))"
+        + `<br>` + "Which make Points, PP and SP gain softcap start " + format(layers.slog.effectP(false)) + "x later." + `<br>` + "(Formula: " + "10" + `<sup>` + format(tmp.slog.effectPowP, 3) + "×10" + `<sup>` + format(tmp.slog.effectExpP1, 3) + "×" + format(player.slog.prestigePoints, 3) + `<sup>` + format(tmp.slog.effectExpP2, 3) + `</sup></sup></sup>` + ")" + `<br>`
+        + "HP gain softcap start " + format(layers.slog.effectP(true)) + "x later." + `<br>` + "(Formula: " + "10" + `<sup>` + format(tmp.slog.effectPowP_HP, 3) + "×" + format(player.slog.prestigePoints, 3) + `<sup>` + format(tmp.slog.effectExpP_HP, 3) + `</sup></sup>` + ")" + `<br>`
+        + "and raise slog points boost to the power of " + format(player.slog.prestigePoints.max(tmp.slog.effectPPtoPowMin).pow(tmp.slog.effectPPtoPPow), 3) + "." + `<br>` + "(Formula: " + format(player.slog.prestigePoints.max(tmp.slog.effectPPtoPowMin), 3) + `<sup>` + format(tmp.slog.effectPPtoPPow, 3) + `</sup>` + ")" : ""
+      }],
+      "blank",
+      ["display-text", function(){
+        return "Points gain softcap start: " + format(getPointGainSCStart())
+      }]
     ],
-    milestonePopups: false,
-})
-
-
-
-// side layer
-
-addLayer("unit", {
-	startData() { return {unlocked: true}},
-	color: "#ffffff",
-	symbol: "ST",
-	row: "side",
-	layerShown() { return true },
-	tooltip: "Statistics",
-  tabFormat: [
-    ["display-text", function(){
-      return `<h2>Main</h2>`}],
-    ["display-text", function(){
-      return "Your meters are equal to:"}],
-    ["display-text", function(){
-      return "sound travel " + format(player.points.div(343)) + " seconds (+" + format(getPointGen().div(343)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(42195)) + "x marathon distance (+" + format(getPointGen().div(42195)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(12742000)) + "x earth diameter (+" + format(getPointGen().div(12742000)) + "/s)"}],
-    ["display-text", function(){
-      return "light travel " + format(player.points.div(299792458)) + " seconds (+" + format(getPointGen().div(299792458)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(1392700000)) + "x sun diameter (+" + format(getPointGen().div(1392700000)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(149597870700)) + " astronomical units (+" + format(getPointGen().div(149597870700)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(ly)) + " light years (+" + format(getPointGen().div(ly)) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(new Decimal(149597870700).mul(648000).div(Math.PI))) + " parsec (+" + format(getPointGen().div(new Decimal(149597870700).mul(648000).div(Math.PI))) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(ly.mul(100000))) + "x galaxy diameter (+" + format(getPointGen().div(ly.mul(100000))) + "/s)"}],
-    ["display-text", function(){
-      return "" + format(player.points.div(uni)) + "x universe diameter (+" + format(getPointGen().div(uni)) + "/s)"}],
-    ["display-text", function(){
-      return "universe diameter ^" + format(player.points.max(1).log(uni), 3) + ""}],
-    "blank","blank",
-    ["display-text", function(){
-      return `<h2>Production softcaps</h2>`}],
-    ["display-text", function(){
-      return getPointGen().gte(343) ? "Stage 1: Starts at " + formatWhole(new Decimal(343)) + " m/s, cube rooted" : ""}],
-    ["display-text", function(){
-      return getPointGen().gte(299792458) && hasMilestone("l", 9) ? "Stage 2: Starts at " + formatWhole(new Decimal(299792458)) + " m/s, exponent square rooted" : ""}],
-    ["display-text", function(){
-      return getPointGen().gte(1e100) ? "Stage 3: Starts at " + formatWhole(new Decimal(1e100)) + " m/s, logarithmic but raised to the " + format(new Decimal(50)) + "th power" : ""}],
-  ],
+    update(diff){
+      let slog = tmp.slog.getNonFreeSlogPoints.add(tmp.slog.getFreeSlogPoints)
+      let slogP = tmp.slog.getNonFreeSlogPrestigePoints
+      if (!player.slog.unlocked) player.slog.points = new Decimal(0)
+      else player.slog.points = slog
+      if (!hasMilestone("e", 4)) player.slog.prestigePoints = new Decimal(0)
+      else player.slog.prestigePoints = slogP
+    },
+    getNonFreeSlogPoints(){
+      let usedPoints = player.points
+      usedPoints = usedPoints.max(1)
+      let baseAmt = usedPoints.slog(tmp.slog.getBase)
+      if (inChallenge("i", 21)) baseAmt = new Decimal(0)
+      return baseAmt
+    },
+    getNonFreeSlogPrestigePoints(){
+      let usedPoints = player.p.points
+      usedPoints = usedPoints.max(1)
+      let baseAmt = usedPoints.slog(tmp.slog.getBase.tetrate(tmp.slog.getSlogPPTetrate))
+      if (player.e.activeChallenge) baseAmt = new Decimal(0)
+      return baseAmt
+    },
+    getFreeSlogPoints(){
+      let freeAmt = new Decimal(0)
+      if (hasUpgrade("hp", 34)) freeAmt = freeAmt.add(upgradeEffect("hp", 34))
+      if (hasChallenge("e", 21)) freeAmt = freeAmt.add(tmp.slog.getNonFreeSlogPoints.mul(challengeEffect("e", 21)))
+      if (inChallenge("e", 21)) freeAmt = new Decimal(-5)
+      
+      if (player.e.activeChallenge) freeAmt = freeAmt.min(0)
+      return freeAmt
+    },
+    getBase(){
+      let base = new Decimal(10)
+      if (hasChallenge("i", 62)) base = base.sub(challengeEffect("i", 62))
+      if (hasUpgrade("sp", 41)) base = base.sub(upgradeEffect("sp", 41))
+      if (hasUpgrade("sp", 44)) base = base.sub(upgradeEffect("sp", 44))
+      if (inChallenge("e", 31)) base = base.tetrate(1.5)
+      return base
+    },
+    getSlogPPTetrate(){
+      let tetr = new Decimal(2)
+      return tetr
+    },
+    effectPow(){
+      let pow = new Decimal(1)
+      if (hasUpgrade("sp", 22)) pow = pow.mul(upgradeEffect("sp", 22))
+      if (hasUpgrade("sp", 24)) pow = pow.mul(upgradeEffect("sp", 24))
+      if (hasUpgrade("hp", 22)) pow = pow.mul(upgradeEffect("hp", 22))
+      pow = pow.mul(player.slog.prestigePoints.max(tmp.slog.effectPPtoPowMin).pow(tmp.slog.effectPPtoPPow))
+      if (inChallenge("e", 21)) pow = new Decimal(10)
+      if (!player.slog.points.eq(0)) pow = pow.mul(player.slog.points.sign)
+      return pow
+    },
+    effectExp(){
+      let exp = new Decimal(1)
+      if (hasUpgrade("sp", 13)) exp = exp.mul(upgradeEffect("sp", 13))
+      if (hasUpgrade("sp", 21)) exp = exp.mul(upgradeEffect("sp", 21))
+      if (hasUpgrade("e", 12)) exp = exp.mul(upgradeEffect("e", 12))
+      if (hasChallenge("i", 61)) exp = exp.add(challengeEffect("i", 61))
+      return exp
+    },
+    effect(){
+      if (!player.slog.unlocked) return new Decimal(1)
+      let slog = player.slog.points.abs()
+      let pow = tmp.slog.effectPow
+      let exp = tmp.slog.effectExp
+      let eff = new Decimal(10).pow(pow.mul(slog.pow(exp)))
+      return eff
+    },
+    effectPowP(){
+      let pow = new Decimal(1)
+      if (hasUpgrade("p", 44)) pow = pow.mul(upgradeEffect("p", 44))
+      return pow
+    },
+    effectExpP1(){
+      let exp1 = new Decimal(1.25)
+      return exp1
+    },
+    effectExpP2(){
+      let exp2 = new Decimal(1)
+      return exp2
+    },
+    effectPowP_HP(){
+      let pow = new Decimal(4)
+      if (hasUpgrade("p", 44)) pow = pow.mul(upgradeEffect("p", 44))
+      return pow
+    },
+    effectExpP_HP(){
+      let exp = new Decimal(1)
+      if (hasUpgrade("i", 44)) exp = exp.add(upgradeEffect("i", 44))
+      return exp
+    },
+    effectPPtoPPow(){
+      let pow = new Decimal(1)
+      if (hasUpgrade("i", 44)) pow = pow.add(upgradeEffect("i", 44))
+      return pow
+    },
+    effectPPtoPowMin(){
+      let min = new Decimal(1)
+      return min
+    },
+    effectP(boostHP){
+      if (!hasMilestone("e", 4)) return new Decimal(1)
+      let slog = player.slog.prestigePoints
+      let pow = tmp.slog.effectPowP
+      let exp1 = (boostHP ? tmp.slog.effectPowP_HP : tmp.slog.effectExpP1)
+      let exp2 = (boostHP ? tmp.slog.effectExpP_HP : tmp.slog.effectExpP2)
+      let eff = new Decimal(10).pow(exp1.mul(slog.pow(exp2)))
+      if (!boostHP) eff = new Decimal(10).pow(eff).pow(pow)
+      return eff
+    },
 })
