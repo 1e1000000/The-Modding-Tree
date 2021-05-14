@@ -518,7 +518,7 @@ addLayer("sp", {
         cost: new Decimal(1.28e12),
         effect(){
           if (inChallenge("i", 12)) return new Decimal(1)
-          let eff = new Decimal(player.sp.upgrades.length).pow(0.5)
+          let eff = new Decimal(player.sp.upgrades.length).pow(0.5).max(1)
           return eff
         },
         effectDisplay(){
@@ -1303,7 +1303,7 @@ addLayer("i", {
       },
       42: {
         name: "Challenge 8",
-        challengeDescription: "Superlogarithm Points is the only things that boost PP gain, and PP gain tetrate is always 1.1",
+        challengeDescription: "Superlogarithm Points is the only things that boost PP gain, PP gain tetrate is always 1.1",
         goal: new Decimal(10).pow(2505),
         rewardDescription: "I Challenge 3 reward is better based on IP",
         rewardEffect(){
@@ -2104,7 +2104,7 @@ addLayer("slog", {
     tabFormat: [
       ["display-text", function(){
         return "You have " + format(tmp.slog.getNonFreeSlogPoints, 6) + (tmp.slog.getFreeSlogPoints.eq(0) ? "" : (tmp.slog.getFreeSlogPoints.gt(0) ? " + " : " - ") + format(tmp.slog.getFreeSlogPoints.abs(), 6)) + " superlogarithm points. " + `<br>` + "(based on points with a base of " + format(tmp.slog.getBase, 3) + ")"
-        + `<br>` + "Which " + (player.slog.points.gt(0) ? "multiply" : "divide")  + " Points, PP and SP gain by " + format(layers.slog.effect().pow(player.slog.points.gt(0) ? 1 : -1)) + "." + `<br>` + "(Formula: 10" + `<sup>` + format(tmp.slog.effectPow.abs(), 3) + "×" + format(player.slog.points.abs(), 3) + `<sup>` + format(tmp.slog.effectExp, 3) + `</sup></sup>` + ")"
+        + `<br>` + "Which " + (player.slog.points.gte(0) ? "multiply" : "divide")  + " Points, PP and SP gain by " + format(layers.slog.effect().pow(player.slog.points.gte(0) ? 1 : -1)) + "." + `<br>` + "(Formula: 10" + `<sup>` + format(tmp.slog.effectPow.abs(), 3) + "×" + format(player.slog.points.abs(), 3) + `<sup>` + format(tmp.slog.effectExp, 3) + `</sup></sup>` + ")"
       }],
       "blank",
       ["display-text", function(){
