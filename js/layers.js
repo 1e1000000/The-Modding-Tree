@@ -452,7 +452,7 @@ addLayer("sp", {
       "blank",
       "upgrades"
     ],
-    milestonePopups: false,
+    milestonePopups: true,
     milestones: {
         0: {
           requirementDescription: "500 Total Super Prestige Points",
@@ -791,11 +791,11 @@ addLayer("i", {
       if (layers[resettingLayer].row > this.row) layerDataReset("i", keep)
     },
     tabFormat: {
-      "Upgrades": {
+      "Milestones":{
         content:[
           "main-display",
           ["display-text", function(){
-            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
+            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
           }],
           ["display-text", function(){
             return "IP effect softcap start: " + format(tmp.i.effectiveIP[1]) + ", effective IP: " + format(tmp.i.effectiveIP[0])
@@ -805,6 +805,20 @@ addLayer("i", {
           "resource-display",
           "blank",
           "milestones",
+        ]
+      },
+      "Upgrades": {
+        content:[
+          "main-display",
+          ["display-text", function(){
+            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
+          }],
+          ["display-text", function(){
+            return "IP effect softcap start: " + format(tmp.i.effectiveIP[1]) + ", effective IP: " + format(tmp.i.effectiveIP[0])
+          }],
+          "blank",
+          "prestige-button",
+          "resource-display",
           "blank",
           "upgrades",
         ]
@@ -813,7 +827,7 @@ addLayer("i", {
         content:[
           "main-display",
           ["display-text", function(){
-            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards into I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
+            return "Free IP amount: " + format(tmp.i.freeIP) + " (doesn't count towards I Upgrade cost), Total IP amount: " + format(tmp.i.totalIP)
           }],
           ["display-text", function(){
             return "IP effect softcap start: " + format(tmp.i.effectiveIP[1]) + ", effective IP: " + format(tmp.i.effectiveIP[0])
@@ -822,14 +836,12 @@ addLayer("i", {
           "prestige-button",
           "resource-display",
           "blank",
-          "milestones",
-          "blank",
           "challenges",
         ],
         unlocked() {return hasMilestone("i",2)}
       },
     },
-    milestonePopups: false,
+    milestonePopups: true,
     milestones: {
         0: {
           requirementDescription: "2 Infinity Points",
@@ -1280,7 +1292,7 @@ addLayer("i", {
         name: "Challenge 7",
         challengeDescription: "Prestige Upgrade 11 is the only things that boost Point generation.",
         goal: new Decimal(10).pow(2456),
-        rewardDescription: "Divide Infinity require based on PP",
+        rewardDescription: "Divide Infinity requirement based on PP",
         rewardEffect(){
           if (inChallenge("i", 31)) return new Decimal(1)
           let eff = player.p.points.pow(0.2815).max(1)
@@ -1435,6 +1447,7 @@ addLayer("hp", {
       let gain = tmp.hp.getBaseResetGain.mul(tmp.hp.getResetGainMulFromIP)
       
       if (hasUpgrade("hp", 12)) gain = gain.mul(upgradeEffect("hp", 12))
+      if (hasUpgrade("hp", 13) && !hasUpgrade("hp", 14)) gain = gain.mul(10)
       if (hasUpgrade("sp", 32)) gain = gain.mul(upgradeEffect("sp", 32))
       if (hasUpgrade("i", 22)) gain = gain.mul(upgradeEffect("i", 22)[1])
       if (hasUpgrade("i", 23)) gain = gain.mul(upgradeEffect("i", 23))
@@ -1480,7 +1493,7 @@ addLayer("hp", {
       "blank",
       "upgrades"
     ],
-    milestonePopups: false,
+    milestonePopups: true,
     milestones: {
         0: {
           requirementDescription: "300 Total Hyper Prestige Points",
@@ -1489,9 +1502,9 @@ addLayer("hp", {
           unlocked(){return true}
         },
         1: {
-          requirementDescription: "920 Total Hyper Prestige Points",
+          requirementDescription: "3,000 Total Hyper Prestige Points",
           effectDescription: "Keep Prestige Upgrades on row 3 reset and you can buy max Infinity Points.",
-          done() { return player.hp.total.gte(920)},
+          done() { return player.hp.total.gte(3000)},
           unlocked(){return true}
         },
         2: {
@@ -1524,7 +1537,7 @@ addLayer("hp", {
       rows: 4,
       cols: 4,
       11: {
-        description: "Multiply Points and PP gain by 100, then raise Points and PP gain to the power of 1.0415 (unaffected by softcap)",
+        description: "Multiply Points and PP gain by 100, then raise Points and PP gain to the power of 1.0415 (PP gain is unaffected by softcap)",
         cost: new Decimal(1),
         effect(){
           if (inChallenge("i", 62)) return [new Decimal(1), new Decimal(1)]
@@ -1546,7 +1559,7 @@ addLayer("hp", {
         }
       },
       13: {
-        description: "Boost SP gain based on HP (unaffected by softcap)",
+        description: "Boost SP gain based on HP (unaffected by softcap) and gain 10x HP if you didn't have Hyper Prestige Upgrade 14",
         cost: new Decimal(600),
         effect(){
           if (inChallenge("i", 62)) return new Decimal(1)
@@ -1561,7 +1574,7 @@ addLayer("hp", {
       },
       14: {
         description: "Hyper Prestige Upgrade 12 is stronger based on IP",
-        cost: new Decimal(1250),
+        cost: new Decimal(6000),
         effect(){
           if (inChallenge("i", 62)) return new Decimal(1)
           let eff = tmp.i.totalIP.max(1).pow(0.25)
@@ -1572,7 +1585,7 @@ addLayer("hp", {
         }
       },
       21: {
-        description: "Divide Infinity require based on SP",
+        description: "Divide Infinity requirement based on SP",
         cost: new Decimal(2.25e5),
         effect(){
           if (inChallenge("i", 62)) return new Decimal(1)
@@ -1796,7 +1809,7 @@ addLayer("e", {
       if (layers[resettingLayer].row > this.row) layerDataReset("i", keep)
     },
     tabFormat: {
-      "Upgrades": {
+      "Milestones":{
         content:[
           "main-display",
           "blank",
@@ -1804,6 +1817,14 @@ addLayer("e", {
           "resource-display",
           "blank",
           "milestones",
+        ]
+      },
+      "Upgrades": {
+        content:[
+          "main-display",
+          "blank",
+          "prestige-button",
+          "resource-display",
           "blank",
           "upgrades",
         ]
@@ -1826,7 +1847,7 @@ addLayer("e", {
         unlocked() {return hasMilestone("e",2)}
       },
     },
-    milestonePopups: false,
+    milestonePopups: true,
     milestones: {
         0: {
           requirementDescription: "2 Eternity Points",
@@ -1975,7 +1996,7 @@ addLayer("e", {
         name: "Challenge 2",
         challengeDescription: "You can't gain any IP.",
         goal: new Decimal(10).pow(15245),
-        rewardDescription: "Prestige Upgrade 31 boost from IP ^1.705, and Divide EP require based on slog points.",
+        rewardDescription: "Prestige Upgrade 31 boost from IP ^1.705, and Divide EP requirement based on slog points.",
         rewardEffect(){
           let eff = [new Decimal(1.705), new Decimal(10).pow(player.slog.points.mul(6.5)).max(1)]
           if (hasUpgrade("sp", 44)) eff[1] = eff[1].max(new Decimal(10).pow(player.slog.points.max(1).pow(5.21)))
