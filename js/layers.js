@@ -1837,8 +1837,6 @@ addLayer("e", {
           "prestige-button",
           "resource-display",
           "blank",
-          "milestones",
-          "blank",
           ["display-text", function(){
             return "If you are in a Eternity tier Challenges, you will have a maximum of 0 free slog points, no slog prestige points and maximum of 0 free Infinity Points."
           }],
