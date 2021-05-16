@@ -435,6 +435,7 @@ addLayer("sp", {
     passiveGeneration(){ return hasMilestone("hp", 3)?1:0},
     doReset(resettingLayer) {
 			let keep = [];
+      if (hasMilestone("hp", 0) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("milestones")
       if (hasMilestone("hp", 2) && (resettingLayer== "hp" || resettingLayer== "e")) keep.push("upgrades")
       if (layers[resettingLayer].row > this.row) layerDataReset("sp", keep)
     },
@@ -1429,7 +1430,7 @@ addLayer("hp", {
       if (hasUpgrade("i", 23) && !inChallenge("i", 31)) base = base.sub(1.4)
       if (hasUpgrade("i", 34) && !inChallenge("i", 31)) base = base.sub(upgradeEffect("i", 34))
       
-      let gain = player.sp.points.max(1).log(base).max(1).log(base).sub(1)
+      let gain = player.sp.points.max(base).log(base).max(base).log(base).sub(1)
       if (hasUpgrade("i", 34) && !inChallenge("i", 31)) gain = gain.add(1)
       return gain.tetrate(tetr)
     },
@@ -1447,7 +1448,7 @@ addLayer("hp", {
       let gain = tmp.hp.getBaseResetGain.mul(tmp.hp.getResetGainMulFromIP)
       
       if (hasUpgrade("hp", 12)) gain = gain.mul(upgradeEffect("hp", 12))
-      if (hasUpgrade("hp", 13) && !hasUpgrade("hp", 14)) gain = gain.mul(10)
+      if (hasUpgrade("hp", 13) && !hasUpgrade("hp", 14) && !inChallenge("i", 62)) gain = gain.mul(10)
       if (hasUpgrade("sp", 32)) gain = gain.mul(upgradeEffect("sp", 32))
       if (hasUpgrade("i", 22)) gain = gain.mul(upgradeEffect("i", 22)[1])
       if (hasUpgrade("i", 23)) gain = gain.mul(upgradeEffect("i", 23))
