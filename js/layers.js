@@ -7,7 +7,7 @@ addLayer("p", {
 		  points: new Decimal(0),
       total: new Decimal(0),
     }},
-    color: "#F66",
+    color: "#83CECF",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
     resource: "prestige points", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
@@ -371,7 +371,7 @@ addLayer("sp", {
 		  points: new Decimal(0),
       total: new Decimal(0),
     }},
-    color: "#F33",
+    color: "#5ABEBF",
     requires: new Decimal(1e10), // Can be a function that takes requirement increases into account
     resource: "super prestige points", // Name of prestige currency
     baseResource: "prestige points", // Name of resource prestige is based on
@@ -1414,7 +1414,7 @@ addLayer("hp", {
 		  points: new Decimal(0),
       total: new Decimal(0),
     }},
-    color: "#F00",
+    color: "#31AEB0",
     requires: new Decimal(11.4).pow(new Decimal(11.4).pow(2)), // Can be a function that takes requirement increases into account
     resource: "hyper prestige points", // Name of prestige currency
     baseResource: "super prestige points", // Name of resource prestige is based on
@@ -2115,8 +2115,35 @@ addLayer("slog", {
       unlocked: false,
 		  points: new Decimal(0),
       prestigePoints: new Decimal(0),
+      animationInterval: 10,
     }},
-    color: "#FFFFFF",
+    color(){
+      let i = player.slog.animationInterval * 1000
+      let t = Date.now() % i
+      let r = 0
+      let g = 0
+      let b = 0
+      if (t < i/6){
+        r = 255
+        g = (t - 0) / (i/6) * 255
+      } else if (t < i/6*2){
+        g = 255
+        r = 255 - (t - i/6) / (i/6) * 255
+      } else if (t < i/6*3){
+        g = 255
+        b = (t - i/6*2) / (i/6) * 255
+      } else if (t < i/6*4){
+        b = 255
+        g = 255 - (t - i/6*3) / (i/6) * 255
+      } else if (t < i/6*5){
+        b = 255
+        r = (t - i/6*4) / (i/6) * 255
+      } else if (t < i){
+        r = 255
+        b = 255 - (t - i/6*5) / (i/6) * 255
+      }
+      return "rgb(" + r + ", " + g + ", " + b + ")"
+    },
     resource: "superlogarithm", // Name of prestige currency
     row: "side", // Row the layer is in on the tree (0 is the first row)
     layerShown(){return player.sp.unlocked},
@@ -2136,7 +2163,10 @@ addLayer("slog", {
       "blank",
       ["display-text", function(){
         return "Points gain softcap start: " + format(getPointGainSCStart())
-      }]
+      }],
+      "blank","blank",
+      ["row", [["clickable", 11],["clickable", 12],["clickable", 13],["clickable", 14],["clickable", 15],["clickable", 16],["clickable", 17]]],
+      ["bar","slogAnimation"],
     ],
     update(diff){
       if (player.sp.unlocked) player.slog.unlocked = true
@@ -2250,4 +2280,65 @@ addLayer("slog", {
       if (!boostHP) eff = new Decimal(10).pow(eff).pow(pow)
       return eff
     },
+    bars: {
+        slogAnimation: {
+          direction: RIGHT,
+          width: 450,
+          height: 20,
+          progress() { return player.slog.animationInterval / 20},
+          display() {return "SL note animation interval: " + format(player.slog.animationInterval, 1) + " seconds"},
+          fillStyle() {return {"background-color": tmp.slog.color}},
+        },
+    },
+    clickables: {
+        11: {
+				  title: "1.0",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval > 1 },
+			  	onClick() {player.slog.animationInterval = 1},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        12: {
+				  title: "-1.0",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval > 1 },
+			  	onClick() {player.slog.animationInterval = Math.max(player.slog.animationInterval-1,1)},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        13: {
+				  title: "-0.1",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval > 1 },
+			  	onClick() {player.slog.animationInterval = Math.max(player.slog.animationInterval-0.1,1)},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        14: {
+				  title: "10.0",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval !== 10 },
+			  	onClick() {player.slog.animationInterval = 10},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        15: {
+				  title: "+0.1",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval < 20 },
+			  	onClick() {player.slog.animationInterval = Math.min(player.slog.animationInterval+0.1,20)},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        16: {
+				  title: "+1.0",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval < 20 },
+			  	onClick() {player.slog.animationInterval = Math.min(player.slog.animationInterval+1,20)},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+        17: {
+				  title: "20.0",
+				  unlocked() { return true },
+			  	canClick() { return player.slog.animationInterval < 20 },
+			  	onClick() {player.slog.animationInterval = 20},
+			  	style:{"height": "50px", "width": "50px"},
+        },
+    }
 })
