@@ -304,7 +304,8 @@ addLayer("p", {
       },
       41: {
         description: "Points gain softcap starts later based on SP, You can buy this upgrade while you are in I Challenge 1",
-        cost(){return inChallenge("i", 11) ? new Decimal(10).pow(469) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(469),
+        canAfford(){return player.p.points.gte("1e469") && player.i.activeChallenge == 11},
         effect(){
           if (inChallenge("i", 22)) return new Decimal(1)
           let eff = player.sp.points.max(1).pow(1.1)
@@ -319,7 +320,8 @@ addLayer("p", {
       },
       42: {
         description: "slog points boost make I Challenge 7 reward softcap starts later, You can buy this upgrade while you are in I Challenge 8",
-        cost(){return inChallenge("i", 42) ? new Decimal(10).pow(2601) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(2601),
+        canAfford(){return player.p.points.gte("1e2601") && player.i.activeChallenge == 42},
         effect(){
           if (inChallenge("i", 22)) return new Decimal(1)
           let eff = layers.slog.effect().pow(0.1).max(1)
@@ -334,7 +336,8 @@ addLayer("p", {
       },
       43: {
         description: "Infinity Upgrade 14 boost ^1.25, You can buy this upgrade while you are in I Challenge 6",
-        cost(){return inChallenge("i", 32) ? new Decimal(10).pow(22008) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(22008),
+        canAfford(){return player.p.points.gte("1e22008") && player.i.activeChallenge == 32},
         effect(){
           if (inChallenge("i", 22)) return new Decimal(1)
           let eff = new Decimal(1.25)
@@ -346,7 +349,8 @@ addLayer("p", {
       },
       44: {
         description: "slog points raise first 2 slog PP boost, You can buy this upgrade while you are in E Challenge 4",
-        cost(){return inChallenge("e", 22) ? new Decimal(10).pow(4263) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(4263),
+        canAfford(){return player.p.points.gte("1e4263") && player.e.activeChallenge == 22},
         effect(){
           if (inChallenge("i", 22)) return new Decimal(1)
           let eff = player.slog.points.max(1).pow(0.57)
@@ -659,7 +663,8 @@ addLayer("sp", {
       },
       42: {
         description: "IP gain scaling exponent -0.0083, You can buy this upgrade while you are in E Challenge 2",
-        cost(){return inChallenge("e", 12) ? new Decimal(10).pow(628) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(628),
+        canAfford(){return player.sp.points.gte("1e628") && player.e.activeChallenge == 12},
         effect(){
           if (inChallenge("i", 12)) return new Decimal(0)
           let eff = new Decimal(0.0083)
@@ -683,7 +688,8 @@ addLayer("sp", {
       },
       44: {
         description: "Reduce slog points base based on slog PP (max -0.4) and E Challenge 2 reward uses a better formula, You can buy this upgrade while you are in E Challenge 5",
-        cost(){return inChallenge("e", 31) ? new Decimal(10).pow(153.5) : new Decimal(1/0)},
+        cost: new Decimal(10).pow(153.5),
+        canAfford(){return player.sp.points.gte(new Decimal(10).pow(153.5)) && player.e.activeChallenge == 31},
         effect(){
           if (inChallenge("i", 12)) return new Decimal(0)
           let eff = player.slog.prestigePoints.div(19.75)
