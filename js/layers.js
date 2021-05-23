@@ -4,7 +4,8 @@ addLayer("p", {
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
-		points: new Decimal(0),
+		    points: new Decimal(0),
+        bestBoughtUpgs: 0,
     }},
     color: "#31aeb0",
     requires: new Decimal(5), // Can be a function that takes requirement increases into account
@@ -47,6 +48,9 @@ addLayer("p", {
     doReset(resettingLayer) {
 			let keep = [];
       if (layers[resettingLayer].row > this.row) layerDataReset("p", keep)
+    },
+    update(diff){
+        player.p.bestBoughtUpgs = Math.max(player.p.bestBoughtUpgs, player.p.upgrades.length)
     },
     tabFormat:[
       "main-display",
@@ -118,7 +122,7 @@ addLayer("p", {
         15: {
           title: "(5) Katakana1",
           description(){
-            return "The broken game... +" + format(tmp.p.upgrades[15].effectBase.mul(100)) + "% PP gain for every prestige upgrades bought (" + (hasUpgrade("p", 35) ? "stack multiplicatively" : "stack additively") + ", softcapped at 15)"
+            return "The broken game... +" + format(tmp.p.upgrades[15].effectBase.mul(100)) + "% PP gain for every prestige upgrades bought (" + (hasUpgrade("p", 35) ? "stacks multiplicatively" : "stacks additively") + ", softcapped at 15)"
           },
           cost: new Decimal(300),
           effectBase(){
@@ -260,7 +264,7 @@ addLayer("p", {
         35: {
           title: "(15) IEmory",
           description(){
-            return "He is smiley, but he already leave discord for around " + formatWhole(Math.floor((Date.now() - 1616601600000) / 86400000)) + " days. unlock Quests for every 10 Upgrades (permanently keep), Upgrade 5 now steak multiplicatively"
+            return "He is smiley, but he already leave discord for around " + formatWhole(Math.floor((Date.now() - 1616601600000) / 86400000)) + " days. unlock Quests (permanently keep), Upgrade 5 now steaks multiplicatively"
           },
           cost: new Decimal(5e16),
           effect(){
@@ -363,7 +367,7 @@ addLayer("p", {
           direction: RIGHT,
           width: 450,
           height: 50,
-          display(){return "Bought Upgrades: "+player.p.upgrades.length+"/"+(Object.keys(tmp.p.upgrades).length-2)},
+          display(){return "Bought Upgrades: "+player.p.upgrades.length+"/"+(Object.keys(tmp.p.upgrades).length-2) + " (Best: " + formatWhole(player.p.bestBoughtUpgs) + ")"},
           progress() {return player.p.upgrades.length / (Object.keys(tmp.p.upgrades).length-2)},
           unlocked() {return true},
           fillStyle() {return {"background-color": tmp.p.color}},
@@ -554,12 +558,14 @@ addLayer("q", {
 		tabFormat: [
         ["display-text",
          function() { return "Note: All Quests completions is never getting reset"}],
+        ["display-text",
+         function() { return "Unlocked Quests: " + formatWhole(player.q.questUnlocked) + " (Next at " + formatWhole(player.q.questUnlocked*5+15) + " Bought Prestige Upgrades)"}],
 		  	"blank",
 			  "challenges",
 		],
     update(diff){
         if (hasUpgrade("p", 35)) player.q.unlocked = true
-        player.q.questUnlocked = Math.max(player.q.questUnlocked, player.p.upgrades.length/10)
+        player.q.questUnlocked = Math.floor(Math.max(player.q.questUnlocked, (player.p.upgrades.length-10)/5))
     },
     challenges: {
       11: {
