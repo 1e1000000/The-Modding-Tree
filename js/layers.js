@@ -604,7 +604,7 @@ addLayer("q", {
         onExit(){doReset("p", true)},
         onComplete(){doReset("p", true)},
         completionLimit: 10,
-        marked(){return maxedChallenge("q", 11)},
+        marked(){return maxedChallenge("q", 12)},
       },
     },
 })
