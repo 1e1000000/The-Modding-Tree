@@ -543,6 +543,7 @@ addLayer("a", {
 addLayer("q", {
     startData() { return {
         unlocked: false,
+        questUnlocked: 0,
     }},
     color: "white",
     row: "side",
@@ -558,13 +559,14 @@ addLayer("q", {
 		],
     update(diff){
         if (hasUpgrade("p", 35)) player.q.unlocked = true
+        player.q.questUnlocked = Math.max(player.q.questUnlocked, player.p.upgrades.length/10)
     },
     challenges: {
       11: {
         name: "TreeQuest 1",
         challengeDescription(){return "Do a forced row 1 reset, Acamaeda have no effect, points gain is square rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 11) + "/" + tmp.q.challenges[11].completionLimit},
-        unlocked(){return player.p.upgrades.length >= 10 && hasUpgrade("p", 35)},
+        unlocked(){return player.q.questUnlocked >= 1 && player.q.unlocked},
         goalDescription(){return format(tmp.q.challenges[11].goal) + " points"},
         goal(){
           let goal = new Decimal(10).pow(new Decimal(15).mul(new Decimal(1.5).pow(challengeCompletions("q", 11))))
@@ -587,7 +589,7 @@ addLayer("q", {
         name: "TreeQuest 2",
         challengeDescription(){return "Do a forced row 1 reset, Boosters have no effect, points gain is cube rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 12) + "/" + tmp.q.challenges[12].completionLimit},
-        unlocked(){return player.p.upgrades.length >= 20 && hasUpgrade("p", 35)},
+        unlocked(){return player.q.questUnlocked >= 2 && player.q.unlocked},
         goalDescription(){return format(tmp.q.challenges[12].goal) + " points"},
         goal(){
           let goal = new Decimal(10).pow(new Decimal(36).mul(new Decimal(1.5).pow(challengeCompletions("q", 12))))
