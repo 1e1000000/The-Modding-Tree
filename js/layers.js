@@ -65,13 +65,13 @@ addLayer("p", {
     upgrades: {
         11: {
           title: "(1) Jacorb",
-          description: "The guy who make The Prestige Tree. Begin the points generation",
+          description: "The one who make The Prestige Tree. Begin the points generation",
           cost: new Decimal(1),
         },
         12: {
           title: "(2) Acamaeda",
           description(){
-            return "The guy who make The Modding Tree. Multiply points gain by " + format(tmp.p.upgrades[12].effectBase) + " for every prestige upgrades bought"
+            return "The one who make The Modding Tree. Multiply points gain by " + format(tmp.p.upgrades[12].effectBase) + " for every prestige upgrades bought"
           },
           cost: new Decimal(2),
           effectBase(){
@@ -94,7 +94,7 @@ addLayer("p", {
         13: {
           title: "(3) thefinaluptake",
           description(){
-            return "The first user to create TMT fork. and maker of The Buring Tree, multiply points gain by log2(points+2)"
+            return "The first user to create TMT fork. and maker of The Burning Tree, multiply points gain by log2(points+2)"
           },
           cost: new Decimal(10),
           effect(){
@@ -122,7 +122,7 @@ addLayer("p", {
         15: {
           title: "(5) Katakana1",
           description(){
-            return "The broken game... +" + format(tmp.p.upgrades[15].effectBase.mul(100)) + "% PP gain for every prestige upgrades bought (" + (hasUpgrade("p", 35) ? "stacks multiplicatively" : "stacks additively") + ", softcapped at 15)"
+            return "The broken game... +" + format(tmp.p.upgrades[15].effectBase.mul(100)) + "% PP gain for every prestige upgrade bought (" + (hasUpgrade("p", 35) ? "stacks multiplicatively" : "stacks additively") + ", softcapped at 15)"
           },
           cost: new Decimal(300),
           effectBase(){
@@ -169,7 +169,7 @@ addLayer("p", {
         23: {
           title: "(8) thepaperpilot",
           description(){
-            return "I see nothing special in githack. but they have game dev tree on tpp.rock, unlock a new layer, multiply points gain by 10"
+            return "I see nothing special in githack. but they have game dev tree on tpp.rocks, unlock a new layer, multiply points gain by 10"
           },
           cost: new Decimal(30000),
           effect(){
@@ -264,7 +264,7 @@ addLayer("p", {
         35: {
           title: "(15) IEmory",
           description(){
-            return "He is smiley, but he already leave discord for around " + formatWhole(Math.floor((Date.now() - 1616601600000) / 86400000)) + " days. unlock Quests (permanently keep), Upgrade 5 now steaks multiplicatively"
+            return "He is smiley, but he already leave discord for around " + formatWhole(Math.floor((Date.now() - 1616601600000) / 86400000)) + " days. unlock Quests (permanently keep), Upgrade 5 now stacks multiplicatively"
           },
           cost: new Decimal(5e16),
           effect(){
