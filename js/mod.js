@@ -24,7 +24,7 @@ let changelog = `<h1>Changelog:</h1><br>
 <br>
 <h3>v1.032 (Update 2)</h3><br>
 - Added Infinity.<br>
-- Balance up to 1.00e3,500 points, 32 Prestige Upgrades, 10 Achievements and Quest 1x10, 2x8, 3x5, 4x4 completion.<br>
+- Balance up to 1.00e3,502 points, 32 Prestige Upgrades, 10 Achievements and Quest 1x10, 2x8, 3x5, 4x4 completion.<br>
 <br>
 `
 
@@ -75,12 +75,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-  "Endgame: 1.00e3,500 points"
+  "Endgame: 1.00e3,502 points"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte("1e3500")
+	return player.points.gte("1e3502")
 }
 
 

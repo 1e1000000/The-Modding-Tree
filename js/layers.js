@@ -595,7 +595,7 @@ addLayer("b", {
       return sc
     },
     effectDescription(){
-      return " which multiply points gain by " + format(tmp.b.effect) + (tmp.b.effect.gte(tmp.b.effectSCStart) ? " (softcapped)" : "")
+      return " which multiply points gain by " + format(tmp.b.effect) + (tmp.b.effect.gte(tmp.b.effectSCStart) ? " (softcapped)" : "") + " (effect base: " + format(tmp.b.effectBase) + ")"
     },
     doReset(resettingLayer) {
 			let keep = ["auto"];
@@ -800,6 +800,8 @@ addLayer("q", {
          function() { return "Note: All Quests completions is never getting reset"}],
         ["display-text",
          function() { return "Unlocked Quests: " + formatWhole(player.q.questUnlocked) + " (Next at " + formatWhole(player.q.questUnlocked*5+15) + " Bought Prestige Upgrades)"}],
+        ["display-text",
+         function() { return "Total Quests completion: " + formatWhole(totalQuestsCompletion())}],
 		  	"blank",
 			  "challenges",
 		],
@@ -891,8 +893,8 @@ addLayer("q", {
         goalDescription(){return format(tmp.q.challenges[22].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.1)
+          if (challengeCompletions("q", 22) >= 5) scaling = scaling.pow(2)
           let goal = new Decimal(10).pow(new Decimal(37.5).mul(new Decimal(scaling).pow(challengeCompletions("q", 22))))
-          if (challengeCompletions("q", 22) >= 4) goal = goal.pow(scaling.pow(challengeCompletions("q", 22) - 4).pow(2))
           if (challengeCompletions("q", 22) >= 4) goal = new Decimal(Infinity)
           return goal
         },
