@@ -12,14 +12,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.022",
-	name: "Literally nothing",
+	num: "1.032",
+	name: "Infinity",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v1.022</h3><br>
-		- Initial Release.<br>
-    - Balance up to 1.80e308 points, 22 Prestige Upgrades and 7 Achievements.<br>
+<br>
+<h3>v1.022 (Update 1)</h3><br>
+- Initial Release.<br>
+- Balance up to 1.80e308 points, 22 Prestige Upgrades, 7 Achievements and Quest 1x5, 2x2 completion.<br>
+<br>
+<h3>v1.032 (Update 2)</h3><br>
+- Added Infinity.<br>
+- Balance up to 1.00e3,500 points, 32 Prestige Upgrades, 10 Achievements and Quest 1x10, 2x8, 3x5, 4x4 completion.<br>
+<br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -54,8 +60,12 @@ function getPointGen() {
   if (hasUpgrade("p", 32)) gain = gain.mul(upgradeEffect("p", 32)[0])
   if (hasUpgrade("p", 43)) gain = gain.mul(upgradeEffect("p", 43))
   if (hasUpgrade("p", 52)) gain = gain.mul(upgradeEffect("p", 52))
+  if (hasUpgrade("p", 53)) gain = gain.mul(upgradeEffect("p", 53))
+  if (hasChallenge("q", 21)) gain = gain.mul(challengeEffect("q", 21))
+  if (inChallenge("q", 22)) gain = new Decimal(10).pow(gain.log(10).pow(0.5))
   if (inChallenge("q", 11)) gain = gain.pow(0.5)
   if (inChallenge("q", 12)) gain = gain.pow(1/3)
+  if (player.i.unlocked && !player.q.activeChallenge) gain = gain.pow(tmp.i.effect)
 	return gain
 }
 
@@ -65,12 +75,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-  "Endgame: 1.80e308 points"
+  "Endgame: 1.00e3,500 points"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(Number.MAX_VALUE)
+	return player.points.gte("1e3500")
 }
 
 
