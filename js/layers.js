@@ -26,7 +26,7 @@ addLayer("p", {
         if (hasUpgrade("p", 34)) mult = mult.mul(upgradeEffect("p", 34))
         if (hasAchievement("a", 21)) mult = mult.mul(achievementEffect("a", 21))
         if (hasUpgrade("p", 52)) mult = mult.mul(upgradeEffect("p", 52))
-        if (hasChallenge("q", 22)) mult = mult.mul(challengeEffect("q", 22))
+        if (hasChallenge("q", 22)) mult = mult.mul(challengeEffect("q", 22)[0])
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -84,9 +84,9 @@ addLayer("p", {
           },
           effect(){
             let x = new Decimal(player.p.upgrades.length)
-            if (maxedChallenge("q", 11)) x = x.pow(1.1)
+            if (maxedChallenge("q", 11)) x = x.pow(challengeEffect("q", 11)[1])
             let y = maxedChallenge("q", 11) ? new Decimal(0) : new Decimal(10)
-            if (x.gte(y)) x = y.add(x.sub(y).mul(challengeEffect("q", 11)))
+            if (x.gte(y)) x = y.add(x.sub(y).mul(challengeEffect("q", 11)[0]))
             if (inChallenge("q", 11)) x = new Decimal(0)
             let eff = tmp.p.upgrades[12].effectBase.pow(x)
             if (eff.gte(tmp.p.upgrades[12].effectSCStart)) eff = new Decimal(10).pow(new Decimal(tmp.p.upgrades[12].effectSCStart.log(10)).mul(eff.log(10).div(tmp.p.upgrades[12].effectSCStart.log(10)).pow(0.5)))
@@ -581,9 +581,9 @@ addLayer("b", {
     },
     effect(){
       let x = player.b.points
-      if (maxedChallenge("q", 12)) x = x.pow(1.1)
+      if (maxedChallenge("q", 12)) x = x.pow(challengeEffect("q", 12)[1])
       let y = maxedChallenge("q", 12) ? new Decimal(0) : new Decimal(10)
-      if (x.gte(y)) x = y.add(x.sub(y).mul(challengeEffect("q", 12)))
+      if (x.gte(y)) x = y.add(x.sub(y).mul(challengeEffect("q", 12)[0]))
       if (inChallenge("q", 12)) x = new Decimal(0)
       let eff = tmp.b.effectBase.pow(x)
       if (eff.gte(tmp.b.effectSCStart)) eff = new Decimal(10).pow(new Decimal(tmp.b.effectSCStart.log(10)).mul(eff.log(10).div(tmp.b.effectSCStart.log(10)).pow(0.5)))
@@ -823,9 +823,9 @@ addLayer("q", {
           if (challengeCompletions("q", 11) >= 10) goal = new Decimal(Infinity)
           return goal
         },
-        rewardDescription(){return "Acamaeda upgrade amount " + (maxedChallenge("q", 11) ? "": "past 10 ") + "is " + format(challengeEffect("q", 11)) + "x higher" + (maxedChallenge("q", 11) ? " and the amount before multiplier is raised to the power of 1.1": ".")},
+        rewardDescription(){return "Acamaeda upgrade amount " + (maxedChallenge("q", 11) ? "": "past 10 ") + "is " + format(challengeEffect("q", 11)[0]) + "x higher" + (maxedChallenge("q", 11) ? " and the amount before multiplier is raised to the power of " + format(challengeEffect("q", 11)[1]) + ".": ".")},
         rewardEffect(){
-          let eff = new Decimal(challengeCompletions("q", 11)).min(9).add(1)
+          let eff = [new Decimal(challengeCompletions("q", 11)).min(9).add(1), new Decimal(1.1)]
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[11].goal)},
@@ -848,9 +848,9 @@ addLayer("q", {
           if (challengeCompletions("q", 12) >= 8) goal = new Decimal(Infinity)
           return goal
         },
-        rewardDescription(){return "Boosters amount " + (maxedChallenge("q", 12) ? "": "past 10 ") + "is " + format(challengeEffect("q", 12)) + "x higher" + (maxedChallenge("q", 12) ? " and the amount before multiplier is raised to the power of 1.1": ".")},
+        rewardDescription(){return "Boosters amount " + (maxedChallenge("q", 12) ? "": "past 10 ") + "is " + format(challengeEffect("q", 12)[0]) + "x higher" + (maxedChallenge("q", 12) ? " and the amount before multiplier is raised to the power of " + format(challengeEffect("q", 12)[1]) + ".": ".")},
         rewardEffect(){
-          let eff = new Decimal(challengeCompletions("q", 12)).min(9).add(1)
+          let eff = [new Decimal(challengeCompletions("q", 12)).min(9).add(1), new Decimal(1.1)]
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[12].goal)},
@@ -873,9 +873,9 @@ addLayer("q", {
           return goal
         },
         countsAs:[11,12],
-        rewardDescription(){return "Multiply points gain by " + format(challengeEffect("q", 21))},
+        rewardDescription(){return "Multiply points gain by " + format(challengeEffect("q", 21)[0]) + (maxedChallenge("q", 21) ? " and raise points gain to the power of " + challengeEffect("q", 21)[1] : ".")},
         rewardEffect(){
-          let eff = new Decimal(10).pow(new Decimal(challengeCompletions("q", 21)).pow(inChallenge("q", 21)?1:2).mul(10))
+          let eff = [new Decimal(10).pow(new Decimal(challengeCompletions("q", 21)).pow(inChallenge("q", 21)?1:2).mul(10)), new Decimal(1.1)]
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[21].goal)},
@@ -898,9 +898,9 @@ addLayer("q", {
           if (challengeCompletions("q", 22) >= 4) goal = new Decimal(Infinity)
           return goal
         },
-        rewardDescription(){return "Multiply PP gain by " + format(challengeEffect("q", 22))},
+        rewardDescription(){return "Multiply PP gain by " + format(challengeEffect("q", 22)[0]) + (maxedChallenge("q", 22) ? " and raise points gain to the power of " + challengeEffect("q", 22)[1] : ".")},
         rewardEffect(){
-          let eff = new Decimal(10).pow(new Decimal(challengeCompletions("q", 22)).pow(inChallenge("q", 22)?1:2).mul(10))
+          let eff = [new Decimal(10).pow(new Decimal(challengeCompletions("q", 22)).pow(inChallenge("q", 22)?1:2).mul(10)), new Decimal(1.1)]
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[22].goal)},
