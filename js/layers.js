@@ -736,9 +736,9 @@ addLayer("a", {
             14: {
                 name: "14",
                 done() {return player.p.points.gte(1e9)},
-                tooltip(){return "Reach " + format(1e9) + " Prestige Points. Reward: add Prestige Upgrade 5 base by log10(PP+10) (softcapped at 40), currently: +" + format(achievementEffect("a", 14).mul(100))},
+                tooltip(){return "Reach " + format(1e9) + " Prestige Points. Reward: add Prestige Upgrade 5 base by log10(PP+1) (softcapped at 40), currently: +" + format(achievementEffect("a", 14).mul(100))},
                 effect(){
-                  let eff = player.p.points.add(10).log(10).div(100)
+                  let eff = player.p.points.add(1).log(10).div(100)
                   if (eff.gte(0.4)) eff = new Decimal(0.4).mul(eff.div(0.4).pow(0.25))
                   return eff
                 },
