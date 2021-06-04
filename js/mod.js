@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.032",
-	name: "Infinity",
+	num: "1.039",
+	name: "Super Prestige (Unofficial Release)",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -48,25 +48,46 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1)
-  if (hasUpgrade("p", 12)) gain = gain.mul(upgradeEffect("p", 12))
-  if (hasUpgrade("p", 13)) gain = gain.mul(upgradeEffect("p", 13))
-  if (hasUpgrade("p", 14)) gain = gain.mul(upgradeEffect("p", 14))
-  if (hasUpgrade("p", 21)) gain = gain.mul(upgradeEffect("p", 21)[0])
-  if (hasUpgrade("p", 23)) gain = gain.mul(upgradeEffect("p", 23))
-  if (hasAchievement("a", 13)) gain = gain.mul(achievementEffect("a", 13))
-  if (player.b.unlocked) gain = gain.mul(tmp.b.effect)
-  if (hasUpgrade("p", 25)) gain = gain.mul(upgradeEffect("p", 25))
-  if (hasUpgrade("p", 32)) gain = gain.mul(upgradeEffect("p", 32)[0])
-  if (hasUpgrade("p", 43)) gain = gain.mul(upgradeEffect("p", 43))
-  if (hasUpgrade("p", 52)) gain = gain.mul(upgradeEffect("p", 52))
-  if (hasUpgrade("p", 53)) gain = gain.mul(upgradeEffect("p", 53))
-  if (hasChallenge("q", 21)) gain = gain.mul(challengeEffect("q", 21)[0])
-  if (inChallenge("q", 22)) gain = new Decimal(10).pow(gain.log(10).pow(0.5))
-  if (inChallenge("q", 11)) gain = gain.pow(0.5)
-  if (inChallenge("q", 12)) gain = gain.pow(1/3)
-  if (player.i.unlocked && !player.q.activeChallenge) gain = gain.pow(tmp.i.effect)
+	let gain = getPointGainMul()
+  gain = new Decimal(10).pow(gain.log(10).pow(getPointGainExpPow()))
+  gain = gain.pow(getPointGainPow())
 	return gain
+}
+
+function getPointGainMul(){
+	let mul = new Decimal(1)
+  if (hasUpgrade("p", 12)) mul = mul.mul(upgradeEffect("p", 12))
+  if (hasUpgrade("p", 13)) mul = mul.mul(upgradeEffect("p", 13))
+  if (hasUpgrade("p", 14)) mul = mul.mul(upgradeEffect("p", 14))
+  if (hasUpgrade("p", 21)) mul = mul.mul(upgradeEffect("p", 21)[0])
+  if (hasUpgrade("p", 23)) mul = mul.mul(upgradeEffect("p", 23))
+  if (hasAchievement("a", 13)) mul = mul.mul(achievementEffect("a", 13))
+  if (player.b.unlocked) mul = mul.mul(tmp.b.effect)
+  if (hasUpgrade("p", 25)) mul = mul.mul(upgradeEffect("p", 25))
+  if (hasUpgrade("p", 32)) mul = mul.mul(upgradeEffect("p", 32)[0])
+  if (hasUpgrade("p", 43)) mul = mul.mul(upgradeEffect("p", 43))
+  if (hasUpgrade("p", 52)) mul = mul.mul(upgradeEffect("p", 52))
+  if (hasUpgrade("p", 53)) mul = mul.mul(upgradeEffect("p", 53))
+  if (hasChallenge("q", 21)) mul = mul.mul(challengeEffect("q", 21)[0])
+  if (hasUpgrade("sp", 11) && !player.q.activeChallenge) mul = mul.mul(upgradeEffect("sp", 11))
+  if (hasUpgrade("sp", 23)) mul = mul.mul(upgradeEffect("sp", 23)[1])
+  return mul
+}
+
+function getPointGainPow(){
+  let pow = new Decimal(1)
+  if (inChallenge("q", 11)) pow = pow.mul(0.5)
+  if (inChallenge("q", 12)) pow = pow.mul(1/3)
+  if (inChallenge("q", 31)) pow = pow.mul(0.1)
+  if (player.i.unlocked && !player.q.activeChallenge) pow = pow.mul(tmp.i.effect)
+  if (maxedChallenge("q", 21)) pow = pow.mul(challengeEffect("q", 21)[1])
+  return pow
+}
+
+function getPointGainExpPow(){
+  let expPow = new Decimal(1)
+  if (inChallenge("q", 22)) expPow = expPow.mul(0.5)
+  return expPow
 }
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
@@ -75,12 +96,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-  "Endgame: 1.00e3,502 points"
+  "Endgame: 129 infinity points"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte("1e3502")
+	return player.i.points.gte(129)
 }
 
 
