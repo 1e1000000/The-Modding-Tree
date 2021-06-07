@@ -1217,7 +1217,7 @@ function getUnlockedQuests(x){
   let b = 5
   let c = 8
   let d = (x-a)/(b*c)
-  let e = Math.max(Math.floor(-0.5+(0.25+2*d)**0.5), 0)
+  let e = Math.floor(Math.max(-0.5+(0.25+2*d), 0)**0.5)
   let f = Math.max(Math.floor((x-a-b*c*e*(e+1)/2)/(b*(e+1)))+c*e, 0)
   return f
 }
@@ -1246,6 +1246,7 @@ addLayer("q", {
 		],
     update(diff){
         if (hasUpgrade("p", 35)) player.q.unlocked = true
+        if (isNaN(player.q.questUnlocked)) player.q.questUnlocked = 0
         player.q.questUnlocked = Math.max(getUnlockedQuests(), player.q.questUnlocked)
     },
     challenges: {
