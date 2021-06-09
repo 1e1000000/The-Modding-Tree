@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The User Tree",
 	id: "user",
 	author: "User_2.005e220",
-	pointsName: "points",
+	pointsName: "h0nde accounts",
 	discordName: "",
 	discordLink: "",
 	initialStartPoints: new Decimal (5), // Used for hard resets and new players
@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.039",
-	name: "Super Prestige (Unofficial Release)",
+	num: "1.041",
+	name: "Super Prestige",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -25,6 +25,11 @@ let changelog = `<h1>Changelog:</h1><br>
 <h3>v1.032 (Update 2)</h3><br>
 - Added Infinity.<br>
 - Balance up to 1.00e3,502 points, 32 Prestige Upgrades, 10 Achievements and Quest 1x10, 2x8, 3x5, 4x4 completion.<br>
+<br>
+<h3>v1.041 (Update 3)</h3><br>
+<b>- Changed everything to h0nde related.</b><br>
+- Added Super Prestige.<br>
+- Balance up to 1.00e112,100 points, 41 Prestige Upgrades, 15 Super Prestige Upgrades, 13 Achievements and Quest 1-4x10, 5x5, 6x2 completion.<br>
 <br>
 `
 
@@ -96,12 +101,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-  "Endgame: 129 infinity points"
+  "Endgame: 1.00e112,100 points"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.i.points.gte(129)
+	return player.points.gte(new Decimal(10).pow(112100))
 }
 
 
@@ -122,4 +127,5 @@ function maxTickLength() {
 // you can cap their current resources with this.
 function fixOldSave(oldVersion){
   if(isNaN(player.q.questUnlocked)) player.q.questUnlocked = 0
+  if(oldVersion < 1.041) player.q.questUnlocked = Math.min(player.q.questUnlocked, 5) // fix wrong quests require
 }

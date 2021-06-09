@@ -9,7 +9,7 @@ addLayer("p", {
     }},
     color: "#31aeb0",
     requires: new Decimal(5), // Can be a function that takes requirement increases into account
-    resource: "prestige points", // Name of prestige currency
+    resource: "prestiged h0nde", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
@@ -40,6 +40,7 @@ addLayer("p", {
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         let exp = new Decimal(1)
+        if (inChallenge("q", 32)) exp = exp.mul(0.1)
         if (maxedChallenge("q", 22)) exp = exp.mul(challengeEffect("q", 22)[1])
         return exp
     },
@@ -92,6 +93,7 @@ addLayer("p", {
             if (hasUpgrade("p", 31)) base = base.add(upgradeEffect("p", 31))
             if (hasUpgrade("p", 55)) base = base.add(upgradeEffect("p", 55))
             if (hasUpgrade("p", 72)) base = base.pow(upgradeEffect("p", 72))
+            if (hasUpgrade("sp", 34)) base = base.pow(upgradeEffect("sp", 34))
             return base
           },
           effect(){
@@ -108,6 +110,7 @@ addLayer("p", {
             let sc = new Decimal(1e100)
             if (hasUpgrade("p", 54)) sc = sc.mul(upgradeEffect("p", 54))
             if (hasUpgrade("p", 73)) sc = sc.pow(upgradeEffect("p", 73))
+            if (hasUpgrade("sp", 34)) sc = sc.pow(upgradeEffect("sp", 34))
             return sc
           },
           effectDisplay(){return format(upgradeEffect("p", 12)) + "x" + (upgradeEffect("p", 12).gte(tmp.p.upgrades[12].effectSCStart) ? " (softcapped)" : "")},
@@ -538,7 +541,7 @@ addLayer("p", {
           description(){
             return "Normal Tree Mk2. Raise " + `<b>Normal-2</b>` + " softcap start to the power of 1.5"
           },
-          cost: new Decimal("1e2009"),
+          cost: new Decimal("1e2000"),
           effect(){
             let eff = new Decimal(1.5)
             return eff
@@ -550,7 +553,7 @@ addLayer("p", {
           description(){
             return "Normal Tree Mk3. Raise second " + `<b>TreeQuest 1</b>` + " reward to the power of 1.5 and 1.5x " + `<b>Super-1</b>` + " time amount from reset time"
           },
-          cost: new Decimal("1e3447"),
+          cost: new Decimal("3.33e3444"),
           effect(){
             let eff = new Decimal(1.5)
             return eff
@@ -562,7 +565,7 @@ addLayer("p", {
           description(){
             return "Level Up! 1.5x " + `<b>Super-1</b>` + " time amount from reset time and time amount exponent, add 1.5 seconds into boost"
           },
-          cost: new Decimal("1e3866"),
+          cost: new Decimal("1e3850"),
           effect(){
             let eff = new Decimal(1.5)
             return eff
@@ -574,7 +577,7 @@ addLayer("p", {
           description(){
             return "Normal Tree Mk4. ^8.9 " + `<b>Normal-3</b>` + " effect"
           },
-          cost: new Decimal("1e5575"),
+          cost: new Decimal("5.56e5566"),
           effect(){
             let eff = new Decimal(8.9)
             return eff
@@ -598,7 +601,7 @@ addLayer("p", {
           description(){
             return "stupidity = braincells. increase Achievement 13 reward achievement exponent by " + format(tmp.p.upgrades[83].effectBase) + " for every Infinity Point (softcapped at 100)"
           },
-          cost: new Decimal("1e11350"),
+          cost: new Decimal("1.11e11333"),
           effectBase(){
             let base = new Decimal(0.005)
             return base
@@ -617,13 +620,42 @@ addLayer("p", {
           description(){
             return "Normal Tree Mk5. Multiply SP gain by Boosters+1 and divide " + `<b>TreeQuest 5</b>` + " goal by 100,000"
           },
-          cost: new Decimal("1e11775"),
+          cost: new Decimal("1e11750"),
           effect(){
             let eff = [player.b.points.add(1), new Decimal(1e5)]
             return eff
           },
           effectDisplay(){return format(upgradeEffect("p", 84)[0]) + "x"},
           unlocked(){return hasUpgrade("p", 83)},
+        },
+        85: {
+          title: "(Normal-40) demonicRiddle",
+          description(){
+            return "At least they have contents... Booster amount softcap starts " + format(tmp.p.upgrades[85].effectBase) + " later for every IP"
+          },
+          cost: new Decimal("1e16000"),
+          effectBase(){
+            let base = new Decimal(1)
+            return base
+          },
+          effect(){
+            let eff = player.i.points.mul(tmp.p.upgrades[85].effectBase)
+            return eff
+          },
+          effectDisplay(){return "+" + format(upgradeEffect("p", 85))},
+          unlocked(){return hasUpgrade("p", 84)},
+        },
+        91: {
+          title: "(Normal-41) jokre33",
+          description(){
+            return "At least they have contents... Mk2. increase Achievement 13 reward achievement exponent by 0.33"
+          },
+          cost: new Decimal("1.23e45600"),
+          effect(){
+            let eff = new Decimal(0.33)
+            return eff
+          },
+          unlocked(){return hasUpgrade("p", 85)},
         },
     },
     bars:{
@@ -658,7 +690,7 @@ addLayer("b", {
       if (hasUpgrade("p", 34)) base = upgradeEffect("p", 34)
       return base
     },
-    resource: "boosters", // Name of prestige currency
+    resource: "boosted h0nde", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
@@ -667,6 +699,8 @@ addLayer("b", {
         mult = new Decimal(1)
         if (hasUpgrade("p", 32)) mult = mult.div(upgradeEffect("p", 32)[1])
         if (hasUpgrade("p", 41)) mult = mult.div(upgradeEffect("p", 41))
+        if (hasUpgrade("sp", 32)) mult = mult.div(upgradeEffect("sp", 32)[1])
+        if (inChallenge("q", 32)) mult = mult.mul(1/0)
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -677,6 +711,7 @@ addLayer("b", {
       if (hasUpgrade("p", 62)) mult = mult.mul(upgradeEffect("p", 62))
       if (hasUpgrade("sp", 25)) mult = mult.mul(upgradeEffect("sp", 25)[0])
       if (hasAchievement("a", 33)) mult = mult.mul(achievementEffect("a", 33))
+      if (hasChallenge("q", 32)) mult = mult.mul(challengeEffect("q", 32)[0])
       return mult
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -697,14 +732,22 @@ addLayer("b", {
       let base = new Decimal(2)
       if (hasUpgrade("p", 33)) base = base.add(upgradeEffect("p", 33))
       if (hasUpgrade("p", 45)) base = base.add(upgradeEffect("p", 45))
-      
+      if (hasUpgrade("sp", 34)) base = base.mul(upgradeEffect("sp", 34))
       if (hasUpgrade("p", 25)) base = base.pow(upgradeEffect("p", 25))
       return base
     },
-    effect(){
-      let x = player.b.points
+    boostersAmt(){ // before power and multi
+      let b = player.b.points
+      if (b.gte(tmp.b.boostersAmtSCStart)) b = b.div(tmp.b.boostersAmtSCStart).pow(0.5).mul(tmp.b.boostersAmtSCStart)
+      return b
+    },
+    boostersAmtSCStart(){
       let SCStart = new Decimal(256)
-      if (x.gte(SCStart)) x = x.div(SCStart).pow(0.5).mul(SCStart)
+      if (hasUpgrade("p", 85)) SCStart = SCStart.add(upgradeEffect("p", 85))
+      return SCStart
+    },
+    effect(){
+      let x = tmp.b.boostersAmt
       if (maxedChallenge("q", 12)) x = x.pow(challengeEffect("q", 12)[1])
       let y = maxedChallenge("q", 12) ? new Decimal(0) : new Decimal(10)
       if (x.gte(y)) x = y.add(x.sub(y).mul(challengeEffect("q", 12)[0]))
@@ -719,7 +762,8 @@ addLayer("b", {
       return sc
     },
     effectDescription(){
-      return " which multiply points gain by " + format(tmp.b.effect) + (tmp.b.effect.gte(tmp.b.effectSCStart) ? " (softcapped)" : "") + " (effect base: " + format(tmp.b.effectBase) + ")"
+      return " which multiply points gain by " + format(tmp.b.effect) + (tmp.b.effect.gte(tmp.b.effectSCStart) ? " (softcapped)" : "") + `<br>` + 
+      "(effect base: " + format(tmp.b.effectBase) + (player.b.points.gte(tmp.b.boostersAmtSCStart) ? ", amount is softcapped at " + formatWhole(tmp.b.boostersAmtSCStart) : "") + ")"
     },
     doReset(resettingLayer) {
 			let keep = ["auto"];
@@ -752,7 +796,7 @@ addLayer("i", {
     let base = new Decimal(Number.MAX_VALUE)
     return base
   },
-  resource: "infinity points", // Name of prestige currency
+  resource: "h0nde infinites", // Name of prestige currency
   baseResource: "points", // Name of resource prestige is based on
   baseAmount() {return player.points}, // Get the current amount of baseResource
   type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
@@ -812,7 +856,7 @@ addLayer("sp", {
   }},
   color: "#278b8c",
   requires: new Decimal("1e1297"), // Can be a function that takes requirement increases into account
-  resource: "super prestige points", // Name of prestige currency
+  resource: "super prestiged h0nde", // Name of prestige currency
   baseResource: "prestige points", // Name of resource prestige is based on
   baseAmount() {return player.p.points}, // Get the current amount of baseResource
   type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
@@ -827,6 +871,8 @@ addLayer("sp", {
       if (hasUpgrade("sp", 22)) mult = mult.mul(upgradeEffect("sp", 22)[0])
       if (hasUpgrade("sp", 23)) mult = mult.mul(upgradeEffect("sp", 23)[0])
       if (hasUpgrade("p", 84)) mult = mult.mul(upgradeEffect("p", 84)[0])
+      if (hasUpgrade("sp", 32)) mult = mult.mul(upgradeEffect("sp", 32)[0])
+      if (hasUpgrade("sp", 35)) mult = mult.mul(upgradeEffect("sp", 35))
       return mult
   },
   gainExp() { // Calculate the exponent on main currency from bonuses
@@ -868,9 +914,10 @@ addLayer("sp", {
     11: {
       title: "(Super-1) Jacorb",
       description(){
-        return "Multiply points gain by " + format(tmp.sp.upgrades[11].effectBase) + " for every second^" + format(tmp.sp.upgrades[11].effectExp) + " of prestige, with a maximum of " + format(tmp.sp.upgrades[11].timeCap) + " seconds (only work while outside quests)"
+        return "Multiply points gain by " + format(tmp.sp.upgrades[11].effectBase) + " for every second^" + format(tmp.sp.upgrades[11].effectExp) + " of prestige, with a maximum of " + format(tmp.sp.upgrades[11].timeCap) + " seconds (only work while outside quests, Require 32 Prestige Upgrades)"
       },
       cost: new Decimal(1),
+      canAfford(){return player.p.upgrades.length >= 32},
       effectBase(){
         let base = new Decimal(10)
         if (hasUpgrade("sp", 24)) base = base.pow(upgradeEffect("sp", 24))
@@ -895,6 +942,7 @@ addLayer("sp", {
         if (hasUpgrade("p", 75)) m = m.mul(upgradeEffect("p", 75))
         if (hasUpgrade("sp", 21)) m = m.mul(upgradeEffect("sp", 21)[1])
         if (hasUpgrade("sp", 31)) m = m.mul(upgradeEffect("sp", 31)[0])
+        if (hasUpgrade("sp", 34)) m = m.mul(upgradeEffect("sp", 34))
 
         if (hasUpgrade("p", 75)) e = e.add(upgradeEffect("p", 75))
         if (hasUpgrade("sp", 22)) e = e.add(upgradeEffect("sp", 22)[1])
@@ -913,36 +961,39 @@ addLayer("sp", {
     12: {
       title: "(Super-2) Acamaeda",
       description(){
-        return `<b>Normal-2</b>` + " affect PP gain with reduced effect"
+        return `<b>Normal-2</b>` + " affect PP gain with reduced effect (Require 12 infinity points)"
       },
       cost: new Decimal(10),
+      canAfford(){return player.i.points.gte(12)},
       effect(){
         let eff = upgradeEffect("p", 12).pow(0.2).max(1)
         return eff
       },
       effectDisplay(){return format(upgradeEffect("sp", 12)) + "x"},
-      unlocked(){return hasUpgrade("sp", 11) && player.i.points.gte(12)},
+      unlocked(){return hasUpgrade("sp", 11)},
     },
     13: {
       title: "(Super-3) thefinaluptake",
       description(){
-        return "Multiply PP gain by log2(PP+2)^20"
+        return "Multiply PP gain by log2(PP+2)^20 (Require 13 infinity points)"
       },
       cost: new Decimal(50),
+      canAfford(){return player.i.points.gte(13)},
       effect(){
         let eff = player.p.points.add(2).log(2).pow(20)
         if (hasUpgrade("sp", 25)) eff = eff.pow(upgradeEffect("sp", 25)[1])
         return eff
       },
       effectDisplay(){return format(upgradeEffect("sp", 13)) + "x"},
-      unlocked(){return hasUpgrade("sp", 12) && player.i.points.gte(13)},
+      unlocked(){return hasUpgrade("sp", 12)},
     },
     14: {
       title: "(Super-4) Menohe",
       description(){
-        return "Multiply PP gain by (SP+1)^50"
+        return "Multiply PP gain by (SP+1)^50 (Require 27 infinity points)"
       },
       cost: new Decimal(1000),
+      canAfford(){return player.i.points.gte(27)},
       effect(){
         let eff = player.sp.points.pow(50).max(1)
         return eff
@@ -953,9 +1004,10 @@ addLayer("sp", {
     15: {
       title: "(Super-5) Katakana1",
       description(){
-        return "+" + format(tmp.sp.upgrades[15].effectBase.mul(100)) + "% SP gain for every Super Prestige Upgrade bought (stacks additively)"
+        return "+" + format(tmp.sp.upgrades[15].effectBase.mul(100)) + "% SP gain for every Super Prestige Upgrade bought (stacks additively, Require 34 Prestige Upgrades)"
       },
       cost: new Decimal(8000),
+      canAfford(){return player.p.upgrades.length >= 34},
       effectBase(){
         let base = new Decimal(1)
         return base
@@ -972,9 +1024,10 @@ addLayer("sp", {
     21: {
       title: "(Super-6) okamii17",
       description(){
-        return "Multiply SP gain by 17 and multiply " + `<b>Super-1</b>` + " time amount from reset time by 1.7"
+        return "Multiply SP gain by 17 and multiply " + `<b>Super-1</b>` + " time amount from reset time by 1.7 (Require 31 infinity points)"
       },
       cost: new Decimal(50000),
+      canAfford(){return player.i.points.gte(31)},
       effect(){
         let eff = [new Decimal(17), new Decimal(1.7)]
         return eff
@@ -984,9 +1037,10 @@ addLayer("sp", {
     22: {
       title: "(Super-7) Letorin",
       description(){
-        return "Multiply SP gain by IP+1 and add " + `<b>Super-1</b>` + " time by sqrt(Boosters)"
+        return "Multiply SP gain by IP+1 and add " + `<b>Super-1</b>` + " time by sqrt(Boosters) (Require q5x1 completion)"
       },
-      cost: new Decimal(3e7),
+      cost: new Decimal(2e7),
+      canAfford(){return challengeCompletions("q", 31) >= 1},
       effect(){
         let eff = [player.i.points.add(1), player.b.points.pow(0.5)]
         return eff
@@ -997,9 +1051,10 @@ addLayer("sp", {
     23: {
       title: "(Super-8) thepaperpilot",
       description(){
-        return "Multiply SP gain by 10 and " + `<b>Super-4</b>` + " affect points gain, but with reduced effect"
+        return "Multiply SP gain by 10 and " + `<b>Super-4</b>` + " affect points gain with reduced effect (Require 49 infinity points)"
       },
       cost: new Decimal(5e9),
+      canAfford(){return player.i.points.gte(49)},
       effect(){
         let eff = [new Decimal(10), upgradeEffect("sp", 14)]
         if (eff[1].gte(10)) eff[1] = new Decimal(10).pow(eff[1].log(10).pow(0.75))
@@ -1011,9 +1066,10 @@ addLayer("sp", {
     24: {
       title: "(Super-9) Dystopia-user181",
       description(){
-        return "^1.81 " + `<b>Super-1</b>` + " base and " + `<b>Super-5</b>` + " effect"
+        return "^1.81 " + `<b>Super-1</b>` + " base and " + `<b>Super-5</b>` + " effect (Require 56 infinity points)"
       },
-      cost: new Decimal(5e11),
+      cost: new Decimal(4e11),
+      canAfford(){return player.i.points.gte(56)},
       effect(){
         let eff = new Decimal(1.81)
         return eff
@@ -1023,9 +1079,10 @@ addLayer("sp", {
     25: {
       title: "(Super-10) E3XA",
       description(){
-        return "You gain 3% more boosters, " + `<b>Super-3</b>` + " effect is cubed"
+        return "You gain 3% more boosters, " + `<b>Super-3</b>` + " effect is cubed (Require q4x8 completion)"
       },
       cost: new Decimal(1e17),
+      canAfford(){return challengeCompletions("q", 22) >= 8},
       effect(){
         let eff = [new Decimal(1.03), new Decimal(3)]
         return eff
@@ -1035,14 +1092,73 @@ addLayer("sp", {
     31: {
       title: "(Super-11) MocyaTheMole",
       description(){
-        return "3x " + `<b>Super-1</b>` + " time amount from reset time, 2x time cap and 1.5x extra time amount"
+        return "3x " + `<b>Super-1</b>` + " time amount from reset time, 2x time cap and 1.5x extra time amount (Require q5x3 completion)"
       },
       cost: new Decimal(2e21),
+      canAfford(){return challengeCompletions("q", 31) >= 3},
       effect(){
         let eff = [new Decimal(3), new Decimal(2), new Decimal(1.5)]
         return eff
       },
       unlocked(){return hasUpgrade("sp", 25)},
+    },
+    32: {
+      title: "(Super-12) Some-random-guy7718",
+      description(){
+        return "Multiply SP gain by " + format(7718) + " and divide Boosters cost by " + format(7718) + " for every Infinity Points (Req 129 infinity points)"
+      },
+      cost: new Decimal(5e24),
+      canAfford(){return player.i.points.gte(129)},
+      effect(){
+        let eff = [new Decimal(7718), new Decimal(7718).pow(player.i.points)]
+        return eff
+      },
+      effectDisplay(){return "/" + format(upgradeEffect("sp", 32)[1])},
+      unlocked(){return hasUpgrade("sp", 31)},
+    },
+    33: {
+      title: "(Super-13) jgdovin",
+      description(){
+        return "^2 " + `<b>TreeQuest 3</b>` + " and " + `<b>TreeQuest 4</b>` + " first reward, and ^1.5 " + `<b>TreeQuest 1</b>` + " first reward  (Require q4x9 completion)"
+      },
+      cost: new Decimal(3e30),
+      canAfford(){return challengeCompletions("q", 22) >= 9},
+      effect(){
+        let eff = [new Decimal(2), new Decimal(1.5)]
+        return eff
+      },
+      unlocked(){return hasUpgrade("sp", 32)},
+    },
+    34: {
+      title: "(Super-14) Crimson4061",
+      description(){
+        return "^4.06 " + `<b>Normal-2</b>` + " effect base and softcap start, 4.06x Boosters boost base and " + `<b>Super-1</b>` + " time amount from reset time (Require q5x4 completion)"
+      },
+      cost: new Decimal(3e37),
+      canAfford(){return challengeCompletions("q", 31) >= 4},
+      effect(){
+        let eff = new Decimal(4.06)
+        return eff
+      },
+      unlocked(){return hasUpgrade("sp", 33)},
+    },
+    35: {
+      title: "(Super-15) IEmory",
+      description(){
+        return "Multiply SP gain by " + format(tmp.sp.upgrades[35].effectBase) + " for every Quests completion (Require q6x2 completion)"
+      },
+      cost: new Decimal(1e62),
+      canAfford(){return challengeCompletions("q", 32) >= 2},
+      effectBase(){
+        let base = new Decimal(2)
+        return base
+      },
+      effect(){
+        let eff = tmp.sp.upgrades[35].effectBase.pow(totalQuestsCompletion())
+        return eff
+      },
+      effectDisplay(){return format(upgradeEffect("sp", 35)) + "x"},
+      unlocked(){return hasUpgrade("sp", 34)},
     },
   },
   bars:{
@@ -1067,7 +1183,7 @@ addLayer("a", {
         position: 1,
         layerShown() {return true}, 
         tooltip() { // Optional, tooltip displays when the layer is locked
-            return (player.a.achievements.length + " Achievements")
+            return (player.a.achievements.length + " h0nde's Achievementers")
         },
 		    tabFormat: [
 		      	"blank", "blank", "blank",
@@ -1102,7 +1218,7 @@ addLayer("a", {
             13: {
                 name: "13",
                 done() {return player.b.points.gte(1)},
-                tooltip(){return "Do a boosters reset. Reward: multiply points gain by log10(points+10) for every completed achievement^" + format(tmp.a.achievements[13].effectExp) + ", currently: " + format(achievementEffect("a", 13)) + "x"},
+                tooltip(){return "Do a boosters reset. Reward: multiply points gain by log10(points+10) for every completed achievement^" + format(tmp.a.achievements[13].effectExp, 3) + ", currently: " + format(achievementEffect("a", 13)) + "x"},
                 effect(){
                   let exp2 = tmp.a.achievements[13].effectExp
                   let base = player.points.add(10).log(10)
@@ -1115,6 +1231,7 @@ addLayer("a", {
                   if (hasUpgrade("p", 51)) exp = exp.add(upgradeEffect("p", 51))
                   if (hasUpgrade("p", 61)) exp = exp.add(upgradeEffect("p", 61))
                   if (hasUpgrade("p", 83)) exp = exp.add(upgradeEffect("p", 83))
+                  if (hasUpgrade("p", 91)) exp = exp.add(upgradeEffect("p", 91))
                   return exp
                 },
             },
@@ -1193,7 +1310,7 @@ addLayer("a", {
 })
 
 function totalQuestsCompletion(){
-  let array = [11,12,21,22,31]
+  let array = [11,12,21,22,31,32]
   let comp = 0
   for (let i = 0; i < array.length; i++){
     comp += player.q.challenges[array[i]]
@@ -1217,7 +1334,7 @@ function getUnlockedQuests(x){
   let b = 5
   let c = 8
   let d = (x-a)/(b*c)
-  let e = Math.floor(Math.max(-0.5+(0.25+2*d), 0)**0.5)
+  let e = Math.floor(Math.max((0.25+2*d), 0)**0.5-0.5)
   let f = Math.max(Math.floor((x-a-b*c*e*(e+1)/2)/(b*(e+1)))+c*e, 0)
   return f
 }
@@ -1232,13 +1349,13 @@ addLayer("q", {
     position: 2,
     layerShown() {return hasUpgrade("p", 35) || player.q.unlocked}, 
     tooltip() { // Optional, tooltip displays when the layer is locked
-        return (formatWhole(totalQuestsCompletion()) + "/" + formatWhole(player.q.questUnlocked*10) + " Quests")
+        return (formatWhole(totalQuestsCompletion()) + "/" + formatWhole(player.q.questUnlocked*10) + " h0nde's Quests completion")
     },
 		tabFormat: [
         ["display-text",
          function() { return "Note: All Quests completions is never getting reset"}],
         ["display-text",
-         function() { return "Unlocked Quests: " + formatWhole(player.q.questUnlocked) + " (Next at " + formatWhole(getNextQuestReq()) + " Bought Prestige Upgrades, Currently " + format(player.p.upgrades.length) + ")"}],
+         function() { return "Unlocked Quests: " + formatWhole(player.q.questUnlocked) + " (Next at " + formatWhole(getNextQuestReq()) + " Bought Prestige Upgrades, Currently " + formatWhole(player.p.upgrades.length) + ")"}],
         ["display-text",
          function() { return "Total Quests completion: " + formatWhole(totalQuestsCompletion())}],
 		  	"blank",
@@ -1266,6 +1383,7 @@ addLayer("q", {
         rewardDescription(){return `<b>Normal-2</b>` + " amount " + (maxedChallenge("q", 11) ? "": "past 10 ") + "is " + format(challengeEffect("q", 11)[0]) + "x higher" + (maxedChallenge("q", 11) ? " and the amount before multiplier is raised to the power of " + format(challengeEffect("q", 11)[1]) + ".": ".")},
         rewardEffect(){
           let eff = [new Decimal(challengeCompletions("q", 11)).min(9).add(1), new Decimal(1.1)]
+          if (hasUpgrade("sp", 33)) eff[0] = eff[0].pow(upgradeEffect("sp", 33)[1])
           if (hasUpgrade("p", 74)) eff[1] = eff[1].pow(upgradeEffect("p", 74))
           return eff
         },
@@ -1317,6 +1435,7 @@ addLayer("q", {
         rewardDescription(){return "Multiply points gain by " + format(challengeEffect("q", 21)[0]) + (maxedChallenge("q", 21) ? " and raise points gain to the power of " + challengeEffect("q", 21)[1] : ".")},
         rewardEffect(){
           let eff = [new Decimal(10).pow(new Decimal(challengeCompletions("q", 21)).pow(inChallenge("q", 21)?1:2).mul(10)), new Decimal(1.05)]
+          if (hasUpgrade("sp", 33)) eff[0] = eff[0].pow(upgradeEffect("sp", 33)[0])
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[21].goal)},
@@ -1335,14 +1454,16 @@ addLayer("q", {
         goal(){
           let scaling = new Decimal(1.1)
           if (challengeCompletions("q", 22) >= 5) scaling = scaling.mul(1.065)
-          if (challengeCompletions("q", 22) >= 8) scaling = scaling.pow(1.25)
+          if (challengeCompletions("q", 22) >= 8) scaling = scaling.mul(0.994)
           let goal = new Decimal(10).pow(new Decimal(37.5).mul(new Decimal(scaling).pow(challengeCompletions("q", 22))))
+          if (challengeCompletions("q", 22) >= 9) goal = goal.pow(1.28)
           if (challengeCompletions("q", 22) >= 10) goal = new Decimal(Infinity)
           return goal
         },
-        rewardDescription(){return "Multiply PP gain by " + format(challengeEffect("q", 22)[0]) + (maxedChallenge("q", 22) ? " and raise points gain to the power of " + challengeEffect("q", 22)[1] : ".")},
+        rewardDescription(){return "Multiply PP gain by " + format(challengeEffect("q", 22)[0]) + (maxedChallenge("q", 22) ? " and raise prestige points gain to the power of " + challengeEffect("q", 22)[1] : ".")},
         rewardEffect(){
           let eff = [new Decimal(10).pow(new Decimal(challengeCompletions("q", 22)).pow(inChallenge("q", 22)?1:2).mul(10)), new Decimal(1.05)]
+          if (hasUpgrade("sp", 33)) eff[0] = eff[0].pow(upgradeEffect("sp", 33)[0])
           return eff
         },
         canComplete: function() {return player.points.gte(tmp.q.challenges[22].goal)},
@@ -1361,11 +1482,13 @@ addLayer("q", {
         goal(){
           let scaling = new Decimal(1.25).add(new Decimal(challengeCompletions("q", 31)).div(25))
           let goal = new Decimal(10).pow(new Decimal(183).mul(new Decimal(scaling).pow(challengeCompletions("q", 31))))
+          if (challengeCompletions("q", 31) >= 3) goal = goal.pow(1.323)
+          if (challengeCompletions("q", 31) >= 4) goal = goal.pow(1.657)
           if (hasUpgrade("p", 84)) goal = goal.div(upgradeEffect("p", 84)[1])
-          if (challengeCompletions("q", 31) >= 10) goal = new Decimal(Infinity)
+          if (challengeCompletions("q", 31) >= 5) goal = new Decimal(Infinity)
           return goal
         },
-        rewardDescription(){return "Increase PP gain exponent by " + format(challengeEffect("q", 31)[0]) + (maxedChallenge("q", 31) ? " and multiply points and PP gain by " + challengeEffect("q", 31)[1] : ".")},
+        rewardDescription(){return "Increase PP gain exponent by " + format(challengeEffect("q", 31)[0]) + (maxedChallenge("q", 31) ? " and ??? " + challengeEffect("q", 31)[1] : ".")},
         rewardEffect(){
           let eff = [new Decimal(challengeCompletions("q", 31)).div(100), new Decimal(1)]
           return eff
@@ -1376,6 +1499,31 @@ addLayer("q", {
         onComplete(){doReset("sp", true)},
         completionLimit: 10,
         marked(){return maxedChallenge("q", 31)},
+      },
+      32: {
+        name: "TreeQuest 6",
+        challengeDescription(){return "Do a forced row 2 reset and reset Prestige Upgrades, you can't gain boosters, PP gain is 10th rooted." + `<br>` + 
+          "Completion: " + challengeCompletions("q", 32) + "/" + tmp.q.challenges[32].completionLimit},
+        unlocked(){return player.q.questUnlocked >= 6 && player.q.unlocked},
+        goalDescription(){return format(tmp.q.challenges[32].goal) + " prestige points"},
+        goal(){
+          let scaling = new Decimal(1.4)
+          let goal = new Decimal(10).pow(new Decimal(505).mul(new Decimal(scaling).pow(challengeCompletions("q", 32))))
+          if (challengeCompletions("q", 32) >= 1) goal = goal.pow(1.357)
+          if (challengeCompletions("q", 32) >= 2) goal = new Decimal(Infinity)
+          return goal
+        },
+        rewardDescription(){return "You gain " + format(challengeEffect("q", 32)[0]) + "x more boosters" + (maxedChallenge("q", 32) ? " and ??? " + challengeEffect("q", 32)[1] : ".")},
+        rewardEffect(){
+          let eff = [new Decimal(1).add(new Decimal(challengeCompletions("q", 32)).div(2.5)), new Decimal(1)]
+          return eff
+        },
+        canComplete: function() {return player.p.points.gte(tmp.q.challenges[32].goal)},
+        onEnter(){doReset("sp", true); player.p.upgrades = []},
+        onExit(){doReset("sp", true)},
+        onComplete(){doReset("sp", true)},
+        completionLimit: 10,
+        marked(){return maxedChallenge("q", 32)},
       },
     },
 })
@@ -1389,7 +1537,7 @@ addLayer("s", {
   position: 0,
   layerShown() {return true}, 
   tooltip() { // Optional, tooltip displays when the layer is locked
-      return ("Statistics")
+      return (format(player.points.max(1).log(10).max(1).log(10).div(new Decimal(112100).log(10)).mul(100), 3) + "% h0nde's completion")
   },
   tabFormat: [
     "blank",
@@ -1438,7 +1586,7 @@ addLayer("s", {
       return (player.i.unlocked ? `<b>Infinity Points:</b>` + `<br>` + 
       formatWhole(player.i.points) + " (Next: " + format(tmp.i.nextAt) + " points)" + `<br>` + 
       "Cost formula:" + `<br>` + 
-      format(tmp.i.requires) + "*" + format(tmp.i.base) + "^((boosters/" + format(tmp.i.directMult, 3) + ")^" + format(tmp.i.exponent, 3) + ")/" + format(tmp.i.gainMult.recip()) : "")},
+      format(tmp.i.requires) + "*" + format(tmp.i.base) + "^((infinity points/" + format(tmp.i.directMult, 3) + ")^" + format(tmp.i.exponent, 3) + ")/" + format(tmp.i.gainMult.recip()) : "")},
     ],
     "blank",
     ["display-text",
@@ -1455,7 +1603,8 @@ addLayer("s", {
       (player.q.questUnlocked >= 2 ? "TreeQuest 2: " + formatWhole(player.q.challenges[12]) + "/10" + (maxedChallenge("q", 12) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[12].goal) + ")") : "") + `<br>` + 
       (player.q.questUnlocked >= 3 ? "TreeQuest 3: " + formatWhole(player.q.challenges[21]) + "/10" + (maxedChallenge("q", 21) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[21].goal) + ")") : "") + `<br>` + 
       (player.q.questUnlocked >= 4 ? "TreeQuest 4: " + formatWhole(player.q.challenges[22]) + "/10" + (maxedChallenge("q", 22) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[22].goal) + ")") : "") + `<br>` + 
-      (player.q.questUnlocked >= 5 ? "TreeQuest 5: " + formatWhole(player.q.challenges[31]) + "/10" + (maxedChallenge("q", 31) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[31].goal) + ")") : "") : "")},
+      (player.q.questUnlocked >= 5 ? "TreeQuest 5: " + formatWhole(player.q.challenges[31]) + "/10" + (maxedChallenge("q", 31) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[31].goal) + ")") : "") + `<br>` + 
+      (player.q.questUnlocked >= 6 ? "TreeQuest 6: " + formatWhole(player.q.challenges[32]) + "/10" + (maxedChallenge("q", 32) ? " (Maxed)" : " (Next: " + format(tmp.q.challenges[32].goal) + ")") : "") : "")},
     ],"blank","blank","blank",
   ]
 })
