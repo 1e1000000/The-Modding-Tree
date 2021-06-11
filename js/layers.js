@@ -297,12 +297,7 @@ addLayer("p", {
         35: {
           title: "(Normal-15) IEmory",
           description(){
-            let d = Math.floor((Date.now() - 1616601600000) / 86400000)
-            let x = formatWhole(d) + " days"
-            if (d % 7 == 0) x = formatWhole(d/7) + " weeks"
-            if (d % 30 == 0) x = formatWhole(d/30) + " months"
-            if (d % 365 == 0) x = formatWhole(d/365) + " years"
-            return "He is smiley, but he already leave discord for around " + x + ". unlock Quests (permanently keep), " + `<b>Normal-5</b>` + " now stacks multiplicatively"
+            return "He is smiley, but idk why he leave discord for a while. unlock Quests (permanently keep), " + `<b>Normal-5</b>` + " now stacks multiplicatively"
           },
           cost: new Decimal(5e16),
           effect(){
