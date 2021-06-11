@@ -1105,7 +1105,7 @@ addLayer("sp", {
     32: {
       title: "(Super-12) Some-random-guy7718",
       description(){
-        return "Multiply SP gain by " + format(7718) + " and divide Boosters cost by " + format(7718) + " for every Infinity Points (Req 129 infinity points)"
+        return "Multiply SP gain by " + format(7718) + " and divide Boosters cost by " + format(7718) + " for every Infinity Points (Require 129 infinity points)"
       },
       cost: new Decimal(5e24),
       canAfford(){return player.i.points.gte(129)},
