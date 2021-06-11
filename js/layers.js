@@ -297,7 +297,7 @@ addLayer("p", {
         35: {
           title: "(Normal-15) IEmory",
           description(){
-            return "He is smiley, but idk why he leave discord for a while. unlock Quests (permanently keep), " + `<b>Normal-5</b>` + " now stacks multiplicatively"
+            return "He is smiley, but he used to be mystery disappear on discord for a while. unlock Quests (permanently keep), " + `<b>Normal-5</b>` + " now stacks multiplicatively"
           },
           cost: new Decimal(5e16),
           effect(){
