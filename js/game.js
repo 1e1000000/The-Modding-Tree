@@ -4,7 +4,7 @@ var gameEnded = false;
 
 // Don't change this
 const TMT_VERSION = {
-	tmtNum: "2.6.1",
+	tmtNum: "2.6.2.2",
 	tmtName: "Fixed Reality"
 }
 
@@ -228,7 +228,9 @@ function doReset(layer, force=false) {
 	player.points = (row == 0 ? decimalZero : getStartPoints())
 
 	for (let x = row; x >= 0; x--) rowReset(x, layer)
-	rowReset("side", layer)
+	for (r in OTHER_LAYERS){
+		rowReset(r, layer)
+	}
 	prevOnReset = undefined
 
 	player[layer].resetTime = 0
