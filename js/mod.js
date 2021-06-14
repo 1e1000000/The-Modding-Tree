@@ -3,10 +3,11 @@ let modInfo = {
 	id: "user",
 	author: "User_2.005e220",
 	pointsName: "h0nde accounts",
+  modFiles: ["layers.js", "tree.js"],
+
 	discordName: "",
 	discordLink: "",
 	initialStartPoints: new Decimal (5), // Used for hard resets and new players
-
 	offlineLimit: 1,  // In hours
 }
 
