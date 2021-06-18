@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The User Tree",
 	id: "user",
 	author: "User_2.005e220",
-	pointsName: "h0nde accounts",
+	pointsName: "points",
   modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -28,7 +28,6 @@ let changelog = `<h1>Changelog:</h1><br>
 - Balance up to 1.00e3,502 points, 32 Prestige Upgrades, 10 Achievements and Quest 1x10, 2x8, 3x5, 4x4 completion.<br>
 <br>
 <h3>v1.041 (Update 3)</h3><br>
-<b>- Changed everything to h0nde related.</b><br>
 - Added Super Prestige.<br>
 - Balance up to 1.00e112,100 points, 41 Prestige Upgrades, 15 Super Prestige Upgrades, 13 Achievements and Quest 1-4x10, 5x5, 6x2 completion.<br>
 <br>
