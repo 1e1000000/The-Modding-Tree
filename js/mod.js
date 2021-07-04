@@ -54,8 +54,8 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = getPointGainMul()
-  gain = new Decimal(10).pow(gain.log(10).pow(getPointGainExpPow()))
   gain = gain.pow(getPointGainPow())
+  gain = new Decimal(10).pow(gain.log(10).pow(getPointGainExpPow()))
 	return gain
 }
 

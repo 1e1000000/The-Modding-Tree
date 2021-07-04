@@ -7,10 +7,10 @@ addLayer("p", {
 		    points: new Decimal(0),
         bestBoughtUpgs: 0,
     }},
-    color: "#31aeb0",
+    color(){return player.fun.crimsonnodes ? "crimson" : "#31aeb0"},
     requires: new Decimal(5), // Can be a function that takes requirement increases into account
-    resource: "prestige points", // Name of prestige currency
-    baseResource: "points", // Name of resource prestige is based on
+    resource(){return (player.fun.h0ndepoints ? "prestiged h0nde" : "prestige points")}, // Name of prestige currency
+    baseResource(){return (player.fun.h0ndepoints ? "h0nde accounts" : "points")}, // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     canReset(){
@@ -121,6 +121,7 @@ addLayer("p", {
           },
           effectDisplay(){return format(upgradeEffect("p", 12)) + "x" + (upgradeEffect("p", 12).gte(tmp.p.upgrades[12].effectSCStart) ? " (softcapped)" : "")},
           unlocked(){return hasUpgrade("p", 11)},
+          tooltip(){return "Effect softcap start: " + format(tmp.p.upgrades[12].effectSCStart) + "x"},
         },
         13: {
           title: "(Normal-3) thefinaluptake",
@@ -152,7 +153,7 @@ addLayer("p", {
           },
           effect(){
             let eff = player.p.points.add(1).pow(0.5)
-            if (eff.gte(tmp.p.upgrades[14].effectSCStart)) eff = new Decimal(10).pow(new Decimal(tmp.p.upgrades[14].effectSCStart.log(10)).mul(eff.log(10).div(tmp.p.upgrades[14].effectSCStart.log(10)).pow(0.5)))
+            if (eff.gte(tmp.p.upgrades[14].effectSCStart)) eff = new Decimal(10).pow(tmp.p.upgrades[14].effectSCStart.log(10).mul(eff.log(10).div(tmp.p.upgrades[14].effectSCStart.log(10)).pow(0.5)))
             return eff
           },
           effectSCStart(){
@@ -161,6 +162,7 @@ addLayer("p", {
           },
           effectDisplay(){return format(upgradeEffect("p", 14)) + "x" + (upgradeEffect("p", 14).gte(tmp.p.upgrades[14].effectSCStart) ? " (softcapped)" : "")},
           unlocked(){return hasUpgrade("p", 13)},
+          tooltip(){return "Effect softcap start: " + format(tmp.p.upgrades[14].effectSCStart) + "x"},
         },
         15: {
           title: "(Normal-5) Katakana1",
@@ -395,11 +397,16 @@ addLayer("p", {
           },
           effect(){
             let eff = player.points.add(1).pow(0.05)
-            if (eff.gte("1e2000")) eff = new Decimal(10).pow(new Decimal(2000).mul(eff.log(10).div(2000).pow(0.5)))
+            if (eff.gte(tmp.p.upgrades[43].effectSCStart)) eff = new Decimal(10).pow(new Decimal(tmp.p.upgrades[43].effectSCStart.log(10)).mul(eff.log(10).div(tmp.p.upgrades[43].effectSCStart.log(10)).pow(0.5)))
             return eff
           },
-          effectDisplay(){return format(upgradeEffect("p", 43)) + "x" + (upgradeEffect("p", 43).gte("1e2000") ? " (softcapped)" : "")},
+          effectSCStart(){
+            let sc = new Decimal("1e2000")
+            return sc
+          },
+          effectDisplay(){return format(upgradeEffect("p", 43)) + "x" + (upgradeEffect("p", 43).gte(tmp.p.upgrades[43].effectSCStart) ? " (softcapped)" : "")},
           unlocked(){return hasUpgrade("p", 42)},
+          tooltip(){return "Effect softcap start: " + format(tmp.p.upgrades[43].effectSCStart) + "x"},
         },
         44: {
           title: "(Normal-19) Grodvert",
@@ -473,7 +480,7 @@ addLayer("p", {
           },
           effect(){
             let x = new Decimal(totalQuestsCompletion())
-            if (hasUpgrade("p", 82)) x = x.pow(upgradeEffect("p", 82))
+            if (hasUpgrade("p", 82)) x = x.pow(upgradeEffect("p", 82)[0])
             let eff = new Decimal(10).pow(x)
             return eff
           },
@@ -690,14 +697,14 @@ addLayer("p", {
         82: {
           title: "(Normal-37) AbitofTetration",
           description(){
-            return "The only completed mod that make by despacit2.0. " + `<b>Normal-23</b>` + " effect exponent ^" + format(2**0.5)
+            return "The only completed mod that make by despacit2.0. " + `<b>Normal-23</b>` + " effect exponent ^" + format(2**0.5) + " and divide " + `<b>TreeQuest 4</b>` + " goal by 2,000"
           },
           cost(){
             let cost = new Decimal("1e8500")
             return cost
           },
           effect(){
-            let eff = new Decimal(2).pow(0.5)
+            let eff = [new Decimal(2).pow(0.5), new Decimal(2000)]
             return eff
           },
           unlocked(){return hasUpgrade("p", 81)},
@@ -808,8 +815,8 @@ addLayer("b", {
       if (hasUpgrade("p", 34)) base = upgradeEffect("p", 34)
       return base
     },
-    resource: "boosters", // Name of prestige currency
-    baseResource: "points", // Name of resource prestige is based on
+    resource(){return (player.fun.h0ndepoints ? "boosted h0nde" : "boosters")}, // Name of prestige currency
+    baseResource(){return (player.fun.h0ndepoints ? "h0nde accounts" : "points")}, // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 1.5, // Prestige currency exponent
@@ -841,7 +848,7 @@ addLayer("b", {
       return hasAchievement("a",22)
     },
     autoPrestige(){
-      return hasAchievement("a",25)
+      return player.b.auto
     },
     resetsNothing(){
       return hasAchievement("a",25)
@@ -881,7 +888,7 @@ addLayer("b", {
     },
     effectDescription(){
       return " which multiply points gain by " + format(tmp.b.effect) + (tmp.b.effect.gte(tmp.b.effectSCStart) ? " (softcapped)" : "") + `<br>` + 
-      "(effect base: " + format(tmp.b.effectBase) + (player.b.points.gte(tmp.b.boostersAmtSCStart) ? ", amount is softcapped at " + formatWhole(tmp.b.boostersAmtSCStart) : "") + ")"
+      "(effect base: " + format(tmp.b.effectBase) + (player.b.points.gte(tmp.b.boostersAmtSCStart) ? ", boost amount is softcapped at " + formatWhole(tmp.b.boostersAmtSCStart) : "") + ")"
     },
     doReset(resettingLayer) {
 			let keep = ["auto"];
@@ -892,7 +899,7 @@ addLayer("b", {
       "blank",
       "prestige-button",
       "resource-display",
-      "blank",
+      function() {if (hasAchievement("a", 25)) return ["row", [["display-text", "Auto Boosters: "],"blank",["toggle", ["b", "auto"]]]]},
     ],
 })
 
@@ -914,8 +921,8 @@ addLayer("i", {
     let base = new Decimal(Number.MAX_VALUE)
     return base
   },
-  resource: "infinity points", // Name of prestige currency
-  baseResource: "points", // Name of resource prestige is based on
+  resource(){return (player.fun.h0ndepoints ? "h0nde infinites" : "infinity points")}, // Name of prestige currency
+  baseResource(){return (player.fun.h0ndepoints ? "h0nde accounts" : "points")}, // Name of resource prestige is based on
   baseAmount() {return player.points}, // Get the current amount of baseResource
   type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
   exponent: 1, // Prestige currency exponent
@@ -972,10 +979,10 @@ addLayer("sp", {
       points: new Decimal(0),
       bestBoughtUpgs: 0,
   }},
-  color: "#278b8c",
+  color(){return player.fun.crimsonnodes ? "crimson" : "#278b8c"},
   requires: new Decimal("1e1297"), // Can be a function that takes requirement increases into account
-  resource: "super prestige points", // Name of prestige currency
-  baseResource: "prestige points", // Name of resource prestige is based on
+  resource(){return (player.fun.h0ndepoints ? "super prestiged h0nde" : "super prestige points")}, // Name of prestige currency
+  baseResource(){return (player.fun.h0ndepoints ? "prestiged h0nde" : "prestige points")}, // Name of resource prestige is based on
   baseAmount() {return player.p.points}, // Get the current amount of baseResource
   type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
   exponent(){
@@ -1346,7 +1353,7 @@ addLayer("a", {
         position: 1,
         layerShown() {return true}, 
         tooltip() { // Optional, tooltip displays when the layer is locked
-            return (player.a.achievements.length + " Achievementers")
+            return (player.a.achievements.length + (player.fun.h0ndepoints ? " h0nde's" : "") + " Achievementers")
         },
 		    tabFormat: [
 		      	"blank", "blank", "blank",
@@ -1444,7 +1451,7 @@ addLayer("a", {
             25: {
               name: "25",
               done() {return player.b.points.gte(111)},
-              tooltip(){return "Reach 111 Boosters. Reward: Autobuy Boosters and they resets nothing"},
+              tooltip(){return "Reach 111 Boosters. Reward: You can autobuy boosters, boosters resets nothing"},
             },
             31: {
               name: "31",
@@ -1512,7 +1519,7 @@ addLayer("q", {
     position: 2,
     layerShown() {return hasUpgrade("p", 35) || player.q.unlocked}, 
     tooltip() { // Optional, tooltip displays when the layer is locked
-        return (formatWhole(totalQuestsCompletion()) + "/" + formatWhole(player.q.questUnlocked*10) + " Quests completion")
+        return (formatWhole(totalQuestsCompletion()) + "/" + formatWhole(player.q.questUnlocked*10) + (player.fun.h0ndepoints ? " h0nde's" : "") + " Quests completion")
     },
 		tabFormat: [
         ["display-text",
@@ -1535,7 +1542,7 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 1 reset, " + `<b>Normal-2</b>` + " have no effect, points gain is square rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 11) + "/" + tmp.q.challenges[11].completionLimit},
         unlocked(){return player.q.questUnlocked >= 1 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[11].goal) + " points"},
+        goalDescription(){return (player.q.activeChallenge == 11 ? format(player.points) + "/" : "") + format(tmp.q.challenges[11].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.5)
           if (hasAchievement("a", 23)) scaling = new Decimal(1.4)
@@ -1562,7 +1569,7 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 1 reset, Boosters have no effect, points gain is cube rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 12) + "/" + tmp.q.challenges[12].completionLimit},
         unlocked(){return player.q.questUnlocked >= 2 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[12].goal) + " points"},
+        goalDescription(){return (player.q.activeChallenge == 12 ? format(player.points) + "/" : "") + format(tmp.q.challenges[12].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.5)
           if (hasAchievement("a", 23)) scaling = new Decimal(1.4)
@@ -1587,7 +1594,7 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 1 reset, " + `<b>TreeQuest 1</b>` + " and " + `<b>TreeQuest 2</b>` + " are applied at once." + `<br>` + 
           "Completion: " + challengeCompletions("q", 21) + "/" + tmp.q.challenges[21].completionLimit},
         unlocked(){return player.q.questUnlocked >= 3 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[21].goal) + " points"},
+        goalDescription(){return (player.q.activeChallenge == 21 ? format(player.points) + "/" : "") + format(tmp.q.challenges[21].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.5)
           let goal = new Decimal(10).pow(new Decimal(21.5).mul(new Decimal(scaling).pow(challengeCompletions("q", 21))))
@@ -1613,13 +1620,14 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 1 reset, points gain exponent is square rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 22) + "/" + tmp.q.challenges[22].completionLimit},
         unlocked(){return player.q.questUnlocked >= 4 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[22].goal) + " points"},
+        goalDescription(){return (player.q.activeChallenge == 22 ? format(player.points) + "/" : "") + format(tmp.q.challenges[22].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.1)
           if (challengeCompletions("q", 22) >= 5) scaling = scaling.mul(1.065)
-          if (challengeCompletions("q", 22) >= 8) scaling = scaling.mul(0.994)
+          if (challengeCompletions("q", 22) >= 8) scaling = scaling.mul(0.9945)
           let goal = new Decimal(10).pow(new Decimal(37.5).mul(new Decimal(scaling).pow(challengeCompletions("q", 22))))
-          if (challengeCompletions("q", 22) >= 9) goal = goal.pow(1.28)
+          if (challengeCompletions("q", 22) >= 9) goal = goal.pow(1.269)
+          if (hasUpgrade("p", 82)) goal = goal.div(upgradeEffect("p", 82)[1])
           if (challengeCompletions("q", 22) >= 10) goal = new Decimal(Infinity)
           return goal
         },
@@ -1641,7 +1649,7 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 2 reset, you can't gain PP, points gain is 10th rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 31) + "/" + tmp.q.challenges[31].completionLimit},
         unlocked(){return player.q.questUnlocked >= 5 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[31].goal) + " points"},
+        goalDescription(){return (player.q.activeChallenge == 31 ? format(player.points) + "/" : "") + format(tmp.q.challenges[31].goal) + " points"},
         goal(){
           let scaling = new Decimal(1.25).add(new Decimal(challengeCompletions("q", 31)).div(25))
           let goal = new Decimal(10).pow(new Decimal(183).mul(new Decimal(scaling).pow(challengeCompletions("q", 31))))
@@ -1668,7 +1676,7 @@ addLayer("q", {
         challengeDescription(){return "Do a forced row 2 reset and reset Prestige Upgrades, you can't gain boosters, PP gain is 10th rooted." + `<br>` + 
           "Completion: " + challengeCompletions("q", 32) + "/" + tmp.q.challenges[32].completionLimit},
         unlocked(){return player.q.questUnlocked >= 6 && player.q.unlocked},
-        goalDescription(){return format(tmp.q.challenges[32].goal) + " prestige points"},
+        goalDescription(){return (player.q.activeChallenge == 32 ? format(player.p.points) + "/" : "") + format(tmp.q.challenges[32].goal) + " prestige points"},
         goal(){
           let scaling = new Decimal(1.4)
           let goal = new Decimal(10).pow(new Decimal(505).mul(new Decimal(scaling).pow(challengeCompletions("q", 32))))
@@ -1700,7 +1708,7 @@ addLayer("s", {
   position: 0,
   layerShown() {return true}, 
   tooltip() { // Optional, tooltip displays when the layer is locked
-      return ("Statistics")
+      return ((player.fun.h0ndepoints ? "h0nde's " : "") + "Statistics")
   },
   tabFormat: [
     "blank",
@@ -1713,7 +1721,7 @@ addLayer("s", {
     ["display-text",
     function() {
       return "Gain formula:" + `<br>` + 
-      "(10^(log10(" + format(getPointGainMul()) + ")^" + format(getPointGainExpPow(), 3) + "))^" + format(getPointGainPow(), 3)},
+      "10" + `<sup>` + "log10(" + format(getPointGainMul()) + `<sup>` + format(getPointGainPow(), 3) + `</sup>` + ")" + `<sup>` + format(getPointGainExpPow(), 3) + `</sup>` + `</sup>`},
     ],
     "blank",
     ["display-text",
@@ -1721,7 +1729,7 @@ addLayer("s", {
       return (player.p.unlocked ? `<b>Prestige Points:</b>` + `<br>` + 
       formatWhole(player.p.points) + " (" + (tmp.p.passiveGeneration == 0 ? "+" + format(tmp.p.resetGain) + ")" : format(tmp.p.resetGain.mul(tmp.p.passiveGeneration)) + "/sec)") + `<br>` + 
       "Gain formula:" + `<br>` + 
-      "((points/" + format(tmp.p.requires) + ")^" + format(tmp.p.exponent) + "*" + format(tmp.p.gainMult) + ")^" + format(tmp.p.gainExp, 3) + `<br>` + 
+      "((points/" + format(tmp.p.requires) + ")" + `<sup>` + format(tmp.p.exponent) + `</sup>` + "*" + format(tmp.p.gainMult) + ")" + `<sup>` + format(tmp.p.gainExp, 3) + `</sup>` + `<br>` + 
       "Softcap start:" + `<br>` + 
       format(tmp.p.softcap) + ", gain ^" + format(tmp.p.softcapPower, 3) + `<br>` + 
       "Bought Upgrades:"  + `<br>` + 
@@ -1733,7 +1741,7 @@ addLayer("s", {
       return (player.b.unlocked ? `<b>Boosters:</b>` + `<br>` + 
       formatWhole(player.b.points) + " (Next: " + format(tmp.b.nextAt) + " points)" + `<br>` + 
       "Cost formula:" + `<br>` + 
-      format(tmp.b.requires) + "*" + format(tmp.b.base) + "^((boosters/" + format(tmp.b.directMult, 3) + ")^" + format(tmp.b.exponent, 3) + ")/" + format(tmp.b.gainMult.recip()) : "")},
+      format(tmp.b.requires) + "*" + format(tmp.b.base) + `<sup>` + "(boosters/" + format(tmp.b.directMult, 3) + ")" + `<sup>` + format(tmp.b.exponent, 3) + `</sup>` + `</sup>` + "/" + format(tmp.b.gainMult.recip()) : "")},
     ],
     "blank",
     ["display-text",
@@ -1741,7 +1749,7 @@ addLayer("s", {
       return (player.sp.unlocked ? `<b>Super Prestige Points:</b>` + `<br>` + 
       formatWhole(player.sp.points) + " (" + (tmp.sp.passiveGeneration == 0 ? "+" + format(tmp.sp.resetGain) + ")" : format(tmp.sp.resetGain.mul(tmp.sp.passiveGeneration)) + "/sec)") + `<br>` + 
       "Gain formula:" + `<br>` + 
-      "((prestige points/" + format(tmp.sp.requires) + ")^" + format(tmp.sp.exponent) + "*" + format(tmp.sp.gainMult) + ")^" + format(tmp.sp.gainExp, 3) + `<br>` + 
+      "((prestige points/" + format(tmp.sp.requires) + ")" + `<sup>` + format(tmp.sp.exponent) + `</sup>` + "*" + format(tmp.sp.gainMult) + ")" + `<sup>` + format(tmp.sp.gainExp, 3) + `</sup>` + `<br>` + 
       "Softcap start:" + `<br>` + 
       format(tmp.sp.softcap) + ", gain ^" + format(tmp.sp.softcapPower, 3) + `<br>` + 
       "Bought Upgrades:"  + `<br>` + 
@@ -1753,7 +1761,7 @@ addLayer("s", {
       return (player.i.unlocked ? `<b>Infinity Points:</b>` + `<br>` + 
       formatWhole(player.i.points) + " (Next: " + format(tmp.i.nextAt) + " points)" + `<br>` + 
       "Cost formula:" + `<br>` + 
-      format(tmp.i.requires) + "*" + format(tmp.i.base) + "^((infinity points/" + format(tmp.i.directMult, 3) + ")^" + format(tmp.i.exponent, 3) + ")/" + format(tmp.i.gainMult.recip()) : "")},
+      format(tmp.i.requires) + "*" + format(tmp.i.base) + `<sup>` + "(infinity points/" + format(tmp.i.directMult, 3) + ")" + `<sup>` + format(tmp.i.exponent, 3) + `</sup>` + `</sup>` + "/" + format(tmp.i.gainMult.recip()) : "")},
     ],
     "blank",
     ["display-text",
@@ -1787,3 +1795,333 @@ addLayer("s", {
     },
   },
 })
+
+addLayer("fun", {
+  symbol: "FUN", // This appears on the layer's node. Default is the id with the first letter capitalized
+  startData() { return {
+    unlocked: true,
+    points: new Decimal(1),
+    points2: new Decimal(1),
+    points3: new Decimal(0),
+    input1: "",
+    input2: "",
+    h0ndepoints: false,
+    crimsonnodes: false,
+    producting_14: false,
+    producting_15: false,
+    producting_16: false,
+  }},
+  color: "white",
+  row: "side",
+  position: 999,
+  layerShown() {return true}, 
+  tooltip() { // Optional, tooltip displays when the layer is locked
+      return ""
+  },
+  update(diff){
+    modInfo.pointsName = (player.fun.h0ndepoints ? "h0nde accounts" : "points")
+    let speed14 = player.fun.points.add(10).log(10).pow(player.b.points).mul(player.fun.points2).mul(new Decimal(10).pow(player.fun.points3.pow(3)))
+    let exp15 = player.i.points.mul(player.fun.points2.log(10).add(10).log(10)).mul(player.fun.points3.add(1).pow(0.5))
+    let speed16 = player.sp.total.add(1).max(1).log(10).mul(player.fun.points3.add(1))
+    if (player.fun.producting_14){
+      player.fun.points = player.fun.points.add(speed14.mul(diff))
+    }
+    if (player.fun.producting_15){
+      player.fun.points2 = player.fun.points2.pow(exp15.pow(-1)).add(diff).pow(exp15)
+    }
+    if (player.fun.producting_16){
+      player.fun.points3 = new Decimal(2).pow(player.fun.points3).add(speed16.mul(diff)).log(2)
+    }
+  },
+  tabFormat: [
+    "blank",
+    ["row", [["clickable", 11],["blank","8px","8px"],["clickable", 12],["blank","8px","8px"],["clickable", 13]]],
+    ["blank","8px","8px"],
+    ["row", [["clickable", 14],["blank","8px","8px"],["clickable", 15],["blank","8px","8px"],["clickable", 16]]],
+    ["blank","8px","8px"],
+    ["row", [["clickable", 17],["blank","8px","8px"],["clickable", 18],["blank","8px","8px"],["clickable", 19]]],
+    "blank",
+    ["display-text",
+      function() {
+        return getText()
+      },
+    ],
+  ],
+  clickables: {
+    11: {
+      title(){
+        return "Enter the new code."
+      },
+      display(){
+        return (player.fun.input1.length > 0 ? "Currently: " + player.fun.input1 : "")
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        let x = prompt("Enter the code here, leave empty for stay as current one.", player.fun.input1)
+        x = x.toLowerCase()
+        if (x == null) x = ""
+        if (x !== "") player.fun.input1 = x
+        if (player.fun.input1 == "h0nde"){
+          player.fun.h0ndepoints = 1-player.fun.h0ndepoints
+        }
+        if (player.fun.input1 == "crimson406" && player.p.bestBoughtUpgs >= 14){
+          player.fun.crimsonnodes = 1-player.fun.crimsonnodes
+        }
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "red"},
+    },
+    12: {
+      title(){
+        return "Reset the current code."
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        player.fun.input1 = ""
+        player.fun.input2 = ""
+        
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "orange"},
+    },
+    13: {
+      title(){
+        return "Remove all interface changes."
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        player.fun.h0ndepoints = 0
+        player.fun.crimsonnodes = 0
+        
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "yellow"},
+    },
+    14: {
+      title(){
+        return (player.fun.producting_14 ? "Stop produce your points." : "Start produce your points.")
+      },
+      display(){
+        let speed = player.fun.points.add(10).log(10).pow(player.b.points).mul(player.fun.points2).mul(new Decimal(10).pow(player.fun.points3.pow(3)))
+        return (player.fun.producting_14 ? format(player.fun.points) + `<br>` + "(+" + format(speed) + "/s)" : "Require boosters unlocked")
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        if (!player.b.unlocked) return
+        player.fun.producting_14 = 1-player.fun.producting_14
+        if (player.fun.producting_14){
+
+        } else {
+          player.fun.points = new Decimal(1)
+        }
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "lime"},
+    },
+    15: {
+      title(){
+        return (player.fun.producting_15 ? "Stop produce your prestige points." : "Start produce your prestige points.")
+      },
+      display(){
+        let exp = player.i.points.mul(player.fun.points2.log(10).add(10).log(10)).mul(player.fun.points3.add(1).pow(0.5))
+        return (player.fun.producting_15 ? format(player.fun.points2) + `<br>` + " (Exponent: " + format(exp) + ")" : "Require infinity unlocked")
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        if (!player.i.unlocked) return
+        player.fun.producting_15 = 1-player.fun.producting_15
+        if (player.fun.producting_15){
+          
+        } else {
+          player.fun.points2 = new Decimal(1)
+        }
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "cyan"},
+    },
+    16: {
+      title(){
+        return (player.fun.producting_16 ? "Stop produce your boosters." : "Start produce your boosters.")
+      },
+      display(){
+        let speed = player.sp.total.add(1).max(1).log(10).mul(player.fun.points3.add(1))
+        return (player.fun.producting_16 ? format(player.fun.points3, 3) + `<br>` + "(+" + format(speed) + "/s before log)" : "Require super prestige unlocked")
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+        if (!player.sp.unlocked) return
+        player.fun.producting_16 = 1-player.fun.producting_16
+        if (player.fun.producting_16){
+          
+        } else {
+          player.fun.points3 = new Decimal(0)
+        }
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "blue"},
+    },
+    17: {
+      title(){
+        return "Classified"
+      },
+      display(){
+        return ""
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "#a020f0"},
+    },
+    18: {
+      title(){
+        return "Readcted"
+      },
+      display(){
+        return ""
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "magenta"},
+    },
+    19: {
+      title(){
+        return "Coming Soon"
+      },
+      display(){
+        return ""
+      },
+      unlocked() {return true},
+      canClick() {return true},
+      onClick(){
+
+      },
+      style: {"height": "150px", "width": "150px", "background-color": "white"},
+    },
+  },
+})
+
+function getText(){
+  let output = ""
+  let x = player.fun.input1.toLowerCase()
+  if (x == "pointsexppow"){
+    output = format(new Decimal(10).pow(player.points.log(10).pow(player.fun.points.slog(10).add(1))))
+  }
+  if (x == "pointssuperlog2"){
+    output = format(player.points.slog(2), 15)
+  }
+  if (x == "pointstohypere"){
+    let superlog = player.points.slog(10)
+    let mod1 = superlog.sub(superlog.floor())
+    if (superlog.gte(1e6)){
+      output = "E" + format(superlog.log(10), 4) + "#1#2"
+    } else if (superlog.gte(2)){
+      output = "E" + format(new Decimal(10).pow(mod1), 4) + "#" + formatWhole(superlog.floor())
+    } else if (superlog.gte(1)){
+      output = "E" + format(player.points.log(10), 4)
+    } else {
+      output = format(player.points, 4)
+    }
+  }
+  if (x == "pointstostandard"){
+    let num = player.points
+    let exponent = num.log10().div(3).floor();
+    let mantissa = num.div(new Decimal(1000).pow(exponent))
+    if (mantissa.gte(1000 - 10 ** -2 / 2)){
+      mantissa = mantissa.div(1000)
+      exponent = exponent.add(1)
+    }
+    let maxT1 = num.log10().sub(3).div(3).floor()
+    let maxT2 = maxT1.log10().div(3).floor().toNumber()
+    if (maxT1.lt(1e15)) maxT1 = maxT1.toNumber()
+    else maxT1 = maxT1.div(new Decimal(1000).pow(maxT2 - 4)).floor().toNumber()
+    let tril = Math.floor(maxT1/1e12)
+    let bill = Math.floor(maxT1/1e9) % 1000
+    let mill = Math.floor(maxT1/1e6) % 1000
+    let kill = Math.floor(maxT1/1e3) % 1000
+    let ones = maxT1 % 1000
+    if (num.lt(1000 - 10 ** -2 / 2)){
+      output = mantissa.toFixed(2)
+    } else if (num.lt(new Decimal(1e33))) {
+      output = mantissa.toFixed(2) + " " + standardPreE33[maxT1]
+    } else if (num.lt(new Decimal(10).pow(3e15).mul(1000))) {
+      output = mantissa.toFixed(2) + " " + standard(tril, 4, 1) + standard(bill, 3, 1) + standard(mill, 2, 1) + standard(kill, 1, 1) + standard(ones, 0, 0)
+    } else if (num.lt(new Decimal(10).pow("3e3000").mul(1000))) {
+      output = standard(tril, maxT2, (ones + kill + mill + bill !== 0 ? 1 : 0)) + standard(bill, maxT2 - 1, (ones + kill + mill !== 0 ? 1 : 0)) + standard(mill, maxT2 - 2, (ones + kill !== 0 ? 1 : 0)) + standard(kill, maxT2 - 3, (ones !== 0 ? 1 : 0)) + standard(ones, maxT2 - 4, 0) + "s"
+    } else output = format(num)
+  }
+  if (x == "inf" || x == "infinity"){
+    output = format(new Decimal(2).pow(1024))
+  }
+  if (x == "embi"){
+    output = "DNA Ordinal"
+  }
+  if (x == "dnaordinal"){
+    output = "Embi"
+  }
+  if (x == "rickroll"){
+    output = `<a href="https://youtu.be/dQw4w9WgXcQ">https://youtu.be/dQw4w9WgXcQ</a>`
+  }
+  if (x == "boosterstetrate2" && player.b.unlocked){
+    output = format(player.b.points.tetrate(2))
+  }
+  if (x == "infinitypointstetrate2" && player.i.unlocked){
+    output = format(player.i.points.tetrate(2)) + " (which is equal to Infinity^" + format(player.i.points.tetrate(2).log(Number.MAX_VALUE), 6) + ")"
+  }
+  if (x == "acamaeda" && player.p.bestBoughtUpgs >= 2){
+    output = "TMT Version: " + TMT_VERSION.tmtNum
+  }
+  if (x == "h0nde" && player.p.bestBoughtUpgs >= 8){
+    output = "The resource name has changed to " + (player.fun.h0ndepoints ? "h0nde" : "points") + ", enter the same code will change back to " + (player.fun.h0ndepoints ? "points" : "h0nde")
+  }
+  if (x == "crimson406" && player.p.bestBoughtUpgs >= 14){
+    output = "The prestige notes has changed to " + (player.fun.crimsonnodes ? "crimson" : "default") + ", enter the same code will change back to " + (player.fun.crimsonnodes ? "default" : "crimson")
+  }
+  if (x == "iemory" && player.p.bestBoughtUpgs >= 15){
+    output = (player.fun.h0ndepoints ? "this hasn't been updated, I'm not sure why it says it has" : "smiley" + `<sup>` + formatWhole(new Decimal(totalQuestsCompletion()).pow(player.fun.points.slog(10).add(2))) + `</sup>`)
+  }
+  if (x == "pg132" && player.p.bestBoughtUpgs >= 22){
+    output = (player.fun.crimsonnodes ? "pg132^132^" + format(player.fun.points.slog(10).add(1), 4) + " (or pg" + formatWhole(new Decimal(132).pow(new Decimal(132).pow(player.fun.points.slog(10).add(1)))) + ")" : "Ghotsify")
+  }
+  if (x == "roldo"){
+    output = (player.fun.h0ndepoints && player.fun.crimsonnodes && player.q.activeChallenge ? "You Found an Easter Egg!" : "Hidden Marble")
+  }
+  return output
+}
+
+const standardPreE33 = ["K", "M", "B", "T", "Qa", "Qt", "Sx", "Sp", "Oc", "No"]
+const standardUnits = ["", "U", "D", "T", "Qa", "Qt", "Sx", "Sp", "O", "N"]
+const standardTens = ["", "Dc", "Vg", "Tg", "Qd", "Qi", "Se", "St", "Og", "Nn"]
+const standardHundreds = ["", "Ct", "Dn", "Tc", "Qe", "Qu", "Sc", "Si", "Oe", "Ne"]
+const standardMilestonePreEE33 = ["", "MI", "MC", "NA", "PC", "FM", "AT", "ZP", "YC", "XN", "VE"]
+const standardMilestoneUnits = ["", "M", "D", "T", "TE", "P", "H", "HE", "O", "E", "VE"]
+const standardMilestoneTens = ["", "E", "IS", "TN", "TEN", "PN", "HN", "HEN", "ON", "EN"]
+const standardMilestoneHundreds = ["", "HT", "DT", "TT", "TET", "PT", "HT", "HET", "OT", "ET"]
+
+function standard(t1, t2, more){
+  t1 = t1 % 1000
+  t2 = t2 % 1000
+  if (t1 == 0) return ""
+  let output1 = ""
+  let output2 = ""
+  if (t1 !== 1 || (t1 == 1 && t2 == 0)){
+    let ones1 = t1 % 10
+    let tens1 = Math.floor(t1 / 10) % 10
+    let hundreds1 = Math.floor(t1 / 100)
+    output1 = standardUnits[ones1] + standardTens[tens1] + standardHundreds[hundreds1]
+  }
+  if (t2 < 10.5) output2 = standardMilestonePreEE33[t2]
+  else{
+    let mod100 = t2 % 100
+    let ones2 = t2 % 10
+    let tens2 = Math.floor(t2 / 10) % 10
+    let hundreds2 = Math.floor(t2 / 100)
+    if (mod100 < 10.5) output2 = standardMilestoneUnits[mod100] + standardMilestoneHundreds[hundreds2]
+    else output2 = standardMilestoneUnits[ones2] + standardMilestoneTens[tens2] + standardMilestoneHundreds[hundreds2]
+  }
+  return output1 + output2 + (more && t2 !== 0 ? "-" : "")
+}
