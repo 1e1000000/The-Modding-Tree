@@ -1353,7 +1353,7 @@ addLayer("a", {
         position: 1,
         layerShown() {return true}, 
         tooltip() { // Optional, tooltip displays when the layer is locked
-            return (player.a.achievements.length + (player.fun.h0ndepoints ? " h0nde's" : "") + " Achievementers")
+            return (player.a.achievements.length + (player.fun.h0ndepoints ? " h0nde's Achievementers" : " Achievements"))
         },
 		    tabFormat: [
 		      	"blank", "blank", "blank",
@@ -2088,7 +2088,7 @@ function getText(){
     output = (player.fun.crimsonnodes ? "pg132^132^" + format(player.fun.points.slog(10).add(1), 4) + " (or pg" + formatWhole(new Decimal(132).pow(new Decimal(132).pow(player.fun.points.slog(10).add(1)))) + ")" : "Ghotsify")
   }
   if (x == "roldo"){
-    output = (player.fun.h0ndepoints && player.fun.crimsonnodes && player.q.activeChallenge ? "You Found an Easter Egg!" : "Hidden Marble")
+    output = "Hidden Marble"
   }
   return output
 }
