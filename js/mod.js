@@ -1,8 +1,8 @@
 let modInfo = {
 	name: "The h0nde Tree",
 	id: "h0nde",
-	author: "nobody",
-	pointsName: "points",
+	author: "1e1000000",
+	pointsName: "h0nde accounts",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -13,14 +13,19 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.01",
+	name: "The begin of h0nde creation I",
 }
 
-let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+let changelog = `
+Note: They were no offline progress, idk why this happen.<br>
+Credit to pg132, for the design of first layer on Incrementreeverse.<br>
+Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
+    <h1>Changelog:</h1><br>
+    <h3>v0.01</h3><br>
+		- Initial Release.<br>
+		- Endgame: 11 h0nde accounts.<br>
+`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -56,7 +61,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return false
 }
 
 
