@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.02",
+	num: "0.021",
 	name: "The begin of h0nde creation II",
 }
 
@@ -21,10 +21,14 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.021</h3><br>
+	- Added just one upgrades.<br>
+	- Fixed some buyables can go pass limit while buying multiple.<br>
+	- Endgame: 1e50 h0nde power & all h0nde upgrades.<br>
 	<h3>v0.02</h3><br>
 	- Added 2 buyables, 6 upgrades and 5 achievements.<br>
 	- Added more info on Generator buyable.<br>
-	- Softcapp Generator buyable multiplier boost at 100 boosts.<br>
+	- Softcap Generator buyable multiplier boost at 100 boosts.<br>
 	- Make number between 1e12 and 1e15 less chaotic, but e1e9 and e1e12 more chaotic.<br>
 	- Endgame: 22 h0nde accounts & max out Generator buyable.<br>
     <h3>v0.01</h3><br>

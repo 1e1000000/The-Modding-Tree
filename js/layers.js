@@ -96,7 +96,7 @@ addLayer("h", {
         "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + " / " + formatWhole(tmp.h.buyables[11].purchaseLimit) + `<br>` +
         format(tmp.h.buyables[11].multiBoostMultiplier) + "x production boost counts: " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).floor()) + 
         " (Next at: " + formatWhole(tmp.h.buyables[11].totalLevel) + "/" + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).add(1e-10).ceil().mul(tmp.h.buyables[11].multiBoostDensity)) + ")" + `<br>` +
-        "h0nde power production multi from this buyable: " + format(tmp.h.buyables[11].totalLevel.pow(buyableEffect("h",21)))
+        "h0nde power production multi from this buyable: " + format(tmp.h.buyables[11].effectMul)
       },
       costBase(){
         let base = new Decimal(5)
@@ -157,8 +157,13 @@ addLayer("h", {
         if (hasAchievement("a", 24)) x = x.mul(achievementEffect("a", 24))
         return x
       },
+      effectMul(){
+        let x = tmp.h.buyables[11].totalLevel
+        x = x.pow(buyableEffect("h",21))
+        return x
+      },
       effect(){
-        let x = tmp.h.buyables[11].totalLevel.pow(buyableEffect("h",21)).mul(tmp.h.buyables[11].effectBase)
+        let x = tmp.h.buyables[11].effectMul.mul(tmp.h.buyables[11].effectBase)
         return x
       },
       canAfford(){
@@ -249,6 +254,7 @@ addLayer("h", {
         player.h.points = player.h.points.minus(cost)
       },
       buyMax(){
+        let maxBulk = tmp.h.buyables[12].purchaseLimit.sub(getBuyableAmount("h", 12))
         let bulk
         let a = tmp.h.buyables[12].cost
         let r = tmp.h.buyables[12].costScaling
@@ -256,6 +262,7 @@ addLayer("h", {
         if (x.lt(a)) return
         if (a.eq(0)) bulk = new Decimal(1)
         else bulk = x.mul(r.sub(1)).div(a).add(1).log(r).floor()
+        bulk = bulk.min(maxBulk)
         let cost = new Decimal(0)
         if (!a.eq(0)) cost = a.mul(r.pow(bulk).sub(1)).div(r.sub(1))
         addBuyables("h", 12, bulk)
@@ -318,6 +325,7 @@ addLayer("h", {
         player.h.points = player.h.points.minus(cost)
       },
       buyMax(){
+        let maxBulk = tmp.h.buyables[13].purchaseLimit.sub(getBuyableAmount("h", 13))
         let bulk
         let a = tmp.h.buyables[13].cost
         let r = tmp.h.buyables[13].costScaling
@@ -325,6 +333,7 @@ addLayer("h", {
         if (x.lt(a)) return
         if (a.eq(0)) bulk = new Decimal(1)
         else bulk = x.mul(r.sub(1)).div(a).add(1).log(r).floor()
+        bulk = bulk.min(maxBulk)
         let cost = new Decimal(0)
         if (!a.eq(0)) cost = a.mul(r.pow(bulk).sub(1)).div(r.sub(1))
         addBuyables("h", 13, bulk)
@@ -354,10 +363,6 @@ addLayer("h", {
         let r = tmp.h.buyables[21].costScaling
         return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
       },
-      purchaseLimit(){
-        let lim = new Decimal(2)
-        return lim
-      },
       freeLevel(){
         let free = new Decimal(0)
         return free
@@ -384,6 +389,7 @@ addLayer("h", {
         player.h.points = player.h.points.minus(cost)
       },
       buyMax(){
+        let maxBulk = tmp.h.buyables[21].purchaseLimit.sub(getBuyableAmount("h", 21))
         let bulk
         let a = tmp.h.buyables[21].cost.log(10)
         let r = tmp.h.buyables[21].costScaling
@@ -391,6 +397,7 @@ addLayer("h", {
         if (x.lt(a)) return
         if (a.eq(0)) bulk = new Decimal(1)
         else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
         let cost = a.mul(r.pow(bulk.sub(1))) // log
         addBuyables("h", 21, bulk)
         // some upgrade should make them not actually remove h0nde power
@@ -573,6 +580,21 @@ addLayer("h", {
       },
       canAfford(){
         return tmp.h.buyables[13].totalLevel.gte(35)
+      },
+    },
+    25: {
+      title: "New Layer",
+      description: "Unlock a new Layer (WIP), you need 3 Power buyable level and 2,500 non-free Generator buyable level to buy this upgrade",
+      cost: new Decimal(1e50),
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      unlocked(){
+        return player.h.upgrades.length >= 5
+      },
+      canAfford(){
+        return tmp.h.buyables[21].totalLevel.gte(3) && getBuyableAmount("h",11).gte(2500)
       },
     },
   },
