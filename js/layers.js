@@ -5,6 +5,8 @@ addLayer("h", {
   startData() { return {
     unlocked: true,
 	  points: new Decimal(0),
+    best: new Decimal(0),
+    total: new Decimal(0),
   }},
   color: "#4BDC13",
   requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -17,8 +19,7 @@ addLayer("h", {
     return gain
   },
   passiveGeneration(){
-    let p = new Decimal(1)
-    return p
+    return 1
   },
   getNextAt(){
     return ""
@@ -50,6 +51,10 @@ addLayer("h", {
         "blank","clickables","buyables","blank","upgrades"
       ],
     },
+  },
+  doReset(resettingLayer) {
+    let keep = [];
+    if (layers[resettingLayer].row > this.row) layerDataReset("h", keep)
   },
   getAccounts(){ // credit to c0vid for this
     let amt = player.h.points.add(1).log(10)
@@ -597,6 +602,55 @@ addLayer("h", {
         return tmp.h.buyables[21].totalLevel.gte(3) && getBuyableAmount("h",11).gte(2500)
       },
     },
+  },
+})
+
+addLayer("p", {
+  name: "prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+  symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+  position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+  startData() { return {
+    unlocked: false,
+	  points: new Decimal(0),
+  }},
+  color: "#31aeb0",
+  requires: new Decimal(2500), // Can be a function that takes requirement increases into account
+  resource: "prestige points", // Name of prestige currency
+  baseResource: "non-free Generator buyable level", // Name of resource prestige is based on
+  baseAmount() {return getBuyableAmount("h",11)}, // Get the current amount of baseResource
+  type: "custom", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+  getResetGain() {
+    let gain = new Decimal(10).pow(getBuyableAmount("h",11).add(1e-10).pow(0.5).sub(50))
+    return gain.floor()
+  },
+  passiveGeneration(){
+    return 0
+  },
+  getNextAt(){
+    return ""
+  },
+  prestigeButtonText(){
+    return "Reset for +" + formatWhole(tmp.p.getResetGain) + " prestige points"
+  },
+  canReset(){
+    return false //getBuyableAmount("h",11).gte(2500)
+  },
+  update(diff){
+
+  },
+  row: 1, // Row the layer is in on the tree (0 is the first row)
+  branches: ["h"],
+  layerShown(){return hasUpgrade("h",25) || player.p.unlocked},
+  tabFormat: {
+    "Main": {
+      content: [
+        "main-display","prestige-button","blank","resource-display",
+        ],
+    },
+  },
+  doReset(resettingLayer) {
+    let keep = [];
+    if (layers[resettingLayer].row > this.row) layerDataReset("h", keep)
   },
 })
 

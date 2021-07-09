@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.021",
+	num: "0.022",
 	name: "The begin of h0nde creation II",
 }
 
@@ -21,6 +21,9 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.022</h3><br>
+	- Added placeholder for prestige layer.<br>
+	- Endgame remain same.<br>
 	<h3>v0.021</h3><br>
 	- Added just one upgrades.<br>
 	- Fixed some buyables can go pass limit while buying multiple.<br>
