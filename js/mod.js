@@ -13,14 +13,21 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.022",
-	name: "The begin of h0nde creation II",
+	num: "0.03",
+	name: "The h0nde prestige era I",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.03</h3><br>
+	- Added a new layer (Prestige)<br>
+	- Added 3 achievements.<br>
+	- Added incomplete Statistics node<br>
+	- Combined Buy max Multiplier and Divider buyable.<br>
+	- Fixed game-breaking bug when buying Power buyable with 0 h0nde power.<br>
+	- Endgame: 27.5 h0nde accounts & 600 total PP.<br>
 	<h3>v0.022</h3><br>
 	- Added placeholder for prestige layer.<br>
 	- Endgame remain same.<br>
@@ -65,6 +72,7 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	bestPoints: new Decimal(0)
 }}
 
 // Display extra things at the top of the page
