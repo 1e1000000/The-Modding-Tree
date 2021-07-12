@@ -109,7 +109,7 @@ addLayer("h", {
       display(){
         return "Produce " + format(tmp.h.buyables[11].effectBase) + " h0nde powers per second." + `<br>` +
         "Currently: " + format(buyableEffect("h",11)) + "/s" + `<br>` + `<br>` + 
-        "Cost: " + format(tmp.h.buyables[11].cost) + " h0nde power" + `<br>` +
+        "Cost: " + format(tmp.h.buyables[11].cost, 2, true) + " h0nde power" + `<br>` +
         "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + " / " + formatWhole(tmp.h.buyables[11].purchaseLimit) + `<br>` +
         format(tmp.h.buyables[11].multiBoostMultiplier) + "x production boost counts: " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).floor()) + 
         " (Next at: " + formatWhole(tmp.h.buyables[11].totalLevel) + "/" + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).add(1e-10).ceil().mul(tmp.h.buyables[11].multiBoostDensity)) + ")" + `<br>` +
@@ -138,6 +138,7 @@ addLayer("h", {
       freeLevel(){
         let free = new Decimal(0)
         if (hasUpgrade("h",15)) free = free.add(upgradeEffect("h",15))
+        if (hasAchievement("a",34)) free = free.add(1)
         return free
       },
       totalLevel(){
@@ -146,6 +147,7 @@ addLayer("h", {
       multiBoostDensity(){
         let d = new Decimal(50)
         if (hasUpgrade("h",13)) d = d.div(2)
+        if (hasUpgrade("p",22)) d = d.div(1.25)
         return d
       },
       multiBoostMultiplier(){
@@ -154,6 +156,7 @@ addLayer("h", {
         if (hasUpgrade("h",13)) m = m.sub(0.4)
         if (hasAchievement("a",25)) m = m.add(0.1)
         if (hasAchievement("a",32)) m = m.add(achievementEffect("a",32))
+        if (hasUpgrade("p",24)) m = m.add(0.1)
         return m
       },
       multiBoostAmountSCStart(){
@@ -180,6 +183,7 @@ addLayer("h", {
         if (hasUpgrade("p", 11)) x = x.mul(upgradeEffect("p", 11))
         if (hasUpgrade("p", 12)) x = x.mul(upgradeEffect("p", 12))
         if (hasUpgrade("p", 15)) x = x.mul(upgradeEffect("p", 15))
+        if (hasUpgrade("p", 25)) x = x.mul(upgradeEffect("p", 25)[1])
         return x
       },
       effectExp(){
@@ -336,11 +340,13 @@ addLayer("h", {
       },
       effectBase(){
         let x = new Decimal(1)
+        if (hasUpgrade("p",21)) x = x.add(upgradeEffect("p",21))
         return x
       },
       effectExp(){
         let e = new Decimal(2)
         if (hasUpgrade("h",23)) e = e.mul(1.5)
+        if (hasAchievement("a",35)) e = e.mul(2)
         return e
       },
       effect(){
@@ -557,7 +563,7 @@ addLayer("h", {
         return eff
       },
       unlocked(){
-        return player.h.upgrades.length >= 5
+        return getBoughtUpgradesRow("h", 1) >= 5
       },
       canAfford(){
         return tmp.h.buyables[11].totalLevel.gte(900) || hasAchievement("a",31)
@@ -572,7 +578,7 @@ addLayer("h", {
         return eff
       },
       unlocked(){
-        return player.h.upgrades.length >= 5
+        return getBoughtUpgradesRow("h", 1) >= 5
       },
       canAfford(){
         return tmp.h.buyables[12].totalLevel.gte(60) || hasAchievement("a",31)
@@ -587,7 +593,7 @@ addLayer("h", {
         return eff
       },
       unlocked(){
-        return player.h.upgrades.length >= 5
+        return getBoughtUpgradesRow("h", 1) >= 5
       },
       canAfford(){
         return tmp.h.buyables[12].totalLevel.gte(85) || hasAchievement("a",31)
@@ -602,7 +608,7 @@ addLayer("h", {
         return eff
       },
       unlocked(){
-        return player.h.upgrades.length >= 5
+        return getBoughtUpgradesRow("h", 1) >= 5
       },
       canAfford(){
         return tmp.h.buyables[13].totalLevel.gte(35) || hasAchievement("a",31)
@@ -610,14 +616,19 @@ addLayer("h", {
     },
     25: {
       title: "New Layer",
-      description(){return "Unlock a new Layer" + (hasAchievement("a",31) ? ", each Power buyable level give 2 free levels on Divider buyable." : ", you need 3 Power buyable level and 2,500 non-free Generator buyable level to buy this upgrade")},
+      description(){return "Unlock a new Layer" + (hasAchievement("a",31) ? ", each Power buyable level give " + format(tmp.h.upgrades[25].effectBase) +" free levels on Divider buyable." : ", you need 3 Power buyable level and 2,500 non-free Generator buyable level to buy this upgrade")},
       cost: new Decimal(1e50),
       effect(){
-        let eff = hasAchievement("a",31) ? tmp.h.buyables[21].totalLevel.mul(2) : new Decimal(0)
+        let eff = hasAchievement("a",31) ? tmp.h.buyables[21].totalLevel.mul(tmp.h.upgrades[25].effectBase) : new Decimal(0)
         return eff
       },
+      effectBase(){
+        let base = new Decimal(2)
+        if (hasAchievement("a",34)) base = base.mul(2)
+        return base
+      },
       unlocked(){
-        return player.h.upgrades.length >= 5
+        return getBoughtUpgradesRow("h", 1) >= 5
       },
       canAfford(){
         return (tmp.h.buyables[21].totalLevel.gte(3) && getBuyableAmount("h",11).gte(2500)) || hasAchievement("a",31)
@@ -641,11 +652,17 @@ addLayer("p", {
   baseResource: "non-free Generator buyable level", // Name of resource prestige is based on
   baseAmount() {return getBuyableAmount("h",11)}, // Get the current amount of baseResource
   type: "custom", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+  getExtraAmount(){
+    let extra = new Decimal(0)
+    if (hasMilestone("p",4)) extra = extra.add(tmp.h.buyables[11].freeLevel.div(5).mul(Math.min(getBoughtUpgradesRow("p", 2)+1, 5)))
+    return extra
+  },
   getResetGain() {
-    let x = getBuyableAmount("h",11)
-    if (hasMilestone("p",4)) x = x.add(tmp.h.buyables[11].freeLevel.div(5).floor())
+    let x = getBuyableAmount("h",11).add(tmp.p.getExtraAmount)
     let gain = new Decimal(10).pow(x.add(1e-10).pow(0.5).sub(50))
-    if (hasAchievement("a", 33)) gain = gain.mul(achievementEffect("a", 33))
+    if (hasAchievement("a",33)) gain = gain.mul(achievementEffect("a", 33))
+    if (hasAchievement("a",35)) gain = gain.mul(2)
+    if (hasUpgrade("p",25)) gain = gain.mul(upgradeEffect("p",25)[0])
     return gain.floor()
   },
   passiveGeneration(){
@@ -665,6 +682,7 @@ addLayer("p", {
   },
   effect(){
     let eff = player.p.points.add(1)
+    if (hasUpgrade("p",23)) eff = eff.pow(1.5)
     return eff
   },
   effectDescription(){
@@ -681,6 +699,10 @@ addLayer("p", {
         "blank",
         "resource-display",
         "blank",
+        ["display-text",function(){
+          return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+        ],
+        "blank",
         "milestones"
       ],
     },
@@ -692,7 +714,11 @@ addLayer("p", {
         "resource-display",
         "blank",
         ["display-text", function(){
-          return "Note: When you buy an upgrade, the cost of the upgrades are doubled."
+          return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+        ],
+        "blank",
+        ["display-text", function(){
+          return "Note: When you buy an upgrade on first row, the cost of the other same row upgrades are increased."
         }],
         "upgrades"
       ],
@@ -729,7 +755,7 @@ addLayer("p", {
     },
     5: {
       requirementDescription: "5 bought prestige upgrades",
-      effectDescription(){return "buying a buyable costs nothing, add 20% of free Generator buyable level into prestige points gain formula (+" + formatWhole(tmp.h.buyables[11].freeLevel.div(5).floor()) + ")."},
+      effectDescription(){return "buying a buyable costs nothing, add 20% of free Generator buyable level into prestige points gain formula, multiply the amount of second row prestige upgrades bought (max 100%, +" + format(tmp.h.buyables[11].freeLevel.div(5).mul(Math.min(getBoughtUpgradesRow("p", 2)+1, 5)), 1) + ")."},
       done() { return player.p.upgrades.length >= 5},
     },
   },
@@ -737,7 +763,7 @@ addLayer("p", {
     11: {
       title: "Constant boost",
       description(){return "You gain 500x more h0nde power."},
-      cost(){return new Decimal(3).mul(new Decimal(2).pow(player.p.upgrades.length))},
+      cost(){return new Decimal(3).mul(new Decimal(2).pow(getBoughtUpgradesRow("p", 1)))},
       effect(){
         let eff = new Decimal(500)
         return eff
@@ -752,7 +778,7 @@ addLayer("p", {
     12: {
       title: "h0nde boost",
       description(){return "You gain more h0nde power based on h0nde accounts."},
-      cost(){return new Decimal(3).mul(new Decimal(2).pow(player.p.upgrades.length))},
+      cost(){return new Decimal(3).mul(new Decimal(2).pow(getBoughtUpgradesRow("p", 1)))},
       effect(){
         let eff = new Decimal(10).pow(player.points.pow(0.5)).pow(0.5)
         return eff
@@ -770,7 +796,7 @@ addLayer("p", {
     13: {
       title: "Generator boost",
       description(){return "+0.7 Generator buyable level to h0nde production exponent."},
-      cost(){return new Decimal(3).mul(new Decimal(2).pow(player.p.upgrades.length))},
+      cost(){return new Decimal(3).mul(new Decimal(2).pow(getBoughtUpgradesRow("p", 1)))},
       effect(){
         let eff = new Decimal(0.7)
         return eff
@@ -785,7 +811,7 @@ addLayer("p", {
     14: {
       title: "Multiplier boost",
       description(){return "Multiplier buyable effect ^1.25."},
-      cost(){return new Decimal(3).mul(new Decimal(2).pow(player.p.upgrades.length))},
+      cost(){return new Decimal(3).mul(new Decimal(2).pow(getBoughtUpgradesRow("p", 1)))},
       effect(){
         let eff = new Decimal(1.25)
         return eff
@@ -800,7 +826,7 @@ addLayer("p", {
     15: {
       title: "Power boost",
       description(){return "You gain more h0nde power based on non-free Power buyable level."},
-      cost(){return new Decimal(3).mul(new Decimal(2).pow(player.p.upgrades.length))},
+      cost(){return new Decimal(3).mul(new Decimal(2).pow(getBoughtUpgradesRow("p", 1)))},
       effect(){
         let eff = new Decimal(2).pow(getBuyableAmount("h",21).pow(2)).pow(0.5)
         return eff
@@ -815,8 +841,94 @@ addLayer("p", {
         return true
       },
     },
+    21: {
+      title: "Divider boost",
+      description(){return "Every Power buyable level increase Divider buyable base by 1."},
+      cost(){return new Decimal(1000)},
+      effect(){
+        let eff = tmp.h.buyables[21].totalLevel
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 1) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    22: {
+      title: "Faster boost",
+      description(){return "Generator buyable multiplier boost occur 1.25x faster."},
+      cost(){return new Decimal(9000)},
+      effect(){
+        let eff = new Decimal(1.25)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 1) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    23: {
+      title: "Prestige boost",
+      description(){return "Prestige Points effect ^1.5."},
+      cost(){return new Decimal(81000)},
+      effect(){
+        let eff = new Decimal(1.5)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 1) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    24: {
+      title: "Stronger boost",
+      description(){return "Increase Generator buyable multiplier boost by 0.1."},
+      cost(){return new Decimal(2187000)},
+      effect(){
+        let eff = new Decimal(0.1)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 1) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    25: {
+      title: "Self Synergy",
+      description(){return "Boost PP gain and h0nde power gain based on itself."},
+      cost(){return new Decimal(177147000)},
+      effect(){
+        let eff = [player.p.points.add(10).log(10), player.h.points.add(10).log(10)]
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("p",25)[0]) + "x PP gain, " + format(upgradeEffect("p",25)[1]) + "x power gain"
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 1) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
   },
 })
+
+function getBoughtUpgradesRow(layer, row){
+  let x = 0
+  for (let i = 1; i <= 9; i++){
+    if (hasUpgrade(layer,row*10+i)) x++
+  }
+  return x
+}
 
 addLayer("a", {
   startData() { return {
@@ -928,13 +1040,23 @@ addLayer("a", {
       },
     },
     33: {
-      name: "Anti-Upgraded",
+      name: "Anti-Upgrades",
       done(){return player.h.points.gte(1e24) && player.h.upgrades.length == 0},
       tooltip(){return "Reach " + format(1e24) + " h0nde powers without h0nde upgrades. Reward: Power buyable level boost PP gain. (" + format(achievementEffect("a", 33)) + "x)"},
       effect(){
-        let eff = tmp.h.buyables[21].totalLevel.add(1).pow(0.5)
+        let eff = tmp.h.buyables[21].totalLevel.add(1)
         return eff
       },
+    },
+    34: {
+      name: "Anti-Buyables",
+      done(){return player.h.points.gte(1e48) && getBuyableAmount("h",12).eq(0) && getBuyableAmount("h",13).eq(0) && getBuyableAmount("h",21).eq(0)},
+      tooltip(){return "Reach " + format(1e48) + " h0nde powers without non-free Multiplier, Divider and Power buyables. Reward: Add 1 to Generator buyable level, New Layer gives 2x more free levels."},
+    },
+    35: {
+      name: "Anti-Generators",
+      done(){return player.h.points.gte(1e47) && getBuyableAmount("h",11).eq(0)},
+      tooltip(){return "Reach " + format(1e47) + " h0nde powers without non-free Generator buyables. Reward: Double Prestige Points gain, Square Divider buyable effect."},
     },
   },
 })
@@ -964,7 +1086,7 @@ addLayer("s", {
     ["display-text", function(){
       return "Generator buyable multiplier from Generator buyable: " + format(tmp.h.buyables[11].effectBoost) + "x"
     }],
-    ["blank", "1000px"],
+    ["blank", "3000px"],
     ["display-text", function(){
       return "The players that completed the Septendecillion (e54) h0nde power challenge at 10 July:" + `<br>` +
       "Elund (07:50 GMT+8)" + `<br>` +
