@@ -128,13 +128,13 @@ function maxTickLength() {
 function fixOldSave(oldVersion){
 	if (oldVersion == 0.05 && player.a.achievements.includes("45")){
 		player.a.achievements = []
-		alert("due to a game breaking bug, your achievements has been cleared, and you will did a forced prestige reset, but I will give you 1e20 h0nde powers for free")
+		alert("due to a game breaking bug, your achievements has been cleared, and you will did a forced prestige reset, but I will give you 1e20 h0nde powers for free if you didn't prestiged")
 		setBuyableAmount("h",11,new Decimal(0))
 		setBuyableAmount("h",12,new Decimal(0))
 		setBuyableAmount("h",13,new Decimal(0))
 		setBuyableAmount("h",21,new Decimal(0))
 		setBuyableAmount("h",22,new Decimal(0))
 		player.h.upgrades = []
-		player.h.points = new Decimal(1e20)
+		if (!player.p.unlocked) player.h.points = new Decimal(1e20)
 	}
 }
