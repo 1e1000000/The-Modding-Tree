@@ -98,10 +98,11 @@ addLayer("h", {
     },
   },
   automate(){
-    if (hasMilestone("p",2) && player.h.autoBuyable11) tmp.h.buyables[11].buyMax()
-    if (hasMilestone("p",3) && player.h.autoBuyable12) tmp.h.buyables[12].buyMax()
-    if (hasMilestone("p",3) && player.h.autoBuyable13) tmp.h.buyables[13].buyMax()
-    if (hasMilestone("p",4) && player.h.autoBuyable21) tmp.h.buyables[21].buyMax()
+    if (hasMilestone("p",2) && player.h.autoBuyable11 && tmp.h.buyables[11].unlocked) tmp.h.buyables[11].buyMax()
+    if (hasMilestone("p",3) && player.h.autoBuyable12 && tmp.h.buyables[12].unlocked) tmp.h.buyables[12].buyMax()
+    if (hasMilestone("p",3) && player.h.autoBuyable13 && tmp.h.buyables[13].unlocked) tmp.h.buyables[13].buyMax()
+    if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[21].unlocked) tmp.h.buyables[21].buyMax()
+    if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[22].unlocked) tmp.h.buyables[22].buyMax()
   },
   buyables: {
     11: {
@@ -110,7 +111,7 @@ addLayer("h", {
         return "Produce " + format(tmp.h.buyables[11].effectBase) + " h0nde powers per second." + `<br>` +
         "Currently: " + format(buyableEffect("h",11)) + "/s" + `<br>` + `<br>` + 
         "Cost: " + format(tmp.h.buyables[11].cost, 2, true) + " h0nde power" + `<br>` +
-        "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + " / " + formatWhole(tmp.h.buyables[11].purchaseLimit) + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + (player.p.breakLimit ? "" : " / " + formatWhole(tmp.h.buyables[11].purchaseLimit)) + `<br>` +
         format(tmp.h.buyables[11].multiBoostMultiplier) + "x production boost counts: " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).floor()) + 
         " (Next at: " + formatWhole(tmp.h.buyables[11].totalLevel) + "/" + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).add(1e-10).ceil().mul(tmp.h.buyables[11].multiBoostDensity)) + ")" + `<br>` +
         "h0nde power production multi from this buyable: " + format(tmp.h.buyables[11].effectMul)
@@ -123,6 +124,7 @@ addLayer("h", {
       },
       costScaling(){
         let scaling = new Decimal(1.05)
+        if (hasUpgrade("p",34)) scaling = scaling.sub(0.01)
         return scaling
       },
       cost(x=player[this.layer].buyables[this.id]){
@@ -133,6 +135,7 @@ addLayer("h", {
       },
       purchaseLimit(){
         let lim = new Decimal(2500)
+        if (player.p.breakLimit) lim = new Decimal(Infinity)
         return lim
       },
       freeLevel(){
@@ -157,10 +160,12 @@ addLayer("h", {
         if (hasAchievement("a",25)) m = m.add(0.1)
         if (hasAchievement("a",32)) m = m.add(achievementEffect("a",32))
         if (hasUpgrade("p",24)) m = m.add(0.1)
+        if (hasUpgrade("p",32)) m = m.add(upgradeEffect("p",32))
         return m
       },
       multiBoostAmountSCStart(){
         let s = new Decimal(100)
+        if (hasUpgrade("p",35)) s = s.add(40)
         return s
       },
       effectBoost(){
@@ -184,10 +189,12 @@ addLayer("h", {
         if (hasUpgrade("p", 12)) x = x.mul(upgradeEffect("p", 12))
         if (hasUpgrade("p", 15)) x = x.mul(upgradeEffect("p", 15))
         if (hasUpgrade("p", 25)) x = x.mul(upgradeEffect("p", 25)[1])
+        x = x.mul(buyableEffect("h",22))
         return x
       },
       effectExp(){
-        let e = buyableEffect("h",21)
+        let e = new Decimal(1)
+        e = e.add(buyableEffect("h",21))
         if (hasUpgrade("p",13)) e = e.add(0.7)
         return e
       },
@@ -272,6 +279,7 @@ addLayer("h", {
         if (hasUpgrade("h",21)) e = e.mul(1.25)
         if (hasUpgrade("h",23)) e = e.mul(1.5)
         if (hasUpgrade("p",14)) e = e.mul(1.25)
+        if (hasUpgrade("p",33)) e = e.mul(2)
         return e
       },
       effect(){
@@ -347,6 +355,7 @@ addLayer("h", {
         let e = new Decimal(2)
         if (hasUpgrade("h",23)) e = e.mul(1.5)
         if (hasAchievement("a",35)) e = e.mul(2)
+        if (hasAchievement("a",45)) e = e.mul(1.7)
         return e
       },
       effect(){
@@ -387,7 +396,7 @@ addLayer("h", {
       title: "Power",
       display(){
         return "Increase Generator buyable level to h0nde power production exponent by " + format(tmp.h.buyables[21].effectBase) + "." + `<br>` +
-        "Currently: ^" + format(buyableEffect("h",21)) + `<br>` + `<br>` + 
+        "Currently: +" + format(buyableEffect("h",21)) + `<br>` + `<br>` + 
         "Cost: " + format(tmp.h.buyables[21].cost) + " h0nde power" + `<br>` +
         "Level " + formatWhole(getBuyableAmount("h", 21)) + (tmp.h.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[21].freeLevel))
       },
@@ -414,10 +423,12 @@ addLayer("h", {
       },
       effectBase(){
         let x = new Decimal(0.5)
+        if (hasUpgrade("p",31)) x = x.add(0.2)
         return x
       },
       effect(){
-        let x = tmp.h.buyables[21].totalLevel.mul(tmp.h.buyables[21].effectBase).add(1)
+        let x = tmp.h.buyables[21].totalLevel.mul(tmp.h.buyables[21].effectBase)
+        if (x.gte(10)) x = x.div(10).pow(0.5).mul(10)
         return x
       },
       canAfford(){
@@ -444,6 +455,67 @@ addLayer("h", {
         if (!hasMilestone("p",5)) player.h.points = player.h.points.sub(new Decimal(10).pow(cost))
       },
       unlocked(){ return hasAchievement("a",24)},
+    },
+    22: {
+      title: "Booster",
+      display(){
+        return "Multiply h0nde power gain by " + format(tmp.h.buyables[22].effectBase) + "." + `<br>` +
+        "Currently: " + format(buyableEffect("h",22)) + "x" + `<br>` + `<br>` + 
+        "Cost: " + format(tmp.h.buyables[22].cost) + " h0nde power" + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("h", 22)) + (tmp.h.buyables[22].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[22].freeLevel))
+      },
+      costBase(){
+        let base = new Decimal(1e140)
+        return base 
+      },
+      costScaling(){ // exponent scaling
+        let scaling = new Decimal(1.1)
+        return scaling
+      },
+      cost(x=player[this.layer].buyables[this.id]){
+        let a = tmp.h.buyables[22].costBase
+        let r = tmp.h.buyables[22].costScaling
+        return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
+      },
+      freeLevel(){
+        let free = new Decimal(0)
+        return free
+      },
+      totalLevel(){
+        return getBuyableAmount("h", 22).add(tmp.h.buyables[22].freeLevel)
+      },
+      effectBase(){
+        let x = new Decimal(1000)
+        return x
+      },
+      effect(){
+        let x = tmp.h.buyables[22].effectBase.pow(tmp.h.buyables[22].totalLevel)
+        return x
+      },
+      canAfford(){
+        return player.h.points.gte(tmp.h.buyables[22].cost)
+      },
+      buy(){
+        let cost = tmp.h.buyables[22].cost
+        if (player.h.points.lt(cost)) return
+        addBuyables("h", 22, new Decimal(1))
+        if (!hasMilestone("p",5)) player.h.points = player.h.points.minus(cost)
+      },
+      buyMax(){
+        let maxBulk = tmp.h.buyables[22].purchaseLimit.sub(getBuyableAmount("h", 22))
+        let bulk
+        let a = tmp.h.buyables[22].cost.log(10)
+        let r = tmp.h.buyables[22].costScaling
+        let x = player.h.points.max(1).log(10)
+        if (x.lt(a)) return
+        if (a.eq(0)) bulk = new Decimal(1)
+        else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
+        let cost = a.mul(r.pow(bulk.sub(1))) // log
+        addBuyables("h", 22, bulk)
+        if (!hasMilestone("p",5)) player.h.points = player.h.points.sub(new Decimal(10).pow(cost))
+      },
+      unlocked(){ return hasAchievement("a",41)},
     },
   },
   clickables: {
@@ -585,7 +657,7 @@ addLayer("h", {
       },
     },
     23: {
-      title: "Booster",
+      title: "Exponentator",
       description(){return "Raise Multiplier and Divider buyable effect to the 1.5th power" + (hasAchievement("a",31) ? "." : ", you need 85 Multiplier buyable level to buy this upgrade")},
       cost: new Decimal(1e23),
       effect(){
@@ -645,6 +717,7 @@ addLayer("p", {
     unlocked: false,
 	  points: new Decimal(0),
     total: new Decimal(0),
+    breakLimit: false,
   }},
   color: "#31aeb0",
   requires: new Decimal(2500), // Can be a function that takes requirement increases into account
@@ -660,9 +733,13 @@ addLayer("p", {
   getResetGain() {
     let x = getBuyableAmount("h",11).add(tmp.p.getExtraAmount)
     let gain = new Decimal(10).pow(x.add(1e-10).pow(0.5).sub(50))
+    if (player.p.breakLimit) gain = gain.root(clickableEffect("p",11))
+
     if (hasAchievement("a",33)) gain = gain.mul(achievementEffect("a", 33))
     if (hasAchievement("a",35)) gain = gain.mul(2)
     if (hasUpgrade("p",25)) gain = gain.mul(upgradeEffect("p",25)[0])
+    gain = gain.mul(buyableEffect("p",11))
+    if (hasAchievement("a",44)) gain = gain.mul(achievementEffect("a", 44))
     return gain.floor()
   },
   passiveGeneration(){
@@ -677,6 +754,9 @@ addLayer("p", {
   canReset(){
     return getBuyableAmount("h",11).gte(2500)
   },
+  hotkeys: [
+    {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+  ],
   update(diff){
     player.p.points = player.p.points.round()
   },
@@ -716,12 +796,27 @@ addLayer("p", {
         ["display-text", function(){
           return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
         ],
-        "blank",
+        "blank","buyables","blank",
         ["display-text", function(){
           return "Note: When you buy an upgrade on first row, the cost of the other same row upgrades are increased."
         }],
         "upgrades"
       ],
+    },
+    "BREAK LIMIT": {
+      content: [
+        "main-display",
+        "prestige-button",
+        "blank",
+        "resource-display",
+        "blank",
+        ["display-text", function(){
+          return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+        ],
+        "blank",
+        ["clickable",11],
+      ],
+      unlocked(){return hasMilestone("p",6)}
     },
   },
   doReset(resettingLayer) {
@@ -749,7 +844,7 @@ addLayer("p", {
     },
     4: {
       requirementDescription: "4 bought prestige upgrades",
-      effectDescription: "autobuy Power buyable, add 1 to Power buyable level.",
+      effectDescription: "autobuy row 2 buyables, add 1 to Power buyable level.",
       done() { return player.p.upgrades.length >= 4},
       toggles: [["h","autoBuyable21"]],
     },
@@ -758,6 +853,33 @@ addLayer("p", {
       effectDescription(){return "buying a buyable costs nothing, add 20% of free Generator buyable level into prestige points gain formula, multiply the amount of second row prestige upgrades bought (max 100%, +" + format(tmp.h.buyables[11].freeLevel.div(5).mul(Math.min(getBoughtUpgradesRow("p", 2)+1, 5)), 1) + ")."},
       done() { return player.p.upgrades.length >= 5},
     },
+    6: {
+      requirementDescription: "10 bought prestige upgrades",
+      effectDescription(){return "Unlock an ability for remove the limit of non-free Generator buyable level."},
+      done() { return player.p.upgrades.length >= 10},
+    },
+  },
+  clickables:{
+    11: {
+      title() {return (player.p.breakLimit ? "FIX" : "BREAK") + " LIMIT"},
+      display(){
+        return "Require:" + `<br>` + format(player.h.points) + "/" + format(1e107) + " h0nde power" + `<br>` + format(player.p.total) + "/" + format(5e9) + " total PP"
+      },
+      tooltip(){
+        return "When you break the limit, you can buy Generator buyable as many as possible, but base PP gain is " + format(clickableEffect("p",11)) + "th rooted, and will did a forced prestige reset when you break it or fix it."
+      },
+      canClick(){return player.h.points.gte(1e107) && player.p.total.gte(5e9)},
+      onClick(){
+        doReset("p",true)
+        player.p.breakLimit = Boolean(1-player.p.breakLimit)
+      },
+      unlocked(){return true},
+      effect(){
+        let root = new Decimal(5)
+        return root
+      },
+      style: {'height':'200px', 'width':'200px'},
+   },
   },
   upgrades: {
     11: {
@@ -919,6 +1041,149 @@ addLayer("p", {
         return true
       },
     },
+    31: {
+      title: "Power^2",
+      description(){return "Power buyable base is increased by 0.2."},
+      cost(){return new Decimal(1e13)},
+      effect(){
+        let eff = new Decimal(0.2)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 2) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    32: {
+      title: "Prestige Generator Multiplier",
+      description(){return "Increase Generator buyable multiplier boost based on PP."},
+      cost(){return new Decimal(1e17)},
+      effect(){
+        let eff = player.p.points.max(1).log(10).div(100)
+        if (eff.gte(0.2)) eff = eff.div(0.2).pow(0.2).mul(0.2)
+        return eff
+      },
+      effectDisplay(){
+        return "+" + format(upgradeEffect("p",32),3)
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 2) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    33: {
+      title: "Multiplier Superboost",
+      description(){return "Square Multiplier buyable effect."},
+      cost(){return new Decimal(1e19)},
+      effect(){
+        let eff = new Decimal(2)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 2) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    34: {
+      title: "Unscaled",
+      description(){return "Reduce Generator buyable cost scaling by 0.01."},
+      cost(){return new Decimal(1e23)},
+      effect(){
+        let eff = new Decimal(0.01)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 2) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+    35: {
+      title: "Unsoftcapped",
+      description(){return "The softcap of Generator buyable multiplier starts 40 later."},
+      cost(){return new Decimal(1e29)},
+      effect(){
+        let eff = new Decimal(40)
+        return eff
+      },
+      unlocked(){
+        return getBoughtUpgradesRow("p", 2) >= 5
+      },
+      canAfford(){
+        return true
+      },
+    },
+  },
+  buyables: {
+    11: {
+      title: "Prestige gain",
+      display(){
+        return "Multiply prestige points gain by " + format(tmp.p.buyables[11].effectBase) + "." + `<br>` +
+        "Currently: " + format(buyableEffect("p",11)) + "x" + `<br>` + `<br>` + 
+        "Cost: " + format(tmp.p.buyables[11].cost) + " prestige points" + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("p", 11)) + (tmp.p.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.p.buyables[11].freeLevel))
+      },
+      costBase(){
+        let base = new Decimal(1e12)
+        return base 
+      },
+      costScaling(){ // exponent scaling
+        let scaling = new Decimal(1.1)
+        return scaling
+      },
+      cost(x=player[this.layer].buyables[this.id]){
+        let a = tmp.p.buyables[11].costBase
+        let r = tmp.p.buyables[11].costScaling
+        return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
+      },
+      freeLevel(){
+        let free = new Decimal(0)
+        return free
+      },
+      totalLevel(){
+        return getBuyableAmount("p", 11).add(tmp.p.buyables[11].freeLevel)
+      },
+      effectBase(){
+        let x = new Decimal(2)
+        if (hasAchievement("a",43)) x = x.add(1)
+        return x
+      },
+      effect(){
+        let x = tmp.p.buyables[11].effectBase.pow(tmp.p.buyables[11].totalLevel)
+        return x
+      },
+      canAfford(){
+        return player.p.points.gte(tmp.p.buyables[11].cost)
+      },
+      buy(){
+        let cost = tmp.p.buyables[11].cost
+        if (player.p.points.lt(cost)) return
+        addBuyables("p", 11, new Decimal(1))
+        if (true) player.p.points = player.p.points.minus(cost)
+      },
+      buyMax(){
+        let maxBulk = tmp.p.buyables[11].purchaseLimit.sub(getBuyableAmount("p", 11))
+        let bulk
+        let a = tmp.p.buyables[11].cost.log(10)
+        let r = tmp.p.buyables[11].costScaling
+        let x = player.p.points.max(1).log(10)
+        if (x.lt(a)) return
+        if (a.eq(0)) bulk = new Decimal(1)
+        else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
+        let cost = a.mul(r.pow(bulk.sub(1))) // log
+        addBuyables("p", 11, bulk)
+        if (true) player.p.points = player.p.points.sub(new Decimal(10).pow(cost))
+      },
+      unlocked(){ return hasAchievement("a",41)},
+    },
   },
 })
 
@@ -964,6 +1229,7 @@ addLayer("a", {
       effect(){
         let eff = player.points.add(1)
         if (hasUpgrade("h",14)) eff = eff.pow(2)
+        if (hasAchievement("a",42)) eff = eff.pow(achievementEffect("a",42))
         return eff
       },
     },
@@ -1019,7 +1285,7 @@ addLayer("a", {
       },
     },
     25: {
-      name: "Yet another softcap",
+      name: "Super Generator",
       done(){return tmp.h.buyables[11].totalLevel.gte(2500)},
       tooltip(){return "Get 2,500 Generator buyable level. Reward: you can buy max Multiplier and Divider buyables, Generator buyable multiplier boost +0.1."},
     },
@@ -1057,6 +1323,39 @@ addLayer("a", {
       name: "Anti-Generators",
       done(){return player.h.points.gte(1e47) && getBuyableAmount("h",11).eq(0)},
       tooltip(){return "Reach " + format(1e47) + " h0nde powers without non-free Generator buyables. Reward: Double Prestige Points gain, Square Divider buyable effect."},
+    },
+    41: {
+      name: "Limit Break",
+      done(){return player.p.breakLimit},
+      tooltip(){return "Break the limit of Generator buyable level. Reward: unlock a h0nde buyable and a prestige buyable."},
+    },
+    42: {
+      name: "Super Generator",
+      done(){return tmp.h.buyables[11].totalLevel.gte(10000) && tmp.h.buyables[11].freeLevel.gte(1000)},
+      tooltip(){return "Get 10,000 Generator buyable level with at least 1,000 free Generator buyable level. Reward: An Alt accounts reward is stronger based on total Generator buyable level. (^" + format(achievementEffect("a", 42),3) + ")"},
+      effect(){
+        let eff = tmp.h.buyables[11].totalLevel.add(10).log(10)
+        return eff
+      },
+    },
+    43: {
+      name: "No more h0nde",
+      done(){return player.h.points.gte(1e42) && getBuyableAmount("h",11).eq(0) && getBuyableAmount("h",12).eq(0) && getBuyableAmount("h",13).eq(0) && getBuyableAmount("h",21).eq(0) && getBuyableAmount("h",22).eq(0)},
+      tooltip(){return "Reach " + format(1e42) + " h0nde powers without any h0nde buyables or upgrades. Reward: Add 1 into Prestige gain buyable base."},
+    },
+    44: {
+      name: "INFINITE POWER",
+      done(){return player.h.points.gte(Number.MAX_VALUE)},
+      tooltip(){return "Reach " + format(Number.MAX_VALUE) + " h0nde powers. Reward: You gain more PP based on h0nde powers. (" + format(achievementEffect("a", 44)) + "x)"},
+      effect(){
+        let eff = player.h.points.add(1).log(10).div(100).max(1)
+        return eff
+      },
+    },
+    45: {
+      name: "Fix Limit is exist, why not?",
+      done(){return tmp.h.getResetGain.gte(1e20) && !player.p.breakLimit},
+      tooltip(){return "Reach " + format(1e20) + " PP gain on reset while limit is fixed. Reward: Divider buyable effect is ^1.7."},
     },
   },
 })

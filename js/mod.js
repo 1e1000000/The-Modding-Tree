@@ -13,20 +13,31 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.04",
-	name: "The h0nde prestige era II",
+	num: "0.05",
+	name: "Break the Generator buyable limit",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.05 - Break the Generator buyable limit</h3><br>
+	- Added BREAK LIMIT, allow player to get more than 2,500 non-free Generator buyable level but reduce PP gain.<br>
+	- Added 5 upgrades, 2 buyables and 5 achievements.<br>
+	- Added a hotkey for prestige.<br>
+	- Slightly changed 4th prestige milestone description.<br>
+	- Changed the h0nde buyable 21 effect display and softcapped the effect at +10.<br>
+	- Renamed h0nde upgrade 23 & achievement 25.<br>
+	- Fixed you can buy buyables automatically without unlock it.<br>
+	- Endgame: 1e377 h0nde powers & 1e33 total PP.<br>
+	<br>
 	<h3>v0.04 - The h0nde prestige era II</h3><br>
 	- Added 5 upgrades and 2 achievements.<br>
 	- Added a function that calculate how many upgrades in a row and a layer bought.<br>
 	- Generator buyable cost can show small number.<br>
 	- Renamed and buffed the Achievement 33.<br>
 	- Endgame: 1e107 h0nde powers & 5e9 total PP.<br>
+	<br>
 	<h3>v0.03 - The h0nde prestige era I</h3><br>
 	- Added a new layer (Prestige)<br>
 	- Added 3 achievements.<br>
@@ -34,19 +45,23 @@ Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	- Combined Buy max Multiplier and Divider buyable.<br>
 	- Fixed game-breaking bug when buying Power buyable with 0 h0nde power.<br>
 	- Endgame: 27.5 h0nde accounts & 600 total PP.<br>
+	<br>
 	<h3>v0.022</h3><br>
 	- Added placeholder for prestige layer.<br>
 	- Endgame remain same.<br>
+	<br>
 	<h3>v0.021</h3><br>
 	- Added just one upgrades.<br>
 	- Fixed some buyables can go pass limit while buying multiple.<br>
 	- Endgame: 1e50 h0nde power & all h0nde upgrades.<br>
+	<br>
 	<h3>v0.02 - The begin of h0nde creation II</h3><br>
 	- Added 2 buyables, 6 upgrades and 5 achievements.<br>
 	- Added more info on Generator buyable.<br>
 	- Softcap Generator buyable multiplier boost at 100 boosts.<br>
 	- Make number between 1e12 and 1e15 less chaotic, but e1e9 and e1e12 more chaotic.<br>
 	- Endgame: 22 h0nde accounts & max out Generator buyable.<br>
+	<br>
     <h3>v0.01 - The begin of h0nde creation I</h3><br>
 	- Initial Release.<br>
 	- Endgame: 11 h0nde accounts.<br>
