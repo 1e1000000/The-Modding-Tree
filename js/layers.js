@@ -1354,7 +1354,7 @@ addLayer("a", {
     },
     45: {
       name: "Fix Limit is exist, why not?",
-      done(){return tmp.h.getResetGain.gte(1e20) && !player.p.breakLimit},
+      done(){return tmp.p.getResetGain.gte(1e20) && !player.p.breakLimit},
       tooltip(){return "Reach " + format(1e20) + " PP gain on reset while limit is fixed. Reward: Divider buyable effect is ^1.7."},
     },
   },

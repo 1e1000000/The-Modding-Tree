@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.05",
+	num: "0.051",
 	name: "Break the Generator buyable limit",
 }
 
@@ -21,6 +21,10 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.051</h3><br>
+	- Fixed you can get Achievement 45 with 1e20 h0nde power instead of 1e20 PP.<br>
+	- Endgame remain same.<br>
+	<br>
 	<h3>v0.05 - Break the Generator buyable limit</h3><br>
 	- Added BREAK LIMIT, allow player to get more than 2,500 non-free Generator buyable level but reduce PP gain.<br>
 	- Added 5 upgrades, 2 buyables and 5 achievements.<br>
@@ -122,4 +126,15 @@ function maxTickLength() {
 // Use this if you need to undo inflation from an older version. If the version is older than the version that fixed the issue,
 // you can cap their current resources with this.
 function fixOldSave(oldVersion){
+	if (oldVersion == 0.05 && player.a.achievements.includes("45")){
+		player.a.achievements = []
+		alert("due to a game breaking bug, your achievements has been cleared, and you will did a forced prestige reset, but I will give you 1e20 h0nde powers for free")
+		setBuyableAmount("h",11,new Decimal(0))
+		setBuyableAmount("h",12,new Decimal(0))
+		setBuyableAmount("h",13,new Decimal(0))
+		setBuyableAmount("h",21,new Decimal(0))
+		setBuyableAmount("h",22,new Decimal(0))
+		player.h.upgrades = []
+		player.h.points = new Decimal(1e20)
+	}
 }
