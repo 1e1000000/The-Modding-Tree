@@ -8,12 +8,12 @@ let modInfo = {
 	discordName: "",
 	discordLink: "",
 	initialStartPoints: new Decimal (0), // Used for hard resets and new players
-	offlineLimit: 1,  // In hours
+	offlineLimit: 48,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.051",
+	num: "0.052",
 	name: "Break the Generator buyable limit",
 }
 
@@ -21,6 +21,12 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br>
+	<h3>v0.052</h3><br>
+	- Added more stuffs in Statistic node.<br>
+	- Changed h0nde power production display to +X h0nde power/s if you have more than 1e1,000 h0nde powers.<br>
+	- Extended the Offline time limit to 48 hours, and the offline progress finally exist!<br>
+	- Endgame remain same.<br>
+	<br>
 	<h3>v0.051</h3><br>
 	- Fixed you can get Achievement 45 with 1e20 h0nde power instead of 1e20 PP.<br>
 	- Endgame remain same.<br>

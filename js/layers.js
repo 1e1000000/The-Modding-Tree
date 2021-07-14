@@ -43,7 +43,7 @@ addLayer("h", {
       content: [
         "main-display",
         ["display-text",
-          function(){return "You are gaining " + format(layers.h.getResetGain()) + " h0nde powers per second"}
+          function(){return (player.p.points.gte("ee3") ? "+" : "You are gaining ") + format(layers.h.getResetGain()) + (player.p.points.gte("ee3") ? " h0nde powers/s" : " h0nde powers per second")}
         ],
         ["infobox", "info"],["infobox", "info2"]
         ],
@@ -1382,8 +1382,60 @@ addLayer("s", {
     ["display-text", function(){
       return "Generator buyable levels: " + formatWhole(tmp.h.buyables[11].totalLevel) + " (" + formatWhole(getBuyableAmount("h", 11)) + " + " + formatWhole(tmp.h.buyables[11].freeLevel) + ")"
     }],
+    "blank",
     ["display-text", function(){
-      return "Generator buyable multiplier from Generator buyable: " + format(tmp.h.buyables[11].effectBoost) + "x"
+      return "h0nde power productions:"
+    }],
+    ["display-text", function(){
+      return "Base production: " + format(tmp.h.buyables[11].effectMul) + "/s"
+    }],
+    ["display-text", function(){
+      return "From Generator buyable bought multipliers: " + format(tmp.h.buyables[11].effectBoost) + "x"
+    }],
+    ["display-text", function(){
+      return (tmp.h.buyables[12].unlocked ? "From Multiplier buyable: " + format(buyableEffect("h",12)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasAchievement("a", 12) ? "From Achievement An Alt account: " + format(achievementEffect("a", 12)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasAchievement("a", 14) ? "From Achievement MILLION POWER: " + format(achievementEffect("a", 14)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasAchievement("a", 22) ? "From Achievement Upgraded: " + format(achievementEffect("a", 22)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasAchievement("a", 24) ? "From Achievement Faster than a potato: " + format(achievementEffect("a", 24)) + "x" : "")
+    }],
+
+    ["display-text", function(){
+      return (player.p.unlocked ? "From Prestige Points: " + format(tmp.p.effect) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasUpgrade("p", 11) ? "From Prestige Upgrade Constant boost: " + format(upgradeEffect("p", 11)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasUpgrade("p", 12) ? "From Prestige Upgrade h0nde boost: " + format(upgradeEffect("p", 12)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasUpgrade("p", 15) ? "From Prestige Upgrade Power boost: " + format(upgradeEffect("p", 15)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasUpgrade("p", 25) ? "From Prestige Upgrade Self Synergy second effect: " + format(upgradeEffect("p", 25)[1]) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (buyableEffect("h",22) ? "From Booster buyable: " + format(buyableEffect("h",22)) + "x" : "")
+    }],
+    ["display-text", function(){
+      return "Total production: " + format(tmp.h.getResetGain) + "/s"
+    }],
+    "blank",
+    ["display-text", function(){
+      if (player.points.gte(86400)){
+        return "If you create " + format(new Decimal(player.points).div(86400)) + " h0nde accounts every second, you could spent 1 day to create the amount of accounts equal to your h0nde accounts."
+      } else {
+        return "If you create a h0nde account every " + formatTime(new Decimal(86400).div(player.points)) + ", you could spent 1 day to create the amount of accounts equal to your h0nde accounts."
+      }
     }],
     ["blank", "3000px"],
     ["display-text", function(){
