@@ -1330,7 +1330,7 @@ addLayer("a", {
       tooltip(){return "Break the limit of Generator buyable level. Reward: unlock a h0nde buyable and a prestige buyable."},
     },
     42: {
-      name: "Super Generator",
+      name: "Hyper Generator",
       done(){return tmp.h.buyables[11].totalLevel.gte(10000) && tmp.h.buyables[11].freeLevel.gte(1000)},
       tooltip(){return "Get 10,000 Generator buyable level with at least 1,000 free Generator buyable level. Reward: An Alt accounts reward is stronger based on total Generator buyable level. (^" + format(achievementEffect("a", 42),3) + ")"},
       effect(){
