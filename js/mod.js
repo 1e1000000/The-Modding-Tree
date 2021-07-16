@@ -2,7 +2,7 @@ let modInfo = {
 	name: "The h0nde Tree",
 	id: "h0nde",
 	author: "1e1000000",
-	pointsName: "h0nde accounts",
+	pointsName: "h0nde discord accounts",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
@@ -13,14 +13,25 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.052",
-	name: "Break the Generator buyable limit",
+	num: "0.06",
+	name: "h0nde Challenger",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
-    <h1>Changelog:</h1><br>
+    <h1>Changelog:</h1><br><br>
+	<h2>v0.06 - h0nde Challenger</h2><br>
+	- Added Challenges.<br>
+	- Added 5 upgrades, 1 buyable and 5 achievements.<br>
+	- Added more info on Generator buyable.<br>
+	- Removed the effect of prestige milestone 5.<br>
+	- Renamed h0nde accounts to h0nde discord accounts.<br>
+	- Softcapped PP gain at 1e20 while the limit is fixed.<br>
+	- Fixed h0nde production past 1e1,000 h0nde power doesn't work property.<br>
+	- Fixed on Statistic node, From Boosters buyable row are always show.<br>
+	- Endgame: 100 h0nde discord accounts & 1e91 total PP.<br>
+	<br>
 	<h3>v0.052</h3><br>
 	- Added more stuffs in Statistic node.<br>
 	- Changed h0nde power production display to +X h0nde power/s if you have more than 1e1,000 h0nde powers.<br>
@@ -31,7 +42,7 @@ Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	- Fixed you can get Achievement 45 with 1e20 h0nde power instead of 1e20 PP.<br>
 	- Endgame remain same.<br>
 	<br>
-	<h3>v0.05 - Break the Generator buyable limit</h3><br>
+	<h2>v0.05 - Break the Generator buyable limit</h2><br>
 	- Added BREAK LIMIT, allow player to get more than 2,500 non-free Generator buyable level but reduce PP gain.<br>
 	- Added 5 upgrades, 2 buyables and 5 achievements.<br>
 	- Added a hotkey for prestige.<br>
@@ -41,20 +52,20 @@ Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	- Fixed you can buy buyables automatically without unlock it.<br>
 	- Endgame: 1e377 h0nde powers & 1e33 total PP.<br>
 	<br>
-	<h3>v0.04 - The h0nde prestige era II</h3><br>
+	<h2>v0.04 - The h0nde prestige era II</h2><br>
 	- Added 5 upgrades and 2 achievements.<br>
 	- Added a function that calculate how many upgrades in a row and a layer bought.<br>
 	- Generator buyable cost can show small number.<br>
 	- Renamed and buffed the Achievement 33.<br>
 	- Endgame: 1e107 h0nde powers & 5e9 total PP.<br>
 	<br>
-	<h3>v0.03 - The h0nde prestige era I</h3><br>
+	<h2>v0.03 - The h0nde prestige era I</h2><br>
 	- Added a new layer (Prestige)<br>
 	- Added 3 achievements.<br>
 	- Added incomplete Statistics node<br>
 	- Combined Buy max Multiplier and Divider buyable.<br>
-	- Fixed game-breaking bug when buying Power buyable with 0 h0nde power.<br>
-	- Endgame: 27.5 h0nde accounts & 600 total PP.<br>
+	- Fixed game-breaking bug when buying max Power buyable with 0 h0nde power.<br>
+	- Endgame: 27.5 h0nde discord accounts & 600 total PP.<br>
 	<br>
 	<h3>v0.022</h3><br>
 	- Added placeholder for prestige layer.<br>
@@ -65,16 +76,16 @@ Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	- Fixed some buyables can go pass limit while buying multiple.<br>
 	- Endgame: 1e50 h0nde power & all h0nde upgrades.<br>
 	<br>
-	<h3>v0.02 - The begin of h0nde creation II</h3><br>
+	<h2>v0.02 - The begin of h0nde creation II</h2><br>
 	- Added 2 buyables, 6 upgrades and 5 achievements.<br>
 	- Added more info on Generator buyable.<br>
 	- Softcap Generator buyable multiplier boost at 100 boosts.<br>
 	- Make number between 1e12 and 1e15 less chaotic, but e1e9 and e1e12 more chaotic.<br>
-	- Endgame: 22 h0nde accounts & max out Generator buyable.<br>
+	- Endgame: 22 h0nde discord accounts & max out Generator buyable.<br>
 	<br>
-    <h3>v0.01 - The begin of h0nde creation I</h3><br>
+    <h2>v0.01 - The begin of h0nde creation I</h2><br>
 	- Initial Release.<br>
-	- Endgame: 11 h0nde accounts.<br>
+	- Endgame: 11 h0nde discord accounts.<br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
