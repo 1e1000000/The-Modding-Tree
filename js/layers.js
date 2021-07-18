@@ -12,6 +12,7 @@ addLayer("h", {
     autoBuyable12: false,
     autoBuyable13: false,
     autoBuyable21: false,
+    maxBuyable11CD: 0,
   }},
   color: "#4BDC13",
   requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -35,6 +36,7 @@ addLayer("h", {
   update(diff){
     player.points = tmp.h.getAccounts
     player.bestPoints = player.bestPoints.max(player.points)
+    player.h.maxBuyable11CD = Math.max(0,player.h.maxBuyable11CD-diff)
   },
   row: 0, // Row the layer is in on the tree (0 is the first row)
   layerShown(){return true},
@@ -615,14 +617,21 @@ addLayer("h", {
   clickables: {
     11: {
       title() {return "Buy max Generator buyable"},
+      display() {return "Cooldown: " + formatWhole(player.h.maxBuyable11CD*1000) + "ms"},
       canClick(){return true},
       onClick(){
-        layers.h.buyables[11].buyMax()
+        if (player.h.maxBuyable11CD <= 1e-10){
+          if (player.h.points.gte(tmp.h.buyables[11].cost)) player.h.maxBuyable11CD = 0.1
+          layers.h.buyables[11].buyMax()
+        }
       },
       onHold(){
-        layers.h.buyables[11].buyMax()
+        if (player.h.maxBuyable11CD <= 1e-10){
+          if (player.h.points.gte(tmp.h.buyables[11].cost)) player.h.maxBuyable11CD = 0.1
+          layers.h.buyables[11].buyMax()
+        }
       },
-      unlocked(){return hasAchievement("a",22)},
+      unlocked(){return hasAchievement("a",22) && !hasMilestone("p",2)},
    },
    12: {
     title() {return "Buy max Multiplier and Divider buyable"},
@@ -635,7 +644,7 @@ addLayer("h", {
         layers.h.buyables[12].buyMax()
         layers.h.buyables[13].buyMax()
       },
-      unlocked(){return hasAchievement("a",25)},
+      unlocked(){return hasAchievement("a",25) && !hasMilestone("p",3)},
     },
   },
   autoUpgrade(){

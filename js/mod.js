@@ -13,14 +13,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.06",
+	num: "0.061",
 	name: "h0nde Challenger",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
-Credit to  Vorona, for "Every Xx amount square rooted" calculation.<br><br>
+Credit to Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br><br>
+	<h3>v0.061</h3><br>
+	- Added 0.1 seconds cooldown for manual buy max Generator buyable.<br>
+	- Buy Max Generator and Multiplier/Divider buyable button will be hidden after you unlock the autobuyer.<br>
+	- If you have more than 100.5 honde discord accounts, you save will be reverted to 1e91 prestige points.<br>
+	- Endgame remain same.<br>
+	<br>
 	<h2>v0.06 - h0nde Challenger</h2><br>
 	- Added Challenges.<br>
 	- Added 5 upgrades, 1 buyable and 5 achievements.<br>
@@ -155,5 +161,20 @@ function fixOldSave(oldVersion){
 		player.h.upgrades = []
 		player.h.points = new Decimal(0)
 		if (!player.p.unlocked) player.h.points = new Decimal(1e20)
+	}
+	if (oldVersion == 0.06 && player.bestPoints.gte(100.5)){
+		alert("due to a game breaking bug, your save has been reverted to 1e91 prestige points with level 22 Prestige Gain buyable level, and you will did a forced prestige reset")
+		setBuyableAmount("h",11,new Decimal(0))
+		setBuyableAmount("h",12,new Decimal(0))
+		setBuyableAmount("h",13,new Decimal(0))
+		setBuyableAmount("h",21,new Decimal(0))
+		setBuyableAmount("h",22,new Decimal(0))
+		setBuyableAmount("h",23,new Decimal(0))
+		player.bestPoints = new Decimal(0)
+		player.h.upgrades = []
+		player.h.points = new Decimal(0)
+		player.p.points = new Decimal(1e91)
+		player.p.total = new Decimal(1e91)
+		setBuyableAmount("p",11,new Decimal(22))
 	}
 }
