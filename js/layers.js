@@ -12,7 +12,7 @@ addLayer("h", {
     autoBuyable12: false,
     autoBuyable13: false,
     autoBuyable21: false,
-    maxBuyable11CD: 0,
+    maxBuyable11CD: 0.1,
   }},
   color: "#4BDC13",
   requires: new Decimal(10), // Can be a function that takes requirement increases into account
