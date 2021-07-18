@@ -1788,7 +1788,14 @@ addLayer("s", {
       "Elund (07:50 GMT+8)" + `<br>` +
       "EmJov (09:31 GMT+8)" + `<br>` +
       "Heydiehey123 (16:49 GMT+8)" + `<br>`
-    }],"blank","blank","blank",
+    }],"blank",
+    ["display-text", function(){
+      return "The players that get the most h0nde power at 14 July:" + `<br>` +
+      "Heydiehey123 (1.58e385)" + `<br>` +
+      "Elund (8.62e381)" + `<br>` +
+      "Pennwick (3.55e381)" + `<br>`
+    }],"blank",
+    "blank","blank",
   ],
 })
 
