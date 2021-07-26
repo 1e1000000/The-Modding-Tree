@@ -5,6 +5,7 @@ addLayer("h", {
   startData() { return {
     unlocked: true,
 	  points: new Decimal(0),
+    points2: new Decimal(0),
     best: new Decimal(0),
     total: new Decimal(0),
     autoUpgrade: false,
@@ -37,20 +38,15 @@ addLayer("h", {
     player.points = tmp.h.getAccounts
     player.bestPoints = player.bestPoints.max(player.points)
     player.h.maxBuyable11CD = Math.max(0,player.h.maxBuyable11CD-diff)
+    player.h.points2 = player.h.points2.add(tmp.t.getSuperPowSpeed.mul(diff))
   },
   row: 0, // Row the layer is in on the tree (0 is the first row)
   layerShown(){return true},
   tabFormat: {
     "Info": {
       content: [
-        "main-display",
-        ["display-text",
-          function(){
-            return (player.h.points.gte(new Decimal("1e1000")) ? "+" : "You are gaining ") + format(layers.h.getResetGain()) + (player.h.points.gte(new Decimal("1e1000")) ? " h0nde powers/s" : " h0nde powers per second")
-          }
-        ],
         ["infobox", "info"],["infobox", "info2"]
-        ],
+      ],
     },
     "Upgrades": {
       content: [
@@ -60,9 +56,31 @@ addLayer("h", {
             return (player.h.points.gte(new Decimal("1e1000")) ? "+" : "You are gaining ") + format(layers.h.getResetGain()) + (player.h.points.gte(new Decimal("1e1000")) ? " h0nde powers/s" : " h0nde powers per second")
           }
         ],
+        function(){
+          return player.t.points.gte(1) ? "blank" : ""
+        },
+        ["display-text",
+          function(){
+            return player.t.points.gte(1) ? "You have " + format(player.h.points2) + " h0nde super powers (+" + format(tmp.t.getSuperPowSpeed) + "/s), which multiply h0nde powers gain by " + format(tmp.h.superPowerEff) + " ((x+1)^" + format(tmp.h.superPowerEffExp) + ")" : ""
+          }
+        ],
+        function(){
+          return player.t.points.gte(1) ? "blank" : ""
+        },
         "blank","clickables","buyables","blank","upgrades"
       ],
     },
+  },
+  superPowerEff(){
+    let eff = player.h.points2.add(1).pow(tmp.h.superPowerEffExp)
+    return eff
+  },
+  superPowerEffExp(){
+    let exp = new Decimal(20)
+    if (hasAchievement("a",62)) exp = exp.add(4)
+    if (hasMilestone("t", 5)) exp = exp.add(tmp.t.milestones[5].effect)
+    if (hasUpgrade("t",34)) exp = exp.add(upgradeEffect("t",34))
+    return exp
   },
   doReset(resettingLayer) {
     let keep = ["autoUpgrade","autoBuyable11","autoBuyable12","autoBuyable13","autoBuyable21"];
@@ -83,6 +101,7 @@ addLayer("h", {
   },
   getAccmult() { 
     let mul = new Decimal(10)
+    if (player.t.unlocked) mul = mul.add(tmp.t.effect[1])
     return mul
   },
   infoboxes: {
@@ -205,6 +224,9 @@ addLayer("h", {
         if (hasUpgrade("p", 25)) x = x.mul(upgradeEffect("p", 25)[1])
         x = x.mul(buyableEffect("h",22))
         if (hasAchievement("a", 52)) x = x.mul(69)
+        if (player.t.unlocked) x = x.mul(tmp.h.superPowerEff)
+        if (hasMilestone("t", 2)) x = x.mul(tmp.t.milestones[2].effect)
+        if (hasUpgrade("t", 33)) x = x.mul(upgradeEffect("t", 33))
         return x
       },
       effectExp(){
@@ -212,6 +234,7 @@ addLayer("h", {
         let e = new Decimal(1)
         e = e.add(buyableEffect("h",21))
         if (hasUpgrade("p",13)) e = e.add(0.7)
+        if (hasUpgrade("t",22)) e = e.mul(1.2)
         return e
       },
       effectMul(){
@@ -303,6 +326,7 @@ addLayer("h", {
         if (hasUpgrade("h",23)) e = e.mul(1.5)
         if (hasUpgrade("p",14)) e = e.mul(1.25)
         if (hasUpgrade("p",33)) e = e.mul(2)
+        if (hasUpgrade("t",23)) e = e.mul(2)
         if (hasChallenge("p",21)) e = e.add(challengeEffect("p",21))
         return e
       },
@@ -382,6 +406,7 @@ addLayer("h", {
         if (hasUpgrade("h",23)) e = e.mul(1.5)
         if (hasAchievement("a",35)) e = e.mul(2)
         if (hasAchievement("a",45)) e = e.mul(1.7)
+        if (hasUpgrade("t",23)) e = e.mul(2)
         if (hasChallenge("p",21)) e = e.add(challengeEffect("p",21))
         return e
       },
@@ -423,7 +448,7 @@ addLayer("h", {
       title: "Power",
       display(){
         return "Increase Generator buyable level to h0nde power production exponent by " + format(tmp.h.buyables[21].effectBase) + "." + `<br>` +
-        "Currently: +" + format(buyableEffect("h",21)) + `<br>` + `<br>` + 
+        "Currently: +" + format(buyableEffect("h",21)) + (buyableEffect("h",21).gte(tmp.h.buyables[21].effectSoftcapStart) ? " (softcapped)" : "") + `<br>` + `<br>` + 
         "Cost: " + format(tmp.h.buyables[21].cost) + " h0nde power" + `<br>` +
         "Level " + formatWhole(getBuyableAmount("h", 21)) + (tmp.h.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[21].freeLevel))
       },
@@ -433,6 +458,7 @@ addLayer("h", {
       },
       costScaling(){ // exponent scaling
         let scaling = new Decimal(1.2)
+        if (hasUpgrade("t",25)) scaling = scaling.sub(0.02)
         return scaling
       },
       cost(x=player[this.layer].buyables[this.id]){
@@ -453,12 +479,17 @@ addLayer("h", {
         if (inChallenge("p",21)) return new Decimal(0)
         let x = new Decimal(0.5)
         if (hasUpgrade("p",31)) x = x.add(0.2)
+        if (hasUpgrade("t",33)) x = x.add(0.1)
         return x
       },
       effect(){
         let x = tmp.h.buyables[21].totalLevel.mul(tmp.h.buyables[21].effectBase)
-        if (x.gte(10)) x = x.div(10).pow(0.5).mul(10)
+        if (x.gte(tmp.h.buyables[21].effectSoftcapStart)) x = x.div(tmp.h.buyables[21].effectSoftcapStart).pow(0.5).mul(tmp.h.buyables[21].effectSoftcapStart)
         return x
+      },
+      effectSoftcapStart(){
+        let start = new Decimal(10)
+        return start
       },
       canAfford(){
         return player.h.points.gte(tmp.h.buyables[21].cost)
@@ -499,6 +530,7 @@ addLayer("h", {
       },
       costScaling(){ // exponent scaling
         let scaling = new Decimal(1.1)
+        if (hasUpgrade("t",25)) scaling = scaling.sub(0.02)
         return scaling
       },
       cost(x=player[this.layer].buyables[this.id]){
@@ -520,10 +552,16 @@ addLayer("h", {
         let x = new Decimal(1000)
         if (hasChallenge("p", 11)) x = x.mul(10)
         if (hasUpgrade("p", 42)) x = x.mul(10)
+        if (hasAchievement("a", 63)) x = x.mul(10)
         return x
       },
+      effectExp(){
+        let exp = new Decimal(1)
+        if (hasUpgrade("t",31)) exp = exp.add(0.1)
+        return exp
+      },
       effect(){
-        let x = tmp.h.buyables[22].effectBase.pow(tmp.h.buyables[22].totalLevel)
+        let x = tmp.h.buyables[22].effectBase.pow(tmp.h.buyables[22].totalLevel.pow(tmp.h.buyables[22].effectExp))
         return x
       },
       canAfford(){
@@ -555,7 +593,7 @@ addLayer("h", {
       title: "Exponentator",
       display(){
         return "Increase h0nde power gain exponent by " + format(tmp.h.buyables[23].effectBase) + "." + `<br>` +
-        "Currently: +" + format(buyableEffect("h",23)) + `<br>` + `<br>` + 
+        "Currently: +" + format(buyableEffect("h",23),3) + (tmp.h.buyables[23].totalLevel.gt(tmp.h.buyables[23].effectLevelSoftcapStart) ? " (softcapped)" : "") + `<br>` + `<br>` + 
         "Cost: " + format(tmp.h.buyables[23].cost) + " h0nde power" + `<br>` +
         "Level " + formatWhole(getBuyableAmount("h", 23)) + (tmp.h.buyables[23].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[23].freeLevel))
       },
@@ -565,6 +603,7 @@ addLayer("h", {
       },
       costScaling(){ // exponent scaling
         let scaling = new Decimal(1.6)
+        if (hasUpgrade("t",25)) scaling = scaling.sub(0.02)
         return scaling
       },
       cost(x=player[this.layer].buyables[this.id]){
@@ -582,10 +621,17 @@ addLayer("h", {
       effectBase(){
         if (inChallenge("p",21)) return new Decimal(0)
         let x = new Decimal(0.05)
+        if (hasUpgrade("t",25)) x = x.add(0.003)
         return x
       },
+      effectLevelSoftcapStart(){
+        let start = new Decimal(3)
+        return start
+      },
       effect(){
-        let x = tmp.h.buyables[23].effectBase.mul(tmp.h.buyables[23].totalLevel)
+        let lvl = tmp.h.buyables[23].totalLevel
+        if (lvl.gte(tmp.h.buyables[23].effectLevelSoftcapStart)) lvl = lvl.sub(tmp.h.buyables[23].effectLevelSoftcapStart).div(3).add(tmp.h.buyables[23].effectLevelSoftcapStart)
+        let x = tmp.h.buyables[23].effectBase.mul(lvl)
         return x
       },
       canAfford(){
@@ -761,7 +807,7 @@ addLayer("h", {
       },
     },
     23: {
-      title: "Exponentator",
+      title: "Super MultiDivider",
       description(){return "Raise Multiplier and Divider buyable effect to the 1.5th power" + (hasAchievement("a",31) ? "." : ", you need 85 Multiplier buyable level to buy this upgrade")},
       cost: new Decimal(1e23),
       effect(){
@@ -847,6 +893,7 @@ addLayer("p", {
     if (hasAchievement("a",44)) gain = gain.mul(achievementEffect("a", 44))
     if (hasAchievement("a", 52)) gain = gain.mul(69)
     if (hasUpgrade("p",43)) gain = gain.mul(upgradeEffect("p",43))
+    if (hasUpgrade("t",14)) gain = gain.mul(upgradeEffect("t",14))
 
     if (!player.p.breakLimit && gain.gte(1e20)) gain = new Decimal(10).pow(gain.log(10).div(20).pow(0.25).mul(20))
     return gain.floor()
@@ -875,10 +922,12 @@ addLayer("p", {
     let eff = player.p.points.add(1)
     if (hasUpgrade("p",23)) eff = eff.pow(1.5)
     if (hasChallenge("p",32)) eff = eff.pow(1.6)
+
+    if (eff.gte(Number.MAX_VALUE)) eff = new Decimal(10).pow(eff.log(10).div(new Decimal(Number.MAX_VALUE).log(10)).pow(0.75).mul(new Decimal(Number.MAX_VALUE).log(10)))
     return eff
   },
   effectDescription(){
-    return " which multiply h0nde power gain by " + format(tmp.p.effect)
+    return " which multiply h0nde power gain by " + format(tmp.p.effect) + (tmp.p.effect.gte(Number.MAX_VALUE) ? " (softcapped)" : "")
   },
   row: 1, // Row the layer is in on the tree (0 is the first row)
   branches: ["h"],
@@ -890,6 +939,12 @@ addLayer("p", {
         "prestige-button",
         "blank",
         "resource-display",
+        "blank",
+        ["display-text",
+          function(){
+            return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
         "blank",
         ["display-text",function(){
           return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
@@ -904,6 +959,12 @@ addLayer("p", {
         "prestige-button",
         "blank",
         "resource-display",
+        "blank",
+        ["display-text",
+          function(){
+           return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
         "blank",
         ["display-text", function(){
           return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
@@ -922,6 +983,12 @@ addLayer("p", {
         "blank",
         "resource-display",
         "blank",
+        ["display-text",
+          function(){
+            return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
+        "blank",
         ["display-text", function(){
           return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
         ],
@@ -937,6 +1004,12 @@ addLayer("p", {
         "blank",
         "resource-display",
         "blank",
+        ["display-text",
+          function(){
+            return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
+        "blank",
         ["display-text", function(){
           return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
         ],
@@ -951,7 +1024,7 @@ addLayer("p", {
   },
   doReset(resettingLayer) {
     let keep = [];
-    if (layers[resettingLayer].row > this.row) layerDataReset("h", keep)
+    if (layers[resettingLayer].row > this.row) layerDataReset("p", keep)
   },
   milestones: {
     1: {
@@ -993,6 +1066,11 @@ addLayer("p", {
       effectDescription(){return "Unlock Challenges."},
       done() { return player.p.upgrades.length >= 15},
     },
+    8: {
+      requirementDescription: "20 bought prestige upgrades",
+      effectDescription(){return "Unlock a new layer."},
+      done() { return player.p.upgrades.length >= 20},
+    },
   },
   clickables:{
     11: {
@@ -1013,6 +1091,7 @@ addLayer("p", {
         let root = new Decimal(5)
         if (hasAchievement("a",51)) root = root.sub(1)
         if (hasAchievement("a",54)) root = root.sub(0.2)
+        if (hasAchievement("a",61)) root = root.sub(0.3)
         return root
       },
       style: {'height':'200px', 'width':'200px'},
@@ -1371,6 +1450,7 @@ addLayer("p", {
         let x = new Decimal(2)
         if (hasAchievement("a",43)) x = x.add(1)
         if (hasAchievement("a",55)) x = x.add(1)
+        if (hasAchievement("a",63)) x = x.add(1)
         return x
       },
       effect(){
@@ -1438,6 +1518,7 @@ addLayer("p", {
       rewardDescription: "Power buyables adds Multiplier and Divider buyables exponent",
       rewardEffect(){
         let eff = buyableEffect("h",21).div(2)
+        if (hasUpgrade("t",23)) eff = eff.mul(2)
         return eff
       },
       rewardDisplay(){return "+" + format(challengeEffect("p",21))},
@@ -1497,6 +1578,828 @@ addLayer("p", {
       countsAs: [11,12,21,22,31,32],
       canComplete: function() {return tmp.h.buyables[11].totalLevel.gte(tmp.p.challenges[41].goal)},
       unlocked(){return player.p.unlockedChallenges >= 7}
+    },
+  },
+})
+
+addLayer("t", {
+  name: "twitter", // This is optional, only used in a few places, If absent it just uses the layer id.
+  symbol: "T", // This appears on the layer's node. Default is the id with the first letter capitalized
+  position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+  startData() { return {
+    unlocked: false,
+	  points: new Decimal(0),
+    power: new Decimal(0),
+    energy: new Decimal(1),
+    comment: new Decimal(1e-2),
+    like: new Decimal(1e-4),
+    retweet: new Decimal(1e-6),
+    following: new Decimal(1e-8),
+    follower: new Decimal(1e-10),
+    resetTime: 0,
+  }},
+  color: "#1DA1F2",
+  requires: new Decimal(100), // Can be a function that takes requirement increases into account
+  base(){
+    let base = new Decimal(1.05)
+    return base
+  },
+  exponent(){
+    let exp = new Decimal(1.1)
+    return exp
+  },
+  resource: "h0nde twitter accounts", // Name of prestige currency
+  baseResource: "h0nde discord accounts", // Name of resource prestige is based on
+  baseAmount() {return player.points}, // Get the current amount of baseResource
+  type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+  hotkeys: [
+    {key: "t", description: "T: Reset for twitter accounts", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+  ],
+  update(diff){
+    if (tmp.t.clickables["energy"].unlocked) player.t.power = getPolyGrow(player.t.power, tmp.t.clickables["power"].exponent, tmp.t.clickables["energy"].speed, diff)
+    if (tmp.t.clickables["comment"].unlocked) player.t.energy = player.t.energy.add(tmp.t.clickables["comment"].speed.mul(diff))
+    if (tmp.t.clickables["like"].unlocked) player.t.comment = player.t.comment.add(tmp.t.clickables["like"].speed.mul(diff))
+    if (tmp.t.clickables["retweet"].unlocked) player.t.like = player.t.like.add(tmp.t.clickables["retweet"].speed.mul(diff))
+    if (tmp.t.clickables["following"].unlocked) player.t.retweet = player.t.retweet.add(tmp.t.clickables["following"].speed.mul(diff))
+    if (tmp.t.clickables["follower"].unlocked) player.t.following = player.t.following.add(tmp.t.clickables["follower"].speed.mul(diff))
+  },
+  effect(){
+    let eff = [new Decimal(2).pow(player.t.points).sub(1), player.t.points.div(10)]
+    if (eff[1].gte(1)) eff = eff.pow(0.5)
+    return eff
+  },
+  getSuperPowSpeed(){
+    let speed = tmp.t.effect[0]
+    if (hasUpgrade("t",11)) speed = speed.mul(upgradeEffect("t",11))
+    if (hasUpgrade("t",15)) speed = speed.mul(upgradeEffect("t",15))
+    if (hasMilestone("t",3)) speed = speed.mul(tmp.t.milestones[3].effect)
+    if (hasUpgrade("t",21)) speed = speed.mul(upgradeEffect("t",21))
+    return speed
+  },
+  getAllProducerSpeed(){
+    let speed = new Decimal(1)
+    if (hasAchievement("a",64)) speed = speed.mul(achievementEffect("a",64))
+    speed = speed.mul(buyableEffect("t",13))
+    if (hasAchievement("a",65)) speed = speed.mul(achievementEffect("a",65))
+    return speed
+  },
+  effectDescription(){
+    return " which produce " + format(tmp.t.effect[0]) + " h0nde super powers per second and increase sqrt multi by " + format(tmp.t.effect[1])
+  },
+  row: 1, // Row the layer is in on the tree (0 is the first row)
+  branches: ["h"],
+  layerShown(){return hasMilestone("p",8) || player.t.unlocked},
+  tabFormat: {
+    "Milestones": {
+      content: [
+        "main-display",
+        "prestige-button",
+        "blank",
+        "resource-display",
+        "blank",
+        ["display-text",
+          function(){
+            return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
+        "blank",
+        "milestones"
+      ],
+    },
+    "Twitter": {
+      content: [
+        "main-display",
+        "prestige-button",
+        "blank",
+        "resource-display",
+        "blank",
+        ["display-text",
+          function(){
+            return "You spent " + formatTime(Math.min(player.t.resetTime, player.p.resetTime)) + " in row 2 resets"
+          }
+        ],
+        "blank",
+        ["display-text",
+          function(){
+            return "You have " + format(player.t.power) + " twitter power" + `<sup>` + format(tmp.t.clickables["power"].exponent) + `</sup>` + " (+" + format(tmp.t.clickables["energy"].speed) + "/s before exp)"
+          }
+        ],
+        ["display-text",
+          function(){
+            return "The twitter power production is based on your PP and h0nde twitter accounts, and exponent is based on h0nde powers." + `<br>` + "The twitter power and all producer are resets when you did a row 2 prestige."
+          }
+        ],
+        "blank",
+        ["display-text",
+          function(){
+            return "You have " + format(player.t.energy, 3, true) + " energy" + (tmp.t.clickables["comment"].unlocked ? " (" + format(tmp.t.clickables["comment"].speed, 3, true) + "/s)" : "")
+          }
+        ],
+        ["display-text",
+          function(){
+            return (tmp.t.clickables["comment"].unlocked ? "You have " + format(player.t.comment, 3, true) + " comment" + (tmp.t.clickables["like"].unlocked ? " (" + format(tmp.t.clickables["like"].speed, 3, true) + "/s)" : "") : "")
+          }
+        ],
+        ["display-text",
+          function(){
+            return (tmp.t.clickables["like"].unlocked ? "You have " + format(player.t.like, 3, true) + " like" + (tmp.t.clickables["retweet"].unlocked ? " (" + format(tmp.t.clickables["retweet"].speed, 3, true) + "/s)" : "") : "")
+          }
+        ],
+        ["display-text",
+          function(){
+            return (tmp.t.clickables["retweet"].unlocked ? "You have " + format(player.t.retweet, 3, true) + " retweet" + (tmp.t.clickables["following"].unlocked ? " (" + format(tmp.t.clickables["following"].speed, 3, true) + "/s)" : "") : "")
+          }
+        ],
+        ["display-text",
+          function(){
+            return (tmp.t.clickables["following"].unlocked ? "You have " + format(player.t.following, 3, true) + " following" + (tmp.t.clickables["follower"].unlocked ? " (" + format(tmp.t.clickables["follower"].speed, 3, true) + "/s)" : "") : "")
+          }
+        ],
+        ["display-text",
+          function(){
+            return (tmp.t.clickables["follower"].unlocked ? "You have " + format(player.t.follower, 2, true) + " follower" : "")
+          }
+        ],
+        "blank","buyables","blank","upgrades"
+      ],
+      unlocked(){return hasMilestone("t",1)},
+    },
+  },
+  doReset(resettingLayer) {
+    let keep = [];
+    player.t.power = new Decimal(0)
+    player.t.energy = new Decimal(1)
+    player.t.comment = new Decimal(1e-2)
+    player.t.like = new Decimal(1e-4)
+    player.t.retweet = new Decimal(1e-6)
+    player.t.following = new Decimal(1e-8)
+    player.t.follower = new Decimal(1e-10)
+    if (layers[resettingLayer].row > this.row) layerDataReset("t", keep)
+  },
+  milestones: {
+    1: {
+      requirementDescription: "1 h0nde twitter accounts & 1e99 prestige points",
+      effectDescription: "Begin the production of Twitter Power",
+      done(){return player.t.points.gte(1) && player.p.points.gte(1e99)},
+    },
+    2: {
+      requirementDescription: "2 h0nde twitter accounts & 1e102 prestige points",
+      effectDescription(){return "Unlock a twitter buyable, h0nde discord accounts & h0nde twitter accounts boost h0nde powers gain (" + format(tmp.t.milestones[2].effect) + "x)"},
+      effect(){
+        let eff = player.t.points.max(1).pow(player.points)
+        if (hasUpgrade("t",35)) eff = eff.pow(2)
+        return eff
+      },
+      done(){return player.t.points.gte(2) && player.p.points.gte(1e102)},
+    },
+    3: {
+      requirementDescription: "3 h0nde twitter accounts & 1e114 prestige points",
+      effectDescription(){return "Your comment produce energy, h0nde discord accounts boost h0nde super power production (" + format(tmp.t.milestones[3].effect) + "x)"},
+      effect(){return player.points.add(1)},
+      done(){return player.t.points.gte(3) && player.p.points.gte(1e114)},
+    },
+    4: {
+      requirementDescription: "4 h0nde twitter accounts & 1e126 prestige points",
+      effectDescription(){return "Unlock a twitter buyable, each h0nde twitter accounts increase twitter power exponent by 0.1 (+" + format(tmp.t.milestones[4].effect) + ")"},
+      effect(){return player.t.points.div(10)},
+      done(){return player.t.points.gte(4) && player.p.points.gte(1e126)},
+    },
+    5: {
+      requirementDescription: "5 h0nde twitter accounts & 1e141 prestige points",
+      effectDescription(){return "Your like produce comment, each h0nde twitter accounts increase h0nde super power boost exponent by 1 (+" + format(tmp.t.milestones[5].effect) + ")"},
+      effect(){return player.t.points},
+      done(){return player.t.points.gte(5) && player.p.points.gte(1e141)},
+    },
+    6: {
+      requirementDescription: "6 h0nde twitter accounts & 1e156 prestige points",
+      effectDescription(){return "Unlock a twitter buyable, each h0nde twitter accounts increase Power Gain base by 1 (+" + format(tmp.t.milestones[6].effect) + ")"},
+      effect(){return player.t.points.div(1)},
+      done(){return player.t.points.gte(6) && player.p.points.gte(1e156)},
+    },
+  },
+  clickables: {
+    power: {
+      unlocked(){return true},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      exponent(){
+        let exp = new Decimal(1)
+        if (player.h.points.gte("1e1000")) exp = player.h.points.log(10).log(10).sub(2)
+        if (hasUpgrade("t",13)) exp = exp.add(upgradeEffect("t",13))
+        if (hasMilestone("t", 4)) exp = exp.add(tmp.t.milestones[4].effect)
+        exp = exp.add(buyableEffect("t",12))
+        if (hasUpgrade("t",24)) exp = exp.add(upgradeEffect("t",24))
+        return exp
+      },
+    },
+    energy: {
+      unlocked(){return hasMilestone("t",1)},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        m = m.mul(player.p.points.mul(10).add(1).log(10).pow(0.5).sub(9).pow(player.t.points))
+        m = m.mul(buyableEffect("t",11))
+        if (hasUpgrade("t",12)) m = m.mul(upgradeEffect("t",12))
+        if (hasAchievement("a",62)) m = m.mul(achievementEffect("a",62))
+        if (hasUpgrade("t",31)) m = m.mul(upgradeEffect("t",31))
+        if (hasUpgrade("t",32)) m = m.mul(upgradeEffect("t",32))
+        return m
+      },
+      speed(){
+        let speed = player.t.energy
+        speed = speed.mul(tmp.t.clickables["energy"].multi)
+        return speed
+      },
+    },
+    comment: {
+      unlocked(){return hasMilestone("t",3)},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        if (hasUpgrade("t",22)) m = m.mul(10)
+        return m
+      },
+      speed(){
+        let speed = player.t.comment
+        speed = speed.mul(tmp.t.clickables["comment"].multi)
+        return speed
+      },
+    },
+    like: {
+      unlocked(){return hasMilestone("t",5)},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        return m
+      },
+      speed(){
+        let speed = player.t.like
+        speed = speed.mul(tmp.t.clickables["like"].multi)
+        return speed
+      },
+    },
+    retweet: {
+      unlocked(){return false},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        return m
+      },
+      speed(){
+        let speed = player.t.retweet
+        speed = speed.mul(tmp.t.clickables["retweet"].multi)
+        return speed
+      },
+    },
+    following: {
+      unlocked(){return false},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        return m
+      },
+      speed(){
+        let speed = player.t.following
+        speed = speed.mul(tmp.t.clickables["following"].multi)
+        return speed
+      },
+    },
+    follower: {
+      unlocked(){return false},
+      effect(){
+        let eff = new Decimal(1)
+        return eff
+      },
+      multi(){
+        let m = new Decimal(1)
+        m = m.mul(tmp.t.getAllProducerSpeed)
+        return m
+      },
+      speed(){
+        let speed = player.t.follower
+        speed = speed.mul(tmp.t.clickables["follower"].multi)
+        return speed
+      },
+    },
+  },
+  upgrades: {
+    11: {
+      title: "Prestige Power",
+      description(){return "Your prestige points boosts h0nde super power gain"},
+      cost(){return new Decimal(40)},
+      effect(){
+        let eff = player.p.points.add(10).log(10)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",11)) + "x"
+      },
+      unlocked(){
+        return true
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    12: {
+      title: "Super Twitter",
+      description(){return "Your h0nde super power boosts base twitter power gain"},
+      cost(){return new Decimal(400)},
+      effect(){
+        let eff = player.h.points2.add(10).log(10)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",12)) + "x"
+      },
+      unlocked(){
+        return true
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    13: {
+      title: "Prestige Exponent",
+      description(){return "Increase twitter power exponent by 0.01 for every Prestige gain buyable level"},
+      cost(){return new Decimal(2000)},
+      effect(){
+        let eff = tmp.p.buyables[11].totalLevel.mul(tmp.t.upgrades[13].effectBase)
+        return eff
+      },
+      effectBase(){
+        let base = new Decimal(0.01)
+        return base
+      },
+      effectDisplay(){
+        return "+" + format(upgradeEffect("t",13))
+      },
+      unlocked(){
+        return true
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    14: {
+      title: "Twitter Prestige",
+      description(){return "You gain more prestige points based on twitter power"},
+      cost(){return new Decimal(20000)},
+      effect(){
+        let eff = new Decimal(10).pow(player.t.power.max(1).log(10).pow(0.5))
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",14)) + "x"
+      },
+      unlocked(){
+        return true
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    15: {
+      title: "Twitter Super Power",
+      description(){return "You gain more h0nde super power based on twitter power"},
+      cost(){return new Decimal(300000)},
+      effect(){
+        let eff = player.t.power.add(10).log(10)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",15)) + "x"
+      },
+      unlocked(){
+        return true
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    21: {
+      title: "Energy Multiplier",
+      description(){return "Energy boost h0nde super power gain"},
+      cost(){return new Decimal(1e7)},
+      effect(){
+        let eff = player.t.energy
+        eff = getInfSqrt(eff, new Decimal(10))
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",21)) + "x"
+      },
+      unlocked(){
+        return hasMilestone("t",3)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    22: {
+      title: "Comment Speed",
+      description(){return "Comment produce 10x more Energy and 1.2x Generator buyable exp"},
+      cost(){return new Decimal(1e8)},
+      effect(){
+        let eff = new Decimal(10)
+        return eff
+      },
+      unlocked(){
+        return hasMilestone("t",3)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    23: {
+      title: "Hyper MultiDivider",
+      description(){return "Square Multiplier and Divider buyable effect and double the Unbuyable reward"},
+      cost(){return new Decimal(1e14)},
+      effect(){
+        let eff = new Decimal(2)
+        return eff
+      },
+      unlocked(){
+        return hasMilestone("t",3)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    24: {
+      title: "Power Exponent",
+      description(){return "Increase twitter power exp based on twitter power"},
+      cost(){return new Decimal(1e15)},
+      effect(){
+        let eff = player.t.power.add(1).log(10).pow(0.5).div(10)
+        return eff
+      },
+      effectDisplay(){
+        return "+" + format(upgradeEffect("t",24))
+      },
+      unlocked(){
+        return hasMilestone("t",3)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    25: {
+      title: "Row 2 Unscaled",
+      description(){return "Reduce all row 2 h0nde buyables cost scaling by 0.02, add 0.003 into Exponentator base"},
+      cost(){return new Decimal(1e18)},
+      effect(){
+        let eff = new Decimal(0.1)
+        return eff
+      },
+      unlocked(){
+        return hasMilestone("t",3)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    31: {
+      title: "Super Booster",
+      description(){return "Add 0.1 to Boosters buyable level exponent, sum of row 2 h0nde buyable level boost base twitter power gain"},
+      cost(){return new Decimal(1e22)},
+      effect(){
+        let eff = tmp.h.buyables[21].totalLevel.add(tmp.h.buyables[22].totalLevel).add(tmp.h.buyables[23].totalLevel).add(1)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",31)) + "x"
+      },
+      unlocked(){
+        return hasMilestone("t",5)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    32: {
+      title: "Self Synergy",
+      description(){return "Multiply base twitter power gain based on itself"},
+      cost(){return new Decimal(1e36)},
+      effect(){
+        let eff = player.t.power.add(10).log(10)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",32)) + "x"
+      },
+      unlocked(){
+        return hasMilestone("t",5)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    33: {
+      title: "Powered",
+      description(){return "Multiply h0nde power gain based on twitter power, add 0.1 to Power buyable base"},
+      cost(){return new Decimal(1e41)},
+      effect(){
+        let eff = player.t.power.add(1)
+        return eff
+      },
+      effectDisplay(){
+        return format(upgradeEffect("t",33)) + "x"
+      },
+      unlocked(){
+        return hasMilestone("t",5)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    34: {
+      title: "Comment Exponent",
+      description(){return "Comment increase h0nde super boost exponent, add 0.1 to Power Exp base"},
+      cost(){return new Decimal(1e75)},
+      effect(){
+        let eff = player.t.comment.pow(0.5).mul(10).log(10).add(1).mul(5)
+        if (eff.gte(10)) eff = eff.log(10).add(9)
+        return eff
+      },
+      effectDisplay(){
+        return "+" + format(upgradeEffect("t",34))
+      },
+      unlocked(){
+        return hasMilestone("t",5)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+    35: {
+      title: "Account^2",
+      description(){return "Square second twitter milestone effect"},
+      cost(){return new Decimal(1e92)},
+      effect(){
+        let eff = new Decimal(2)
+        return eff
+      },
+      unlocked(){
+        return hasMilestone("t",5)
+      },
+      canAfford(){
+        return true
+      },
+      currencyDisplayName: "twitter power",
+      currencyInternalName: "power",
+      currencyLayer: "t",
+    },
+  },
+  buyables: {
+    11: {
+      title: "Power Gain",
+      display(){
+        return "Multiply base twitter power gain by " + format(tmp.t.buyables[11].effectBase) + "." + `<br>` +
+        "Currently: " + format(buyableEffect("t",11)) + "x" + `<br>` + `<br>` + 
+        "Cost: " + format(tmp.t.buyables[11].cost) + " twitter power" + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("t", 11)) + (tmp.t.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[11].freeLevel))
+      },
+      costBase(){
+        let base = new Decimal(10)
+        return base 
+      },
+      costScaling(){ // exponent scaling
+        let scaling = new Decimal(2)
+        return scaling
+      },
+      cost(x=player[this.layer].buyables[this.id]){
+        let a = tmp.t.buyables[11].costBase
+        let r = tmp.t.buyables[11].costScaling
+        return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
+      },
+      freeLevel(){
+        let free = new Decimal(0)
+        return free
+      },
+      totalLevel(){
+        return getBuyableAmount("t", 11).add(tmp.t.buyables[11].freeLevel)
+      },
+      effectBase(){
+        let x = new Decimal(2)
+        if (hasMilestone("t", 6)) x = x.add(tmp.t.milestones[6].effect)
+        return x
+      },
+      effect(){
+        let x = tmp.t.buyables[11].effectBase.pow(tmp.t.buyables[11].totalLevel)
+        return x
+      },
+      canAfford(){
+        return player.t.power.gte(tmp.t.buyables[11].cost)
+      },
+      buy(){
+        let cost = tmp.t.buyables[11].cost
+        if (player.t.power.lt(cost)) return
+        addBuyables("t", 11, new Decimal(1))
+        if (true) player.t.power = player.t.power.minus(cost)
+      },
+      buyMax(){
+        let maxBulk = tmp.t.buyables[11].purchaseLimit.sub(getBuyableAmount("t", 11))
+        let bulk
+        let a = tmp.t.buyables[11].cost.log(10)
+        let r = tmp.t.buyables[11].costScaling
+        let x = player.t.power.max(1).log(10)
+        if (x.lt(a)) return
+        if (a.eq(0)) bulk = new Decimal(1)
+        else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
+        let cost = a.mul(r.pow(bulk.sub(1))) // log
+        addBuyables("t", 11, bulk)
+        if (true) player.t.power = player.t.power.sub(new Decimal(10).pow(cost))
+      },
+      unlocked(){return hasMilestone("t",2)},
+    },
+    12: {
+      title: "Power Exp",
+      display(){
+        return "Increase twitter power exponent by " + format(tmp.t.buyables[12].effectBase) + "." + `<br>` +
+        "Currently: +" + format(buyableEffect("t",12)) + `<br>` + `<br>` + 
+        "Cost: " + format(tmp.t.buyables[12].cost) + " twitter power" + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("t", 12)) + (tmp.t.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[12].freeLevel))
+      },
+      costBase(){
+        let base = new Decimal(10)
+        return base 
+      },
+      costScaling(){ // exponent scaling
+        let scaling = new Decimal(3)
+        return scaling
+      },
+      cost(x=player[this.layer].buyables[this.id]){
+        let a = tmp.t.buyables[12].costBase
+        let r = tmp.t.buyables[12].costScaling
+        return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
+      },
+      freeLevel(){
+        let free = new Decimal(0)
+        return free
+      },
+      totalLevel(){
+        return getBuyableAmount("t", 12).add(tmp.t.buyables[12].freeLevel)
+      },
+      effectBase(){
+        let x = new Decimal(0.1)
+        if (hasUpgrade("t",34)) x = x.add(0.1)
+        return x
+      },
+      effect(){
+        let x = tmp.t.buyables[12].effectBase.mul(tmp.t.buyables[12].totalLevel)
+        return x
+      },
+      canAfford(){
+        return player.t.power.gte(tmp.t.buyables[12].cost)
+      },
+      buy(){
+        let cost = tmp.t.buyables[12].cost
+        if (player.t.power.lt(cost)) return
+        addBuyables("t", 12, new Decimal(1))
+        if (true) player.t.power = player.t.power.minus(cost)
+      },
+      buyMax(){
+        let maxBulk = tmp.t.buyables[12].purchaseLimit.sub(getBuyableAmount("t", 12))
+        let bulk
+        let a = tmp.t.buyables[12].cost.log(10)
+        let r = tmp.t.buyables[12].costScaling
+        let x = player.t.power.max(1).log(10)
+        if (x.lt(a)) return
+        if (a.eq(0)) bulk = new Decimal(1)
+        else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
+        let cost = a.mul(r.pow(bulk.sub(1))) // log
+        addBuyables("t", 12, bulk)
+        if (true) player.t.power = player.t.power.sub(new Decimal(10).pow(cost))
+      },
+      unlocked(){return hasMilestone("t",4)},
+    },
+    13: {
+      title: "Producer Speed",
+      display(){
+        return "Multiply all producer speed by " + format(tmp.t.buyables[13].effectBase) + "." + `<br>` +
+        "Currently: " + format(buyableEffect("t",13)) + "x" + `<br>` + `<br>` + 
+        "Cost: " + format(tmp.t.buyables[13].cost) + " twitter power" + `<br>` +
+        "Level " + formatWhole(getBuyableAmount("t", 13)) + (tmp.t.buyables[13].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[13].freeLevel))
+      },
+      costBase(){
+        let base = new Decimal(10)
+        return base 
+      },
+      costScaling(){ // exponent scaling
+        let scaling = new Decimal(5)
+        return scaling
+      },
+      cost(x=player[this.layer].buyables[this.id]){
+        let a = tmp.t.buyables[13].costBase
+        let r = tmp.t.buyables[13].costScaling
+        return new Decimal(10).pow(a.log(10).mul(r.pow(x)))
+      },
+      freeLevel(){
+        let free = new Decimal(0)
+        return free
+      },
+      totalLevel(){
+        return getBuyableAmount("t", 13).add(tmp.t.buyables[13].freeLevel)
+      },
+      effectBase(){
+        let x = new Decimal(2)
+        return x
+      },
+      effect(){
+        let x = tmp.t.buyables[13].effectBase.pow(tmp.t.buyables[13].totalLevel)
+        return x
+      },
+      canAfford(){
+        return player.t.power.gte(tmp.t.buyables[13].cost)
+      },
+      buy(){
+        let cost = tmp.t.buyables[13].cost
+        if (player.t.power.lt(cost)) return
+        addBuyables("t", 13, new Decimal(1))
+        if (true) player.t.power = player.t.power.minus(cost)
+      },
+      buyMax(){
+        let maxBulk = tmp.t.buyables[13].purchaseLimit.sub(getBuyableAmount("t", 13))
+        let bulk
+        let a = tmp.t.buyables[13].cost.log(10)
+        let r = tmp.t.buyables[13].costScaling
+        let x = player.t.power.max(1).log(10)
+        if (x.lt(a)) return
+        if (a.eq(0)) bulk = new Decimal(1)
+        else bulk = x.div(a).log(r).add(1).floor()
+        bulk = bulk.min(maxBulk)
+        let cost = a.mul(r.pow(bulk.sub(1))) // log
+        addBuyables("t", 13, bulk)
+        if (true) player.t.power = player.t.power.sub(new Decimal(10).pow(cost))
+      },
+      unlocked(){return hasMilestone("t",6)},
     },
   },
 })
@@ -1569,7 +2472,7 @@ addLayer("a", {
     21: {
       name: "QUADRILLION POWER",
       done(){return player.h.points.gte(1e15)},
-      tooltip(){return "Reach " + format(1e15) + " h0nde power. Reward: unlock a buyable, h0nde power increase Multiplier buyable base. (+" + format(achievementEffect("a", 21), 4) + ")"},
+      tooltip(){return "Reach " + format(1e15) + " h0nde power. Reward: unlock a buyable, h0nde discord accounts increase Multiplier buyable base. (+" + format(achievementEffect("a", 21), 4) + ")"},
       effect(){
         let eff = player.points.div(100)
         return eff
@@ -1696,6 +2599,43 @@ addLayer("a", {
       done(){return player.h.points.gte(1e103) && inChallenge("p", 11) && !player.p.breakLimit},
       tooltip(){return "Reach " + format(new Decimal("1e103")) + " h0nde powers in Powerless Challenge while limit is fixed, Reward: Add 1 into Prestige gain buyable base and 2 to Booster buyable level."},
     },
+    61: {
+      name: "Another Social Media?",
+      done(){return player.t.unlocked},
+      tooltip(){return "Do a twitter reset. Reward: Reduce the root of the break limit nerf by 0.3."},
+    },
+    62: {
+      name: "2^4 in two in one",
+      done(){return player.points.gte(16) && player.t.points.gte(2) && inChallenge("p", 41)},
+      tooltip(){return "Reach 16 h0nde discord accounts in All in one Challenge with at least 2 h0nde twitter accounts. Reward: Add 4 to h0nde super power boost exponent, Total Generator buyable level boost base twitter power gain (" + format(achievementEffect("a", 62),3) + "x)"},
+      effect(){
+        let eff = tmp.h.buyables[11].totalLevel.add(10).log(10)
+        return eff
+      },
+    },
+    63: {
+      name: "Fix Generator",
+      done(){return tmp.h.buyables[11].freeLevel.gte(9600) && !player.p.breakLimit},
+      tooltip(){return "Get 9,600 Free Generator buyable level while limit is fixed. Reward: Add 1 into Prestige gain buyable base, Multiplier Booster base by 10."},
+    },
+    64: {
+      name: "twitter^3",
+      done(){return tmp.t.clickables["power"].exponent.gte(3)},
+      tooltip(){return "Reach 3 twitter power exponent. Reward: Multiply all producer production based on twitter power exponent (" + format(achievementEffect("a", 64)) + "x)"},
+      effect(){
+        let eff = tmp.t.clickables["power"].exponent.add(1)
+        return eff
+      },
+    },
+    65: {
+      name: "MILLILLION POWER",
+      done(){return player.h.points.gte("1e3003")},
+      tooltip(){return "Reach " + format(new Decimal("1e3003")) + " h0nde powers. Reward: Multiply all producer production based on h0nde twitter accounts (" + format(achievementEffect("a", 65)) + "x)"},
+      effect(){
+        let eff = player.t.points.add(1)
+        return eff
+      },
+    },
   },
 })
 
@@ -1769,6 +2709,15 @@ addLayer("s", {
       return (hasAchievement("a", 24) ? "From Achievement Nice^2: " + format(69) + "x" : "")
     }],
     ["display-text", function(){
+      return (player.t.unlocked ? "From h0nde super power: " + format(tmp.h.superPowerEff) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasMilestone("t", 2) ? "From Twitter milestone 2: " + format(tmp.t.milestones[2].effect) + "x" : "")
+    }],
+    ["display-text", function(){
+      return (hasUpgrade("t", 33) ? "From Twitter Upgrade Powered: " + format(upgradeEffect("t", 33)) + "x" : "")
+    }],
+    ["display-text", function(){
       return "Production exponent: ^" + format(tmp.h.buyables[11].productionExp, 3)
     }],
     ["display-text", function(){
@@ -1818,4 +2767,26 @@ function getUnlockedChallenges(){
     if (x.gte(challreq[i]) && challreq[i] !== undefined) output++
   }
   return output
+}
+
+function getPolyGrow(curr, exp, prod, time){
+  curr = new Decimal(curr)
+  exp = new Decimal(exp)
+  prod = new Decimal(prod)
+  return curr.pow(exp.recip()).add(prod.mul(time)).pow(exp)
+}
+
+function getInfSqrt(amt, sqrt){
+  amt = new Decimal(amt)
+  sqrt = new Decimal(sqrt)
+
+  if (amt.lt(1)) return amt
+
+  let times = amt.log(sqrt).plus(1).log(2).floor()
+  let a = Decimal.pow(2, times)
+
+  let mul = Decimal.pow(sqrt, times)
+  let mul2 = amt.div(Decimal.pow(sqrt, a.sub(1))).root(a)
+
+  return mul.times(mul2)
 }

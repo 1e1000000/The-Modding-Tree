@@ -58,7 +58,7 @@ function format(decimal, precision = 2, small) {
     else if (decimal.gte("1e1000")) return exponentialFormat(decimal, 2)
     else if (decimal.gte(1e12)) return exponentialFormat(decimal, precision)
     else if (decimal.gte(1e3)) return commaFormat(decimal, 0)
-    else if (decimal.gte(0.0001) || !small) return regularFormat(decimal, precision)
+    else if (decimal.gte(0.01) || !small) return regularFormat(decimal, precision)
     else if (decimal.eq(0)) return (0).toFixed(precision)
 
     decimal = invertOOM(decimal)

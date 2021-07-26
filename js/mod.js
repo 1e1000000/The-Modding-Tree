@@ -13,14 +13,27 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.061",
-	name: "h0nde Challenger",
+	num: "0.07",
+	name: "h0nde second social media I",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to Vorona, for "Every Xx amount square rooted" calculation.<br><br>
     <h1>Changelog:</h1><br><br>
+	<h3>v0.07 - h0nde second social media I</h3><br>
+	- Added a new layer: Twitter.<br>
+	- Added h0nde super power.<br>
+	- Added row 2 reset time on all Prestige subtabs.<br>
+	- Added 5 achievements.<br>
+	- Softcapped Exponentator buyable at level 3.<br>
+	- Softcapped PP boost at 1.80e308x.<br>
+	- Changed the number formatting between 1e-4 and 1e-2.<br>
+	- Fixed did a prestige reset act as did a h0nde reset.<br>
+	- Renamed h0nde upgrade 23 again.<br>
+	- Removed h0nde power and it's production on Info tab.<br>
+	- Endgame: 7 h0nde twitter accounts and 1e176 prestige points (~1e3,250 h0nde powers).<br>
+	<br>
 	<h3>v0.061</h3><br>
 	- Added 0.1 seconds cooldown for manual buy max Generator buyable.<br>
 	- Buy Max Generator and Multiplier/Divider buyable button will be hidden after you unlock the autobuyer.<br>
