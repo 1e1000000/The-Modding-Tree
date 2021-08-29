@@ -3,7 +3,7 @@ let modInfo = {
 	id: "h0nde",
 	author: "1e1000000",
 	pointsName: "h0nde discord accounts",
-	modFiles: ["layers.js", "tree.js"],
+	modFiles: ["layers.js", "tree.js", "h.js", "p.js", "t.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,26 +13,47 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.07",
-	name: "h0nde second social media I",
+	num: "0.08",
+	name: "h0nde second social media II",
 }
 
 let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
-Credit to Vorona, for "Every Xx amount square rooted" calculation.<br><br>
+Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make it for inverse calculation.<br><br>
     <h1>Changelog:</h1><br><br>
-	<h3>v0.07 - h0nde second social media I</h3><br>
+	<h2>v0.08 - h0nde second social media II</h2><br>
+	- Added 8 milestones, 5 achievements, 5 challenges, 5 buyables and 16 upgrades.<br>
+	- Added 2 bars on Statistic tab.<br>
+	- Number past 1e1,000 no longer lost the precision.<br>
+	- All producer speed and product of producers now show.<br>
+	- Achievements now split into pages, each page include 25 achievements.<br>
+	- h0nde discord accounts now display with 1 more precision, and past ee6 will remain show resource name.<br>
+	- Changed twitter reset button, and resource no longer display below reset button.<br>
+	- Changed couple description.<br>
+	- Softcapped Boosters buyable effect at 1e1,300x.<br>
+	- Softcapped PP gain at 1e400 while the limit is broken.<br>
+	- Softcapped Exponentiator buyable again at level 9.<br>
+	- Softcapped Twitter Upgrade 33 at 1.80e308x and 1e4,000x.<br>
+	- Exponential square rooted twitter power for every 10,000x OoM of them.<br>
+	- Hardcapped h0nde power at 2.00e19,728/s.<br>
+	- Fixed you can break the game by having at least 10 h0nde twitter accounts.<br>
+	- Fixed Followers show with 1 fewer precision.<br>
+	- Split the layer files into four.<br>
+	- Renamed h0nde buyable 23.<br>
+	- Endgame: 15 h0nde twitter accounts and 1e10,000 twitter power.<br>
+	<br>
+	<h2>v0.07 - h0nde second social media I</h2><br>
 	- Added a new layer: Twitter.<br>
 	- Added h0nde super power.<br>
 	- Added row 2 reset time on all Prestige subtabs.<br>
 	- Added 5 achievements.<br>
-	- Softcapped Exponentator buyable at level 3.<br>
+	- Softcapped Exponentiator buyable at level 3.<br>
 	- Softcapped PP boost at 1.80e308x.<br>
 	- Changed the number formatting between 1e-4 and 1e-2.<br>
 	- Fixed did a prestige reset act as did a h0nde reset.<br>
 	- Renamed h0nde upgrade 23 again.<br>
 	- Removed h0nde power and it's production on Info tab.<br>
-	- Endgame: 7 h0nde twitter accounts and 1e176 prestige points (~1e3,250 h0nde powers).<br>
+	- Endgame: 7 h0nde twitter accounts and 1e176 prestige points.<br>
 	<br>
 	<h3>v0.061</h3><br>
 	- Added 0.1 seconds cooldown for manual buy max Generator buyable.<br>
@@ -44,7 +65,7 @@ Credit to Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	- Added Challenges.<br>
 	- Added 5 upgrades, 1 buyable and 5 achievements.<br>
 	- Added more info on Generator buyable.<br>
-	- Removed the effect of prestige milestone 5.<br>
+	- Removed the effect display on prestige milestone 5.<br>
 	- Renamed h0nde accounts to h0nde discord accounts.<br>
 	- Softcapped PP gain at 1e20 while the limit is fixed.<br>
 	- Fixed h0nde production past 1e1,000 h0nde power doesn't work property.<br>
@@ -92,14 +113,14 @@ Credit to Vorona, for "Every Xx amount square rooted" calculation.<br><br>
 	<br>
 	<h3>v0.021</h3><br>
 	- Added just one upgrades.<br>
-	- Fixed some buyables can go pass limit while buying multiple.<br>
+	- Fixed buyables can go pass limit when buying multiple.<br>
 	- Endgame: 1e50 h0nde power & all h0nde upgrades.<br>
 	<br>
 	<h2>v0.02 - The begin of h0nde creation II</h2><br>
 	- Added 2 buyables, 6 upgrades and 5 achievements.<br>
 	- Added more info on Generator buyable.<br>
 	- Softcap Generator buyable multiplier boost at 100 boosts.<br>
-	- Make number between 1e12 and 1e15 less chaotic, but e1e9 and e1e12 more chaotic.<br>
+	- Make number between 1e12 and 1e15 shows scientific notation, and between e1e9 and e1e12 shows single-e scientific notation.<br>
 	- Endgame: 22 h0nde discord accounts & max out Generator buyable.<br>
 	<br>
     <h2>v0.01 - The begin of h0nde creation I</h2><br>
@@ -189,5 +210,8 @@ function fixOldSave(oldVersion){
 		player.p.points = new Decimal(1e91)
 		player.p.total = new Decimal(1e91)
 		setBuyableAmount("p",11,new Decimal(22))
+	}
+	if (player.t.power2 == undefined){
+		player.t.power2 = player.t.power
 	}
 }
