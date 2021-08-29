@@ -412,9 +412,9 @@ addLayer("s", {
         height: 90,
         progress(){return player.points.sub(player.points.floor())},
         display(){
-          return convCardToOrd(player.points.ceil()) + " h0nde discord account at" + `<br>` + 
-          format(Decimal.pow(10, getInvInfSqrt(player.points.ceil(), tmp.h.getAccmult))) + " h0nde power" + `<br>` +
-          "(" + format(player.points.sub(player.points.floor()).mul(100)) + "% completed, " + format(getInvInfSqrt(player.points.ceil(), tmp.h.getAccmult).sub(player.h.points.max(1).log(10)).max(0)) + " OoM left)"
+          return convCardToOrd(player.points.ceil().max(1)) + " h0nde discord account at" + `<br>` + 
+          format(Decimal.pow(10, getInvInfSqrt(player.points.ceil().max(1), tmp.h.getAccmult))) + " h0nde power" + `<br>` +
+          "(" + format(player.points.sub(player.points.floor()).mul(100)) + "% completed, " + format(getInvInfSqrt(player.points.ceil().max(1), tmp.h.getAccmult).sub(player.h.points.max(1).log(10)).max(0)) + " OoM left)"
         },
         instant: true,
         fillStyle(){return {"background-color":"#ff0000"}},
