@@ -129,7 +129,7 @@ addLayer("t", {
           ],
           ["display-text",
             function(){
-              return (player.t.power.gte(new Decimal(10).pow(tmp.t.clickables.power.logSoftcapStart)) ? `<span style='color:red'>` + "Due to Excess power storage, for every " + format(tmp.t.clickables.power.logSoftcapStart) + "x OoM of twitter power, the twitter power will be exponential square rooted" + `</span>` : "")
+              return (player.t.power.gte(new Decimal(10).pow(tmp.t.clickables.power.logSoftcapStart)) ? `<span style='color:yellow'>` + "Due to Excess power storage, for every " + format(tmp.t.clickables.power.logSoftcapStart) + "x OoM of twitter power, the twitter power will be exponential square rooted" + `</span>` : "")
             }
           ],
           "blank",

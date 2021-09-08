@@ -73,7 +73,7 @@ addLayer("a", {
     13: {
       name: "Multi Generators",
       done(){return tmp.h.buyables[11].totalLevel.gte(100)},
-      tooltip(){return "Get 100 Generator buyable level. Reward: unlock h0nde power upgrades."},
+      tooltip(){return "Get 100 Generator buyable level. Reward: unlock h0nde upgrades."},
     },
     14: {
       name: "MILLION POWER",
@@ -303,108 +303,229 @@ addLayer("s", {
   tooltip() { // Optional, tooltip displays when the layer is locked
       return ("Statistics")
   },
-  tabFormat: [
-    ["display-text", function(){
-      return "Best h0nde discord accounts: " + format(player.bestPoints, 3)
-    }],
-    ["display-text", function(){
-      return "Square root multi: " + format(tmp.h.getAccmult, 3)
-    }],
-    "blank",
-    ["display-text", function(){
-      return "Generator buyable levels: " + formatWhole(tmp.h.buyables[11].totalLevel) + " (" + formatWhole(getBuyableAmount("h", 11)) + " + " + formatWhole(tmp.h.buyables[11].freeLevel) + ")"
-    }],
-    "blank",
-    ["display-text", function(){
-      return "h0nde power productions:"
-    }],
-    ["display-text", function(){
-      return "Base production: " + format(tmp.h.buyables[11].effectMul) + "/s (" + formatWhole(tmp.h.buyables[11].totalLevel) + "^" + format(tmp.h.buyables[11].effectExp) + ")"
-    }],
-    ["display-text", function(){
-      return "From Generator buyable bought multipliers: " + format(tmp.h.buyables[11].effectBoost) + "x"
-    }],
-    ["display-text", function(){
-      return (tmp.h.buyables[12].unlocked ? "From Multiplier buyable: " + format(buyableEffect("h",12)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasAchievement("a", 12) ? "From Achievement An Alt account: " + format(achievementEffect("a", 12)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasAchievement("a", 14) ? "From Achievement MILLION POWER: " + format(achievementEffect("a", 14)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasAchievement("a", 22) ? "From Achievement Upgraded: " + format(achievementEffect("a", 22)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasAchievement("a", 24) ? "From Achievement Faster than a potato: " + format(achievementEffect("a", 24)) + "x" : "")
-    }],
-
-    ["display-text", function(){
-      return (player.p.unlocked ? "From Prestige Points: " + format(tmp.p.effect) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasUpgrade("p", 11) ? "From Prestige Upgrade Constant boost: " + format(upgradeEffect("p", 11)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasUpgrade("p", 12) ? "From Prestige Upgrade h0nde boost: " + format(upgradeEffect("p", 12)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasUpgrade("p", 15) ? "From Prestige Upgrade Power boost: " + format(upgradeEffect("p", 15)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasUpgrade("p", 25) ? "From Prestige Upgrade Self Synergy second effect: " + format(upgradeEffect("p", 25)[1]) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (tmp.h.buyables[22].unlocked ? "From Booster buyable: " + format(buyableEffect("h",22)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasAchievement("a", 24) ? "From Achievement Nice^2: " + format(69) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (player.t.unlocked ? "From h0nde super power: " + format(tmp.h.superPowerEff) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasMilestone("t", 2) ? "From Twitter milestone 2: " + format(tmp.t.milestones[2].effect) + "x" : "")
-    }],
-    ["display-text", function(){
-      return (hasUpgrade("t", 33) ? "From Twitter Upgrade Powered: " + format(upgradeEffect("t", 33)) + "x" : "")
-    }],
-    ["display-text", function(){
-      return "Production exponent: ^" + format(tmp.h.buyables[11].productionExp, 3)
-    }],
-    "blank",
-    ["display-text", function(){
-      return "Production cap: " + format(tmp.h.buyables[11].effectCap) + " (2^^" + format(tmp.h.buyables[11].effectCap.slog(2),4) + ")/s"
-    }],
-    ["display-text", function(){
-      return "Total production: " + format(tmp.h.getResetGain) + "/s"
-    }],
-    "blank",
-    ["display-text", function(){
-      if (player.points.gte(86400)){
-        return "If you create " + format(new Decimal(player.points).div(86400)) + " h0nde discord accounts every second, you could spent 1 day to create the amount of accounts equal to your h0nde discord accounts."
-      } else {
-        return "If you create a h0nde discord account every " + formatTime(new Decimal(86400).div(player.points)) + ", you could spent 1 day to create the amount of accounts equal to your h0nde discord accounts."
-      }
-    }],
-    "blank",
-    ["bar","h0ndeBar"],["bar","twitterBar"],
-    ["blank", "3000px"],
-    ["display-text", function(){
-      return "The players that completed the Septendecillion (e54) h0nde power challenge at 10 July:" + `<br>` +
-      "Elund (07:50 GMT+8)" + `<br>` +
-      "EmJov (09:31 GMT+8)" + `<br>` +
-      "Heydiehey123 (16:49 GMT+8)" + `<br>`
-    }],"blank",
-    ["display-text", function(){
-      return "The players that get the most h0nde power at 14 July:" + `<br>` +
-      "Heydiehey123 (1.58e385)" + `<br>` +
-      "Elund (8.62e381)" + `<br>` +
-      "Pennwick (3.55e381)" + `<br>`
-    }],"blank",
-    "blank","blank",
-  ],
+  tabFormat: {
+    "Statistics": {
+    content: [
+      ["display-text", function(){
+        return "Best ever h0nde powers: " + format(player.bestEverh0ndePower)
+      }],
+      ["display-text", function(){
+        return "Best h0nde discord accounts: " + format(player.bestPoints, 3)
+      }],
+      ["display-text", function(){
+        return "Square root multi: " + format(tmp.h.getAccmult, 3)
+      }],
+      "blank",
+      ["display-text", function(){
+        return "Generator buyable levels: " + formatWhole(tmp.h.buyables[11].totalLevel) + " (" + formatWhole(getBuyableAmount("h", 11)) + " + " + formatWhole(tmp.h.buyables[11].freeLevel) + ")"
+      }],
+      "blank",
+      ["display-text", function(){
+        return "h0nde power productions:"
+      }],
+      ["display-text", function(){
+        return "Base production: " + format(tmp.h.buyables[11].effectMul) + "/s (" + formatWhole(tmp.h.buyables[11].totalLevel) + "^" + format(tmp.h.buyables[11].effectExp) + ")"
+      }],
+      ["display-text", function(){
+        return "From Generator buyable bought multipliers: " + format(tmp.h.buyables[11].effectBoost) + "x"
+      }],
+      ["display-text", function(){
+        return (tmp.h.buyables[12].unlocked ? "From Multiplier buyable: " + format(buyableEffect("h",12)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasAchievement("a", 12) ? "From Achievement An Alt account: " + format(achievementEffect("a", 12)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasAchievement("a", 14) ? "From Achievement MILLION POWER: " + format(achievementEffect("a", 14)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasAchievement("a", 22) ? "From Achievement Upgraded: " + format(achievementEffect("a", 22)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasAchievement("a", 24) ? "From Achievement Faster than a potato: " + format(achievementEffect("a", 24)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (player.p.unlocked ? "From Prestige Points: " + format(tmp.p.effect) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasUpgrade("p", 11) ? "From Prestige Upgrade Constant boost: " + format(upgradeEffect("p", 11)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasUpgrade("p", 12) ? "From Prestige Upgrade h0nde boost: " + format(upgradeEffect("p", 12)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasUpgrade("p", 15) ? "From Prestige Upgrade Power boost: " + format(upgradeEffect("p", 15)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasUpgrade("p", 25) ? "From Prestige Upgrade Self Synergy second effect: " + format(upgradeEffect("p", 25)[1]) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (tmp.h.buyables[22].unlocked ? "From Booster buyable: " + format(buyableEffect("h",22)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasAchievement("a", 24) ? "From Achievement Nice^2: " + format(69) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (player.t.unlocked ? "From h0nde super power: " + format(tmp.h.superPowerEff) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasMilestone("t", 2) ? "From Twitter milestone 2: " + format(tmp.t.milestones[2].effect) + "x" : "")
+      }],
+      ["display-text", function(){
+        return (hasUpgrade("t", 33) ? "From Twitter Upgrade Powered: " + format(upgradeEffect("t", 33)) + "x" : "")
+      }],
+      ["display-text", function(){
+        return "Production exponent: ^" + format(tmp.h.buyables[11].productionExp, 3)
+      }],
+      "blank",
+      ["display-text", function(){
+        return "Production cap: " + format(tmp.h.buyables[11].effectCap) + " (2^^" + format(tmp.h.buyables[11].effectCap.slog(2),4) + ")/s"
+      }],
+      ["display-text", function(){
+        return "Total production: " + format(tmp.h.getResetGain) + "/s"
+      }],
+      "blank",
+      ["display-text", function(){
+        if (player.points.gte(86400)){
+          return "If you create " + format(new Decimal(player.points).div(86400)) + " h0nde discord accounts every second, you could spent 1 day to create the amount of accounts equal to your h0nde discord accounts."
+        } else {
+          return "If you create a h0nde discord account every " + formatTime(new Decimal(86400).div(player.points)) + ", you could spent 1 day to create the amount of accounts equal to your h0nde discord accounts."
+        }
+      }],
+      "blank",
+      ["bar","h0ndeBar"],["bar","twitterBar"],
+      ["blank", "3000px"],
+      ["display-text", function(){
+        return "The players that completed the Septendecillion (e54) h0nde power challenge at 10 July:" + `<br>` +
+        "Elund (07:50 GMT+8)" + `<br>` +
+        "EmJov (09:31 GMT+8)" + `<br>` +
+        "Heydiehey123 (16:49 GMT+8)" + `<br>`
+      }],"blank",
+      ["display-text", function(){
+        return "The players that get the most h0nde power at 14 July:" + `<br>` +
+        "Heydiehey123 (1.58e385)" + `<br>` +
+        "Elund (8.62e381)" + `<br>` +
+        "Pennwick (3.55e381)" + `<br>`
+      }],"blank",
+      "blank","blank",
+    ],
+    },
+    "Story": {
+      content: [
+        ["clickable", "story"],
+        ["infobox", "h0nde_1"],
+        ["infobox", "h0nde_2"],
+        ["infobox", "h0nde_3"],
+        ["infobox", "h0nde_4"],
+        ["infobox", "h0nde_5"],
+        ["infobox", "h0nde_6"],
+        ["infobox", "h0nde_7"],
+        ["infobox", "h0nde_8"],
+        ["infobox", "h0nde_9"],
+        ["infobox", "h0nde_10"],
+        ["infobox", "h0nde_11"],
+        ["infobox", "h0nde_12"],
+        ["infobox", "h0nde_13"],
+        ["infobox", "h0nde_14"],
+        ["infobox", "h0nde_15"],
+        ["infobox", "h0nde_16"],
+      ]
+    },
+  },
+  infoboxes: {
+    h0nde_1: {
+      title: "The Beginning",
+      body(){return "At June 7, 2021, a ton of twitter.com/h0nde discord account joined many servers, they just attempt to raid the server, however they got banned later."},
+      unlocked(){return true || player.showAllStory},
+    },
+    h0nde_2: {
+      title: "The Recreation",
+      body(){return "1 month later, I created this game, simulate the h0nde discord account creation, and try to get even more h0nde discord account then previous."},
+      unlocked(){return true || player.showAllStory},
+    },
+    h0nde_3: {
+      title: "Early h0nde Recreation",
+      body(){return "At beginning, you start with Generator buyable, they will produce h0nde power, which translate into h0nde discord accounts for every OoM of them. (" + format(player.h.points.add(1).log(10)) + ")"},
+      unlocked(){return true || player.showAllStory},
+    },
+    h0nde_4: {
+      title: "The Achievement",
+      body(){return "During the h0nde power generating, you somehow get an achievement, which can make the game faster."},
+      unlocked(){return hasAchievement("a",11) || player.showAllStory},
+    },
+    h0nde_5: {
+      title: "The Upgrades",
+      body(){return "Someday you found a boost machine, they make the h0nde power production even faster, however, you need insect some h0nde powers and require some buyables to buy the boost."},
+      unlocked(){return hasAchievement("a",13) || player.showAllStory},
+    },
+    h0nde_6: {
+      title: "The Softcap",
+      body(){return "However, due to excess h0nde discord accounts, the account creation start to showdown, you found a machine for generate h0nde discord accounts, it say for every " + format(tmp.h.getAccmult, 3) + "x h0nde discord accounts, the accounts amount will be square rooted." + `<br>` +
+      "(The softcap current applied " + formatWhole(Decimal.log(player.points,tmp.h.getAccmult).floor()) + " times)"},
+      unlocked(){return player.bestPoints.gte(10) || player.showAllStory},
+    },
+    h0nde_7: {
+      title: "The Bulk",
+      body(){return "Now you have a lot of Generator buyable level, if you buy them one-by-one, it could be really boring, fortunately the Buy Max button can solve this problem, you can buy Generator buyable level as many as possible with just one click."},
+      unlocked(){return hasAchievement("a",22) || player.showAllStory},
+    },
+    h0nde_8: {
+      title: "The Hardcap of Generator",
+      body(){return "Somehow when you attempt to buy level 2501 of Generator buyable, but it is not allowed, check the machine, it say YOU REACHED THE MAXIMUM OF BOUGHT AMOUNT, this mean you can't buy them anymore, you must figure out how to break the 2500 barrier."},
+      unlocked(){return getBuyableAmount("h",11).gte(2500) || player.p.unlocked || player.showAllStory},
+    },
+    h0nde_9: {
+      title: "The Prestige",
+      body(){return "You found a machine, it will reset everything but achievement, you accidentally actived the machine, EVERYTHING IS GETTING RESET, but achievement is remain here, you will restart the h0nde power generation, but everything went faster."},
+      unlocked(){return player.p.unlocked || player.showAllStory},
+    },
+    h0nde_10: {
+      title: "The Automation",
+      body(){return "You buy an upgrade, a machine suddenly appear, active them will automatically buy the stuffs, however, buying a upgrade double the cost on first row."},
+      unlocked(){return hasMilestone("p",1) || player.showAllStory},
+    },
+    h0nde_11: {
+      title: "Achievements that need turn off something?",
+      body(){return "You literally thinking these achievements doesn't really need to inactive something, However, these 3 achievements you must need turn off the automation to able get the achievement." + `<br><br>` + "It is called Hard Achievements, normal grinding isn't possible to complete the achievement."},
+      unlocked(){return hasAchievement("a",33) || hasAchievement("a",34) || hasAchievement("a",35) || player.showAllStory},
+    },
+    h0nde_12: {
+      title: "RIP Generator buyable level limit",
+      body(){return "At someday, you finally found a machine which remove the limit of Generator buyable level but reduce PP gain, you actived the machine with enough requirement, everything getting reset (?) You get more h0nde powers, but it seems weaker than usual? You found a line on Generator buyables, it say beyond 100 boosts it will be square rooted."},
+      unlocked(){return hasMilestone("p",6) || hasAchievement("a",41) || player.showAllStory},
+    },
+    h0nde_13: {
+      title: "Infinity h0nde power?",
+      body(){return "You reached " + format(Decimal.pow(2,1024)) + " h0nde power, but it works normally, you figure out the file, it say the resource limit is 10^^" + format(Decimal.pow(2,1024)) + ", which is way larger than " + format(Decimal.pow(2,1024)) + ", this mean you can continue the game normally."},
+      unlocked(){return player.bestEverh0ndePower.gte(Decimal.pow(2,1024)) || player.showAllStory},
+    },
+    h0nde_14: {
+      title: "The Challenges",
+      body(){return "Ok, you reached here with only PP grinding, but you found a challenge machine, which make the game harder but have a reward when you complete it, you decide to enter it, but the power is too low."},
+      unlocked(){return hasMilestone("p",7) || player.showAllStory},
+    },
+    h0nde_15: {
+      title: "Exponential Era",
+      body(){return "You found a buyable, they increase h0nde power gain exponent by 0.05, it can increase h0nde power gain by a lot! However, the cost is increase super fast, with more of them they will be weaker."},
+      unlocked(){return hasAchievement("a",52) || player.showAllStory},
+    },
+    h0nde_16: {
+      title: "Another Social Media?",
+      body(){return "After a lot of grinding, you finally found a new layer, like prestige, it will reset row 1 resource, however the require will be increase with more resource."},
+      unlocked(){return player.t.unlocked || player.showAllStory},
+    },
+  },
+  clickables:{
+    story: {
+      title() {return (player.showAllStory ? "Hide" : "Show") + " all Story"},
+      display(){return "(May contain spoilers)"},
+      canClick(){return true},
+      onClick(){
+        player.showAllStory = Boolean(1 - player.showAllStory)
+      },
+      unlocked(){return true},
+    },
+  },
   bars: {
     h0ndeBar: {
         direction: RIGHT,
@@ -417,7 +538,7 @@ addLayer("s", {
           "(" + format(player.points.sub(player.points.floor()).mul(100)) + "% completed, " + format(getInvInfSqrt(player.points.ceil().max(1), tmp.h.getAccmult).sub(player.h.points.max(1).log(10)).max(0)) + " OoM left)"
         },
         instant: true,
-        fillStyle(){return {"background-color":"#ff0000"}},
+        fillStyle(){return {"background-color":"#406da2"}},
     },
     twitterBar: {
       direction: RIGHT,
@@ -427,11 +548,14 @@ addLayer("s", {
         return player.points.div(tmp.t.nextAt)
       },
       display(){
-        return convCardToOrd(player.t.points.add(1)) + " h0nde discord account at" + `<br>` + 
+        return convCardToOrd(player.t.points.add(1)) + " h0nde twitter account at" + `<br>` + 
         format(tmp.t.nextAt, 3) + " h0nde discord accounts" + `<br>` +
         "(Estimate h0nde power require: " + format(Decimal.pow(10, getInvInfSqrt(tmp.t.nextAt, tmp.h.getAccmult))) + ")" + `<br>(` + format(tmp.t.nextAt.sub(player.points).max(0), 3) + " left)"
       },
       instant: true,
+      unlocked(){
+        return tmp.t.layerShown
+      },
       fillStyle(){return {"background-color":"#1DA1F2"}},
     },
   },

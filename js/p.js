@@ -839,7 +839,7 @@ addLayer("p", {
       },
       42: {
         name: "Super Powerless",
-        challengeDescription: "h0nde super power and twitter power exponent are always 0, Poweless is applied.",
+        challengeDescription: "h0nde super power and twitter power exponent are always 0, Powerless is applied.",
         goalDescription(){return format(tmp.p.challenges[42].goal) + " h0nde power"},
         rewardDescription: "h0nde super power exponent and twitter power exponent boosts each other",
         rewardEffect(){

@@ -18,7 +18,7 @@ addLayer("h", {
       autoBuyable31: false,
       maxBuyable11CD: 0.1,
     }},
-    color: "#4BDC13",
+    color: "#406da2",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
     resource: "h0nde powers", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
@@ -40,19 +40,13 @@ addLayer("h", {
     update(diff){
       player.points = tmp.h.getAccounts
       player.bestPoints = player.bestPoints.max(player.points)
+      player.bestEverh0ndePower = player.bestEverh0ndePower.max(player.h.points)
       player.h.maxBuyable11CD = Math.max(0,player.h.maxBuyable11CD-diff)
       player.h.points2 = player.h.points2.add(tmp.t.getSuperPowSpeed.mul(diff))
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
-    tabFormat: {
-      "Info": {
-        content: [
-          ["infobox", "info"],["infobox", "info2"]
-        ],
-      },
-      "Upgrades": {
-        content: [
+    tabFormat: [
           "main-display",
           ["display-text",
             function(){
@@ -75,9 +69,7 @@ addLayer("h", {
             return !hasMilestone("t",14) ? "" : "Note: You can buy 3rd row of h0nde Upgrades if you are not in Prestige Challenge."
           }],
           "upgrades"
-        ],
-      },
-    },
+    ],
     superPowerEff(){
       let eff = player.h.points2.add(1).pow(tmp.h.superPowerEffExp)
       if (eff.gte(tmp.h.superPowerEffSCStart)) eff = new Decimal(10).pow(eff.log(10).div(tmp.h.superPowerEffSCStart.log(10)).pow(0.5).mul(tmp.h.superPowerEffSCStart.log(10)))
@@ -121,24 +113,6 @@ addLayer("h", {
       if (player.t.unlocked) mul = mul.add(tmp.t.effect[1])
       if (hasUpgrade("h",31)) mul = mul.add(upgradeEffect("h",31))
       return mul
-    },
-    infoboxes: {
-      info: {
-        title: "Info",
-        body() {
-          return "At June 7, 2021, a ton of twitter.com/h0nde discord account joined many servers, they just attempt to raid the server, however they got banned later." + `<br>` +
-          "1 month later, I created this game, simulate the h0nde discord account creation, and try to get even more h0nde discord account then previous."
-        },
-        unlocked(){return true},
-      },
-      info2: {
-        title: "How to create h0nde discord account",
-        body() {
-          return "For every OoM of h0nde power, a new h0nde discord account will be created, however, for every " + format(tmp.h.getAccmult) + "x h0nde discord accounts, the account amount will square rooted." + `<br>` +
-          "Note: It is possible to have decimal amount of accounts."
-        },
-        unlocked(){return player.h.buyables[11].gt(0)},
-      },
     },
     automate(){
       if (hasMilestone("p",2) && player.h.autoBuyable11 && tmp.h.buyables[11].unlocked) tmp.h.buyables[11].buyMax()

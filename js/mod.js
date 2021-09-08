@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.08",
+	num: "0.081",
 	name: "h0nde second social media II",
 }
 
@@ -21,6 +21,14 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make it for inverse calculation.<br><br>
     <h1>Changelog:</h1><br><br>
+	<h3>v0.081</h3><br>
+	- Added best ever h0nde power variable, it never getting reset.<br>
+	- Changed the color of h0nde layer node and h0nde bar to #406da2.<br>
+	- Changed the color of twitter power softcap warning to yellow.<br>
+	- Moved the Info from h0nde layer to Statistics node, renamed it to Story and added more.<br>
+	- Fixed the description of Achievement 13 reward and Prestige Challenge 8 description.<br>
+	- Fixed twitter bar say next integer of discord accounts instead of twitter accounts, and it no longer always show.<br>
+	- Endgame remain same.<br>
 	<h2>v0.08 - h0nde second social media II</h2><br>
 	- Added 8 milestones, 5 achievements, 5 challenges, 5 buyables and 16 upgrades.<br>
 	- Added 2 bars on Statistic tab.<br>
@@ -50,7 +58,7 @@ Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make i
 	- Softcapped Exponentiator buyable at level 3.<br>
 	- Softcapped PP boost at 1.80e308x.<br>
 	- Changed the number formatting between 1e-4 and 1e-2.<br>
-	- Fixed did a prestige reset act as did a h0nde reset.<br>
+	- Fixed did a row 3 reset only reset h0nde layer stuff.<br>
 	- Renamed h0nde upgrade 23 again.<br>
 	- Removed h0nde power and it's production on Info tab.<br>
 	- Endgame: 7 h0nde twitter accounts and 1e176 prestige points.<br>
@@ -154,7 +162,9 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
-	bestPoints: new Decimal(0)
+	bestPoints: new Decimal(0),
+	bestEverh0ndePower: new Decimal(0),
+	showAllStory: false
 }}
 
 // Display extra things at the top of the page
