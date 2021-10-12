@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.082",
+	num: "0.0821",
 	name: "h0nde second social media II",
 }
 
@@ -233,7 +233,11 @@ function fixOldSave(oldVersion){
 		player.p.total = new Decimal(1e91)
 		setBuyableAmount("p",11,new Decimal(22))
 	}
-	if (player.t.power2 == undefined){
+	if (oldVersion <= 0.082 && player.t.power2 == undefined){
 		player.t.power2 = player.t.power
+	}
+        if (player.a.achievements.includes("24")){
+		let index = player.a.achievements.indexOf("24")
+		if (index > -1) player.a.achievements.splice(index, 1)
 	}
 }
