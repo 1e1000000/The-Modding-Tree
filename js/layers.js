@@ -114,7 +114,7 @@ addLayer("a", {
     },
     24: {
       name: "Faster than a potato",
-      done(){return tmp.h.getResetGain.gte(1e29)},
+      done(){return tmp.h.getResetGain.gte(1e29) || !isNaN(tmp.h.getResetGain)},
       tooltip(){return "Reach " + format(1e29) + " h0nde power per second. Reward: unlock a buyable, Divider buyable level boost h0nde power gain. (" + format(achievementEffect("a", 24)) + "x)"},
       effect(){
         let eff = tmp.h.buyables[13].totalLevel.add(1)
