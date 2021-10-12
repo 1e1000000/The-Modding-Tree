@@ -16,6 +16,7 @@ addLayer("t", {
       following: new Decimal(1e-8),
       follower: new Decimal(1e-10),
       resetTime: 0,
+      showTwitterPower: false,
     }},
     color: "#1DA1F2",
     requires: new Decimal(100), // Can be a function that takes requirement increases into account
@@ -191,7 +192,7 @@ addLayer("t", {
       },
     },
     doReset(resettingLayer) {
-      let keep = [];
+      let keep = ["showTwitterPower"];
       player.t.power2 = new Decimal(0)
       player.t.power = new Decimal(0)
       player.t.energy = new Decimal(1)
@@ -202,11 +203,18 @@ addLayer("t", {
       player.t.follower = new Decimal(1e-10)
       if (layers[resettingLayer].row > this.row) layerDataReset("t", keep)
     },
+    tooltipLocked(){
+      return "Reach 100 h0nde discord accounts to unlock (You have " + format(player.points, 3) + " h0nde discord accounts)"
+    },
+    tooltip(){
+      return player.t.showTwitterPower ? (format(player.t.power) + " twitter powers") : (formatWhole(player.t.points) + " h0nde twitter accounts")
+    },
     milestones: {
       1: {
         requirementDescription: "1 h0nde twitter accounts & 1e99 prestige points",
-        effectDescription: "Begin the production of Twitter Power",
+        effectDescription: "Begin the production of Twitter Power, the toggle is let twitter node tooltip shows twitter power instead of accounts",
         done(){return player.t.points.gte(1) && player.p.points.gte(1e99)},
+        toggles: [["t","showTwitterPower"]],
       },
       2: {
         requirementDescription: "2 h0nde twitter accounts & 1e102 prestige points",
@@ -461,7 +469,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",11)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",11)) + "x"
         },
         unlocked(){
           return true
@@ -482,7 +490,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",12)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",12)) + "x"
         },
         unlocked(){
           return true
@@ -503,7 +511,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",13))
+          return shiftDown ? "x/100" : "+" + format(upgradeEffect("t",13))
         },
         unlocked(){
           return true
@@ -524,7 +532,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",14)) + "x"
+          return shiftDown ? "10^log10(x)^0.5" : format(upgradeEffect("t",14)) + "x"
         },
         unlocked(){
           return true
@@ -545,7 +553,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",15)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",15)) + "x"
         },
         unlocked(){
           return true
@@ -567,7 +575,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",21)) + "x"
+          return shiftDown ? "x, every 10.00x, effect is square rooted" : format(upgradeEffect("t",21)) + "x"
         },
         unlocked(){
           return hasMilestone("t",3)
@@ -624,7 +632,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",24))
+          return shiftDown ? "log10(x+1)^0.5/10" : "+" + format(upgradeEffect("t",24))
         },
         unlocked(){
           return hasMilestone("t",3)
@@ -641,7 +649,7 @@ addLayer("t", {
         description(){return "Reduce all row 2 h0nde buyables cost scaling by 0.02, add 0.003 into Exponentiator base"},
         cost(){return new Decimal(1e18)},
         effect(){
-          let eff = new Decimal(0.1)
+          let eff = new Decimal(1)
           return eff
         },
         unlocked(){
@@ -663,7 +671,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",31)) + "x"
+          return shiftDown ? "x+1" : format(upgradeEffect("t",31)) + "x"
         },
         unlocked(){
           return hasMilestone("t",5)
@@ -684,7 +692,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",32)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",32)) + "x"
         },
         unlocked(){
           return hasMilestone("t",5)
@@ -707,7 +715,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",33)) + "x"
+          return shiftDown ? "x+1, exponential softcap at 1.80e308x, logarithm softcap at 1.00e4,000x" : format(upgradeEffect("t",33)) + "x"
         },
         unlocked(){
           return hasMilestone("t",5)
@@ -729,7 +737,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",34))
+          return shiftDown ? "5log10(10x^0.5)+5, softcap at 10" : "+" + format(upgradeEffect("t",34))
         },
         unlocked(){
           return hasMilestone("t",5)
@@ -768,7 +776,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",41)[0]) + "x PP gain, " + format(upgradeEffect("t",41)[1]) + "x Energy and Comment gain"
+          return (shiftDown ? "PP: x+1, every 1e10x, effect is square rooted, Energy and Comment: log10(x+10)" : format(upgradeEffect("t",41)[0]) + "x PP gain, " + format(upgradeEffect("t",41)[1]) + "x Energy and Comment gain")
         },
         unlocked(){
           return hasMilestone("t",7)
@@ -789,7 +797,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",42)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",42)) + "x"
         },
         unlocked(){
           return hasMilestone("t",7)
@@ -824,11 +832,11 @@ addLayer("t", {
         description(){return "Exponentiator buyable effect adds to Power buyable base"},
         cost(){return new Decimal(1e221)},
         effect(){
-          let eff = buyableEffect("h",23).div(1)
+          let eff = buyableEffect("h",23)
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",44), 3)
+          return shiftDown ? "x" : "+" + format(upgradeEffect("t",44), 3)
         },
         unlocked(){
           return hasMilestone("t",7)
@@ -850,7 +858,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",45)[0]) + "x PP gain, " + format(upgradeEffect("t",45)[1]) + "x base twitter power gain"
+          return shiftDown ? "Applied " + formatWhole(player.h.points.add(1).log(Number.MAX_VALUE).floor()) + " times" : format(upgradeEffect("t",45)[0]) + "x PP gain, " + format(upgradeEffect("t",45)[1]) + "x base twitter power gain"
         },
         unlocked(){
           return hasMilestone("t",7)
@@ -871,7 +879,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",51)) + "x"
+          return shiftDown ? "x, every 2.00x, effect is square rooted" : format(upgradeEffect("t",51)) + "x"
         },
         unlocked(){
           return hasMilestone("t",9)
@@ -894,7 +902,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",52), 3)
+          return shiftDown ? "0.1log10(log10(" + (inChallenge("p",51) ? "9.99e99" : "x") + "+1)+1), softcap at 1" : "+" + format(upgradeEffect("t",52), 3)
         },
         unlocked(){
           return hasMilestone("t",9)
@@ -915,7 +923,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",53)) + "x"
+          return shiftDown ? "x^0.01" : format(upgradeEffect("t",53)) + "x"
         },
         unlocked(){
           return hasMilestone("t",9)
@@ -936,7 +944,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("t",54), 3)
+          return shiftDown ? "x/200" : "+" + format(upgradeEffect("t",54), 3)
         },
         unlocked(){
           return hasMilestone("t",9)
@@ -975,7 +983,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",61)) + "x"
+          return shiftDown ? "x^0.01, for every 1,000x, effect is square rooted" : format(upgradeEffect("t",61)) + "x"
         },
         unlocked(){
           return hasMilestone("t",11)
@@ -1010,7 +1018,7 @@ addLayer("t", {
         description(){return "The require of Generator buyable multiplier boost is reduced by 8"},
         cost(){return new Decimal("1e1840")},
         effect(){
-          let eff = new Decimal(Number.MAX_VALUE)
+          let eff = new Decimal(8)
           return eff
         },
         unlocked(){
@@ -1032,7 +1040,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",64)) + "x"
+          return shiftDown ? "log10(x+10)" : format(upgradeEffect("t",64)) + "x"
         },
         unlocked(){
           return hasMilestone("t",11)
@@ -1071,7 +1079,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",71)[0]) + "x base twitter power gain, " + format(upgradeEffect("t",71)[1]) + "x prestige points gain"
+          return shiftDown ? "Twitter power gain: x^0.2, PP gain: x^0.5" : format(upgradeEffect("t",71)[0]) + "x base twitter power gain, " + format(upgradeEffect("t",71)[1]) + "x prestige points gain"
         },
         unlocked(){
           return hasMilestone("t",13)
@@ -1110,7 +1118,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",73)) + "x"
+          return shiftDown ? "x^0.01" : format(upgradeEffect("t",73)) + "x"
         },
         unlocked(){
           return hasMilestone("t",13)
@@ -1131,7 +1139,7 @@ addLayer("t", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("t",74)) + "x"
+          return shiftDown ? "log10(x+10)^2" : format(upgradeEffect("t",74)) + "x"
         },
         unlocked(){
           return hasMilestone("t",13)
@@ -1168,8 +1176,8 @@ addLayer("t", {
         display(){
           return "Multiply base twitter power gain by " + format(tmp.t.buyables[11].effectBase) + "." + `<br>` +
           "Currently: " + format(buyableEffect("t",11)) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[11].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 11)) + (tmp.t.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[11].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[11].costBase, 2, true) + "^" + format(tmp.t.buyables[11].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[11].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 11)) + (tmp.t.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[11].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)
@@ -1230,8 +1238,8 @@ addLayer("t", {
         display(){
           return "Increase twitter power exponent by " + format(tmp.t.buyables[12].effectBase, 3) + "." + `<br>` +
           "Currently: +" + format(buyableEffect("t",12), 3) + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[12].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 12)) + (tmp.t.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[12].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[12].costBase, 2, true) + "^" + format(tmp.t.buyables[12].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[12].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 12)) + (tmp.t.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[12].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)
@@ -1293,8 +1301,8 @@ addLayer("t", {
         display(){
           return "Multiply all producer speed by " + format(tmp.t.buyables[13].effectBase) + "." + `<br>` +
           "Currently: " + format(buyableEffect("t",13)) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[13].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 13)) + (tmp.t.buyables[13].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[13].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[13].costBase, 2, true) + "^" + format(tmp.t.buyables[13].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[13].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 13)) + (tmp.t.buyables[13].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[13].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)
@@ -1353,10 +1361,10 @@ addLayer("t", {
       21: {
         title: "Super Power Speed",
         display(){
-          return "Multiply h0nde super power gain by " + format(tmp.t.buyables[21].effectBase) + " (based on h0nde power)." + `<br>` +
+          return "Multiply h0nde super power gain by " + format(tmp.t.buyables[21].effectBase) + `<br>` + " (log10(h0nde power+10)^0.5)" + `<br>` +
           "Currently: " + format(buyableEffect("t",21)) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[21].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 21)) + (tmp.t.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[21].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[21].costBase, 2, true) + "^" + format(tmp.t.buyables[21].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[21].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 21)) + (tmp.t.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[21].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)
@@ -1416,8 +1424,8 @@ addLayer("t", {
         display(){
           return "Increase Prestige gain base by " + format(tmp.t.buyables[22].effectBase) + "." + `<br>` +
           "Currently: +" + format(buyableEffect("t",22)) + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[22].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 22)) + (tmp.t.buyables[22].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[22].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[22].costBase, 2, true) + "^" + format(tmp.t.buyables[22].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[22].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 22)) + (tmp.t.buyables[22].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[22].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)
@@ -1477,8 +1485,8 @@ addLayer("t", {
         display(){
           return "Increase Prestige effect exponent by " + format(tmp.t.buyables[23].effectBase) + " (multiplicative with each other)." + `<br>` +
           "Currently: +" + format(buyableEffect("t",23)) + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.t.buyables[23].cost) + " twitter power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("t", 23)) + (tmp.t.buyables[23].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[23].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.t.buyables[23].costBase, 2, true) + "^" + format(tmp.t.buyables[23].costScaling, 3) + "^x" : "Cost: " + format(tmp.t.buyables[23].cost) + " twitter power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("t", 23)) + (tmp.t.buyables[23].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.t.buyables[23].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(10)

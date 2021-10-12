@@ -58,7 +58,7 @@ addLayer("h", {
           },
           ["display-text",
             function(){
-              return player.t.points.gte(1) ? "You have " + format(player.h.points2) + " h0nde super powers (+" + format(tmp.t.getSuperPowSpeed) + "/s), which multiply h0nde powers gain by " + format(tmp.h.superPowerEff) + " ((x+1)" + `<sup>` + format(tmp.h.superPowerEffExp, 3) + `</sup>` + ", softcap at " + format(tmp.h.superPowerEffSCStart) + "x)" : ""
+              return player.t.points.gte(1) ? "You have " + format(player.h.points2) + " h0nde super powers (+" + format(tmp.t.getSuperPowSpeed) + "/s), which multiply h0nde powers gain by " + (shiftDown ? "(x+1)" + `<sup>` + format(tmp.h.superPowerEffExp, 3) + `</sup>` + ", softcap at " + format(tmp.h.superPowerEffSCStart) + "x" : format(tmp.h.superPowerEff) + " (Shift click for more info)") : ""
             }
           ],
           function(){
@@ -128,11 +128,8 @@ addLayer("h", {
         display(){
           return "Produce " + format(tmp.h.buyables[11].effectBase) + " h0nde powers per second, then raise the production by " + format(tmp.h.buyables[11].productionExp, 3) + "." + `<br>` +
           "Currently: " + format(buyableEffect("h",11)) + "/s " + (buyableEffect("h",11).gte(tmp.h.buyables[11].effectCap) ? " (hardcapped)" : "") + `<br>` + `<br>` + 
-          (!shiftDown ? "Cost: " + format(tmp.h.buyables[11].cost, 2, true) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + (player.p.breakLimit ? "" : " / " + formatWhole(tmp.h.buyables[11].purchaseLimit)) + `<br>` + "(Shift click for more info)" :
-          format(tmp.h.buyables[11].multiBoostMultiplier, 3) + "x production boost counts: " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).floor()) + 
-          " (Next at: " + formatWhole(tmp.h.buyables[11].totalLevel) + "/" + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).add(1e-10).ceil().mul(tmp.h.buyables[11].multiBoostDensity)) + ")" + `<br>` +
-          "h0nde power production multi from this buyable: " + format(tmp.h.buyables[11].effectMul) + " (Exponent: " + format(tmp.h.buyables[11].effectExp) + ")")
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[11].costBase, 2, true) + "×" + format(tmp.h.buyables[11].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[11].cost, 2, true) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 11)) + (tmp.h.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[11].freeLevel)) + (player.p.breakLimit ? "" : " / " + formatWhole(tmp.h.buyables[11].purchaseLimit)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(5)
@@ -304,9 +301,9 @@ addLayer("h", {
         title: "Multiplier",
         display(){
           return "Increase h0nde powers gain by " + format(tmp.h.buyables[12].effectBase.mul(100)) + "%, then raise this effect by " + format(tmp.h.buyables[12].effectExp) + "." + `<br>` +
-          "Currently: " + format(buyableEffect("h",12)) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.h.buyables[12].cost) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 12)) + (tmp.h.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[12].freeLevel))
+          "Currently: " + (shiftDown ? "(1+" + format(tmp.h.buyables[12].effectBase) + "x)^" + format(tmp.h.buyables[12].effectExp) : format(buyableEffect("h",12)) + "x") + `<br>` + `<br>` + 
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[12].costBase, 2, true) + "×" + format(tmp.h.buyables[12].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[12].cost) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 12)) + (tmp.h.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[12].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(1e7)
@@ -391,9 +388,9 @@ addLayer("h", {
         title: "Divider",
         display(){
           return "Increase Generator buyable cost divider by " + format(tmp.h.buyables[13].effectBase) + ", then raise this effect by " + format(tmp.h.buyables[13].effectExp) + "." + `<br>` +
-          "Currently: /" + format(buyableEffect("h",13)) + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.h.buyables[13].cost) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 13)) + (tmp.h.buyables[13].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[13].freeLevel))
+          "Currently: " + (shiftDown ? "(1+" + format(tmp.h.buyables[13].effectBase) + "x)^" + format(tmp.h.buyables[13].effectExp) : "/" + format(buyableEffect("h",13))) + `<br>` + `<br>` + 
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[13].costBase, 2, true) + "×" + format(tmp.h.buyables[13].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[13].cost) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 13)) + (tmp.h.buyables[13].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[13].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(1e15)
@@ -475,9 +472,9 @@ addLayer("h", {
         title: "Power",
         display(){
           return "Increase Generator buyable level to h0nde power production exponent by " + format(tmp.h.buyables[21].effectBase) + "." + `<br>` +
-          "Currently: +" + format(buyableEffect("h",21)) + (buyableEffect("h",21).gte(tmp.h.buyables[21].effectSoftcapStart) ? " (softcapped)" : "") + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.h.buyables[21].cost) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 21)) + (tmp.h.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[21].freeLevel))
+          "Currently: " + (shiftDown ? format(tmp.h.buyables[21].effectBase) + "x, softcap at " + format(tmp.h.buyables[21].effectSoftcapStart) : "+" + format(buyableEffect("h",21)) + (buyableEffect("h",21).gte(tmp.h.buyables[21].effectSoftcapStart) ? " (softcapped)" : "")) + `<br>` + `<br>` + 
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[21].costBase, 2, true) + "^" + format(tmp.h.buyables[21].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[21].cost) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 21)) + (tmp.h.buyables[21].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[21].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(5e33)
@@ -551,9 +548,9 @@ addLayer("h", {
         title: "Booster",
         display(){
           return "Multiply h0nde power gain by " + format(tmp.h.buyables[22].effectBase) + "." + `<br>` +
-          "Currently: " + format(buyableEffect("h",22)) + "x" + (buyableEffect("h",22).gte(tmp.h.buyables[22].effectSoftcapStart) ? " (softcapped)" : "") + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.h.buyables[22].cost) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 22)) + (tmp.h.buyables[22].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[22].freeLevel))
+          "Currently: " + (shiftDown ? format(tmp.h.buyables[22].effectBase) + "^x^" + format(tmp.h.buyables[22].effectExp) + ", softcap at " + format(tmp.h.buyables[22].effectSoftcapStart) : format(buyableEffect("h",22)) + "x" + (buyableEffect("h",22).gte(tmp.h.buyables[22].effectSoftcapStart) ? " (softcapped)" : "")) + `<br>` + `<br>` + 
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[22].costBase, 2, true) + "^" + format(tmp.h.buyables[22].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[22].cost) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 22)) + (tmp.h.buyables[22].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[22].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(1e140)
@@ -633,9 +630,9 @@ addLayer("h", {
         title: "Exponentiator",
         display(){
           return "Increase h0nde power gain exponent by " + format(tmp.h.buyables[23].effectBase) + "." + `<br>` +
-          "Currently: +" + format(buyableEffect("h",23),3) + (tmp.h.buyables[23].totalLevel.gt(tmp.h.buyables[23].effectLevelSoftcapStart) ? " (softcapped)" + (tmp.h.buyables[23].totalLevel.gt(tmp.h.buyables[23].effectLevelSoftcapStart2) ? "^2" : "") : "") + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.h.buyables[23].cost) + " h0nde power" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 23)) + (tmp.h.buyables[23].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[23].freeLevel))
+          "Currently: " + (shiftDown ? format(tmp.h.buyables[23].effectBase) + "x, after level " + formatWhole(tmp.h.buyables[23].effectLevelSoftcapStart) + ", the level amount will be divided by " + format(tmp.h.buyables[23].effectLevelSoftcapStrength) + ", after level " + formatWhole(tmp.h.buyables[23].effectLevelSoftcapStart2) + ", the level amount will be rooted by " + format(tmp.h.buyables[23].effectLevelSoftcapStrength2) : "+" + format(buyableEffect("h",23),3) + (tmp.h.buyables[23].totalLevel.gt(tmp.h.buyables[23].effectLevelSoftcapStart) ? " (softcapped)" + (tmp.h.buyables[23].totalLevel.gt(tmp.h.buyables[23].effectLevelSoftcapStart2) ? "^2" : "") : "")) + `<br>` + `<br>` + 
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.h.buyables[23].costBase, 2, true) + "^" + format(tmp.h.buyables[23].costScaling, 3) + "^x" : "Cost: " + format(tmp.h.buyables[23].cost) + " h0nde power") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 23)) + (tmp.h.buyables[23].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[23].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal("1e500")
@@ -726,8 +723,8 @@ addLayer("h", {
         display(){
           return "Increase Generator buyable multi boost by " + format(tmp.h.buyables[31].effectBase) + " and exponent multi by " + format(tmp.h.buyables[31].effectBase2) + "." + `<br>` +
           "Currently: +" + format(buyableEffect("h",31)[0]) + ", +" + format(buyableEffect("h",31)[1]) + `x<br>` + `<br>` + 
-          "Require: " + format(tmp.h.buyables[31].cost) + " non-free Generator buyable level" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("h", 31)) + (tmp.h.buyables[31].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[31].freeLevel))
+          (shiftDown ? "Require Formula:" + `<br>` + format(tmp.h.buyables[31].costBase, 2, true) + "×" + format(tmp.h.buyables[31].costScaling, 3) + "^x" : "Require: " + format(tmp.h.buyables[31].cost) + " non-free Generator buyable level") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("h", 31)) + (tmp.h.buyables[31].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.h.buyables[31].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(1e6)
@@ -841,12 +838,12 @@ addLayer("h", {
         cost: new Decimal(2e5),
         effect(){
           let eff = player.points.add(1)
-          if (hasChallenge("p", 11)) eff = new Decimal(10).pow(eff).max(eff)
+          if (hasChallenge("p", 31)) eff = new Decimal(10).pow(eff).max(eff)
           if (hasMilestone("t",14)) eff = eff.pow(11)
           return eff
         },
         effectDisplay(){
-          return "/" + format(upgradeEffect("h",12))
+          return shiftDown ? (hasChallenge("p", 31) ? (hasMilestone("t",14)? "1e11^(x+1)" : "10^(x+1)") : (hasMilestone("t",14)? "(x+1)^11" : "x+1")) : "/" + format(upgradeEffect("h",12))
         },
         unlocked(){
           return hasAchievement("a",13)

@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.081",
+	num: "0.082",
 	name: "h0nde second social media II",
 }
 
@@ -21,6 +21,17 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make it for inverse calculation.<br><br>
     <h1>Changelog:</h1><br><br>
+	<h3>v0.082</h3><br>
+	- When you Shift-click, all buyables cost, all upgrades boost, h0nde super power boost and prestige points boost formula will show.<br>
+	- All details on Generator buyable are moved to Statistic node.<br>
+	- Added an option to only show Exponential Powerless.<br>
+	- Added an option to show current twitter power instead of h0nde twitter accounts on twitter node tooltip.<br>
+	- Added spaces between production breakouts.<br>
+	- The progress bars are no longer use instant.<br>
+	- Fixed Upgradeless reward apply when you completed Powerless.<br> 
+	- Removed some useless things on Statistic node.<br>
+	- Endgame remain same.<br>
+	<br>
 	<h3>v0.081</h3><br>
 	- Added best ever h0nde power variable, it never getting reset.<br>
 	- Changed the color of h0nde layer node and h0nde bar to #406da2.<br>
@@ -29,6 +40,7 @@ Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make i
 	- Fixed the description of Achievement 13 reward and Prestige Challenge 8 description.<br>
 	- Fixed twitter bar say next integer of discord accounts instead of twitter accounts, and it no longer always show.<br>
 	- Endgame remain same.<br>
+	<br>
 	<h2>v0.08 - h0nde second social media II</h2><br>
 	- Added 8 milestones, 5 achievements, 5 challenges, 5 buyables and 16 upgrades.<br>
 	- Added 2 bars on Statistic tab.<br>

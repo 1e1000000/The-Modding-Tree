@@ -11,6 +11,7 @@ addLayer("p", {
       breakLimit: false,
       unlockedChallenges: 0,
       bestC12: new Decimal(0),
+      onlyShowC12: false,
     }},
     color: "#31aeb0",
     requires: new Decimal(2500), // Can be a function that takes requirement increases into account
@@ -98,18 +99,23 @@ addLayer("p", {
       if (hasUpgrade("t",62)) start = start.mul(Number.MAX_VALUE)
       return start
     },
+    effectExp(){
+      if (inChallenge("p",32)) return new Decimal(0)
+      let exp = new Decimal(1)
+      if (hasUpgrade("p",23)) exp = exp.mul(1.5)
+      if (hasChallenge("p",32)) exp = exp.mul(1.6)
+      exp = exp.mul(buyableEffect("t",23).add(1))
+      return exp
+    },
     effect(){
-      if (inChallenge("p",32)) return new Decimal(1)
       let eff = player.p.points.add(1)
-      if (hasUpgrade("p",23)) eff = eff.pow(1.5)
-      if (hasChallenge("p",32)) eff = eff.pow(1.6)
-      eff = eff.pow(buyableEffect("t",23).add(1))
+      eff = eff.pow(tmp.p.effectExp)
   
       if (eff.gte(tmp.p.effectSCStart)) eff = new Decimal(10).pow(eff.log(10).div(new Decimal(tmp.p.effectSCStart).log(10)).pow(0.75).mul(new Decimal(tmp.p.effectSCStart).log(10)))
       return eff
     },
     effectDescription(){
-      return " which multiply h0nde power gain by " + format(tmp.p.effect) + (tmp.p.effect.gte(tmp.p.effectSCStart) ? " (softcapped)" : "")
+      return " which multiply h0nde power gain by " + (shiftDown ? "(x+1)" + `<sup>` + format(tmp.p.effectExp, 3) + `</sup>` + ", softcap at " + format(tmp.p.effectSCStart) + "x" : format(tmp.p.effect) + " (Shift click for more info)")
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
     branches: ["h"],
@@ -129,7 +135,7 @@ addLayer("p", {
           ],
           "blank",
           ["display-text",function(){
-            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula." + `<br>` + "(Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
           ],
           "blank",
           "milestones"
@@ -149,7 +155,7 @@ addLayer("p", {
           ],
           "blank",
           ["display-text", function(){
-            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula." + `<br>` + "(Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
           ],
           "blank","buyables","blank",
           ["display-text", function(){
@@ -172,7 +178,7 @@ addLayer("p", {
           ],
           "blank",
           ["display-text", function(){
-            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula." + `<br>` + "(Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
           ],
           "blank",
           ["clickable",11],
@@ -193,13 +199,17 @@ addLayer("p", {
           ],
           "blank",
           ["display-text", function(){
-            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula. (Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
+            return "" + format(tmp.p.getExtraAmount) + " free Generator buyable level has been added into PP gain formula." + `<br>` + "(Total: " + format(getBuyableAmount("h",11).add(tmp.p.getExtraAmount)) + ")"}
           ],
           "blank",
           ["display-text", function(){
             return player.t.milestones.length >= 12 ? "You unlocked all Challenges" : "Next Challenge unlock at " + (player.p.unlockedChallenges>=7 ? "Twitter Milestone " + formatWhole(Math.max(player.t.milestones.length+1,8)) : format(challreq[player.p.unlockedChallenges+1]) + " h0nde powers.")
           }],
-          "challenges",
+          ["clickable",21],
+          function(){
+            return player.p.onlyShowC12 ? ["challenge",62] : "challenges"
+          },
+          
           "blank",
           ["display-text", function(){
             return (hasMilestone("t", 12) ? "For every Exponential Powerless completion:" + `<br>` + "PP gain softcap starts " + format(tmp.p.challenges[62].rewardBase1) + "x later (based on h0nde discord accounts)" + `<br>` + "Increase Booster buyable base exponent by " + format(tmp.p.challenges[62].rewardBase2,3) + " (based on twitter power)" + `<br>` + "Increase twitter power exponent by " + format(tmp.p.challenges[62].rewardBase3,3) + " (Based on prestige points)" : "")
@@ -245,7 +255,7 @@ addLayer("p", {
       },
       5: {
         requirementDescription: "5 bought prestige upgrades",
-        effectDescription(){return "buying a buyable costs nothing, add 20% of free Generator buyable level into prestige points gain formula, multiply the amount of second row prestige upgrades bought plus one. (max 100%)"},
+        effectDescription(){return "buying a h0nde buyable costs nothing, add 20% of free Generator buyable level into prestige points gain formula, multiply the amount of second row prestige upgrades bought plus one. (max 100%)"},
         done() { return player.p.upgrades.length >= 5},
       },
       6: {
@@ -281,7 +291,19 @@ addLayer("p", {
         },
         unlocked(){return true},
         style: {'height':'200px', 'width':'200px'},
-     },
+      },
+      21: {
+        title() {return "Show All Challenges: "},
+        display(){
+          return !player.p.onlyShowC12
+        },
+        canClick(){return true},
+        onClick(){
+          player.p.onlyShowC12 = Boolean(1-player.p.onlyShowC12)
+        },
+        unlocked(){return tmp.p.challenges[62].unlocked},
+        style: {'height':'150px', 'width':'150px'},
+      },
     },
     upgrades: {
       11: {
@@ -310,7 +332,7 @@ addLayer("p", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",12)) + "x"
+          return shiftDown ? (hasChallenge("p", 51) ? "(1e9^0.5)^" : "(10^0.5)^") + "x^0.5" : format(upgradeEffect("p",12)) + "x"
         },
         unlocked(){
           return true
@@ -358,7 +380,7 @@ addLayer("p", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",15)) + "x"
+          return shiftDown ? "(2^0.5)^x^2" : format(upgradeEffect("p",15)) + "x"
         },
         unlocked(){
           return true
@@ -431,16 +453,20 @@ addLayer("p", {
         title: "Self Synergy",
         description(){return "Boost PP gain and h0nde power gain based on itself."},
         cost(){return new Decimal(177147000)},
-        effect(){
+        effectExp(){
           let exp = [new Decimal(1),new Decimal(1)]
           if (hasChallenge("p",41)) exp[0] = exp[0].add(2)
           if (hasChallenge("p",41)) exp[1] = exp[1].add(2)
           if (hasMilestone("t", 8)) exp[1] = exp[1].add(tmp.t.milestones[8].effect)
+          return exp
+        },
+        effect(){
+          let exp = tmp.p.upgrades[25].effectExp
           let eff = [player.p.points.add(10).log(10).pow(exp[0]), player.h.points.add(10).log(10).pow(exp[1])]
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",25)[0]) + "x PP gain, " + format(upgradeEffect("p",25)[1]) + "x power gain"
+          return (shiftDown ? "log10(x+10)^" + format(tmp.p.upgrades[25].effectExp[0]) : format(upgradeEffect("p",25)[0])) + "x PP gain, " + (shiftDown ? "log10(x+10)^" + format(tmp.p.upgrades[25].effectExp[1]) : format(upgradeEffect("p",25)[1])) + "x power gain"
         },
         unlocked(){
           return getBoughtUpgradesRow("p", 1) >= 5
@@ -474,7 +500,7 @@ addLayer("p", {
           return eff
         },
         effectDisplay(){
-          return "+" + format(upgradeEffect("p",32),3)
+          return shiftDown ? "log10(x)/100, softcap at 0.2" : "+" + format(upgradeEffect("p",32),3)
         },
         unlocked(){
           return getBoughtUpgradesRow("p", 2) >= 5
@@ -567,7 +593,7 @@ addLayer("p", {
           return eff
         },
         effectDisplay(){
-          return format(upgradeEffect("p",43)) + "x"
+          return shiftDown ? "x+1" : format(upgradeEffect("p",43)) + "x"
         },
         unlocked(){
           return getBoughtUpgradesRow("p", 3) >= 5
@@ -613,8 +639,8 @@ addLayer("p", {
         display(){
           return "Multiply prestige points gain by " + format(tmp.p.buyables[11].effectBase) + "." + `<br>` +
           "Currently: " + format(buyableEffect("p",11)) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.p.buyables[11].cost) + " prestige points" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("p", 11)) + (tmp.p.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.p.buyables[11].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.p.buyables[11].costBase, 2, true) + "^" + format(tmp.p.buyables[11].costScaling, 3) + "^x" : "Cost: " + format(tmp.p.buyables[11].cost) + " prestige points") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("p", 11)) + (tmp.p.buyables[11].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.p.buyables[11].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal(1e12)
@@ -679,8 +705,8 @@ addLayer("p", {
         display(){
           return "Increase h0nde super power boost exp by " + format(tmp.p.buyables[12].effectBase) + " and multiply super power boost softcap start by " + format(tmp.p.buyables[12].effectBase2) +"." + `<br>` +
           "Currently: +" + format(buyableEffect("p",12)[0]) + ", " + format(buyableEffect("p",12)[1]) + "x" + `<br>` + `<br>` + 
-          "Cost: " + format(tmp.p.buyables[12].cost) + " prestige points" + `<br>` +
-          "Level " + formatWhole(getBuyableAmount("p", 12)) + (tmp.p.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.p.buyables[12].freeLevel))
+          (shiftDown ? "Cost Formula:" + `<br>` + format(tmp.p.buyables[12].costBase, 2, true) + "^" + format(tmp.p.buyables[12].costScaling, 3) + "^x" : "Cost: " + format(tmp.p.buyables[12].cost) + " prestige points") + `<br>` +
+          "Level " + formatWhole(getBuyableAmount("p", 12)) + (tmp.p.buyables[12].freeLevel.eq(0) ? "" : " + " + formatWhole(tmp.p.buyables[12].freeLevel)) + (!shiftDown ? `<br>` + "(Shift click for more info)" : "")
         },
         costBase(){
           let base = new Decimal("1e500")

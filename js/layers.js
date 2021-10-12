@@ -323,57 +323,75 @@ addLayer("s", {
       ["display-text", function(){
         return "h0nde power productions:"
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return "Base production: " + format(tmp.h.buyables[11].effectMul) + "/s (" + formatWhole(tmp.h.buyables[11].totalLevel) + "^" + format(tmp.h.buyables[11].effectExp) + ")"
       }],
+      ["blank", "10px"],
       ["display-text", function(){
-        return "From Generator buyable bought multipliers: " + format(tmp.h.buyables[11].effectBoost) + "x"
+        return "From Generator buyable bought multipliers: " + format(tmp.h.buyables[11].effectBoost) + "x" + `<br>` + "(" + format(tmp.h.buyables[11].multiBoostMultiplier, 3) + "x each, " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).floor()) + " times (Next at Level " + formatWhole(tmp.h.buyables[11].totalLevel.div(tmp.h.buyables[11].multiBoostDensity).add(1e-10).ceil().mul(tmp.h.buyables[11].multiBoostDensity)) + "), softcap at " + format(tmp.h.buyables[11].multiBoostAmountSCStart) + ")"
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (tmp.h.buyables[12].unlocked ? "From Multiplier buyable: " + format(buyableEffect("h",12)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasAchievement("a", 12) ? "From Achievement An Alt account: " + format(achievementEffect("a", 12)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasAchievement("a", 14) ? "From Achievement MILLION POWER: " + format(achievementEffect("a", 14)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasAchievement("a", 22) ? "From Achievement Upgraded: " + format(achievementEffect("a", 22)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasAchievement("a", 24) ? "From Achievement Faster than a potato: " + format(achievementEffect("a", 24)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (player.p.unlocked ? "From Prestige Points: " + format(tmp.p.effect) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasUpgrade("p", 11) ? "From Prestige Upgrade Constant boost: " + format(upgradeEffect("p", 11)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasUpgrade("p", 12) ? "From Prestige Upgrade h0nde boost: " + format(upgradeEffect("p", 12)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasUpgrade("p", 15) ? "From Prestige Upgrade Power boost: " + format(upgradeEffect("p", 15)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasUpgrade("p", 25) ? "From Prestige Upgrade Self Synergy second effect: " + format(upgradeEffect("p", 25)[1]) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (tmp.h.buyables[22].unlocked ? "From Booster buyable: " + format(buyableEffect("h",22)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasAchievement("a", 24) ? "From Achievement Nice^2: " + format(69) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (player.t.unlocked ? "From h0nde super power: " + format(tmp.h.superPowerEff) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasMilestone("t", 2) ? "From Twitter milestone 2: " + format(tmp.t.milestones[2].effect) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return (hasUpgrade("t", 33) ? "From Twitter Upgrade Powered: " + format(upgradeEffect("t", 33)) + "x" : "")
       }],
+      ["blank", "10px"],
       ["display-text", function(){
         return "Production exponent: ^" + format(tmp.h.buyables[11].productionExp, 3)
       }],
@@ -392,22 +410,7 @@ addLayer("s", {
           return "If you create a h0nde discord account every " + formatTime(new Decimal(86400).div(player.points)) + ", you could spent 1 day to create the amount of accounts equal to your h0nde discord accounts."
         }
       }],
-      "blank",
-      ["bar","h0ndeBar"],["bar","twitterBar"],
-      ["blank", "3000px"],
-      ["display-text", function(){
-        return "The players that completed the Septendecillion (e54) h0nde power challenge at 10 July:" + `<br>` +
-        "Elund (07:50 GMT+8)" + `<br>` +
-        "EmJov (09:31 GMT+8)" + `<br>` +
-        "Heydiehey123 (16:49 GMT+8)" + `<br>`
-      }],"blank",
-      ["display-text", function(){
-        return "The players that get the most h0nde power at 14 July:" + `<br>` +
-        "Heydiehey123 (1.58e385)" + `<br>` +
-        "Elund (8.62e381)" + `<br>` +
-        "Pennwick (3.55e381)" + `<br>`
-      }],"blank",
-      "blank","blank",
+      "blank",["bar","h0ndeBar"],["bar","twitterBar"],"blank","blank",
     ],
     },
     "Story": {
@@ -537,7 +540,7 @@ addLayer("s", {
           format(Decimal.pow(10, getInvInfSqrt(player.points.ceil().max(1), tmp.h.getAccmult))) + " h0nde power" + `<br>` +
           "(" + format(player.points.sub(player.points.floor()).mul(100)) + "% completed, " + format(getInvInfSqrt(player.points.ceil().max(1), tmp.h.getAccmult).sub(player.h.points.max(1).log(10)).max(0)) + " OoM left)"
         },
-        instant: true,
+        instant: false,
         fillStyle(){return {"background-color":"#406da2"}},
     },
     twitterBar: {
@@ -552,7 +555,7 @@ addLayer("s", {
         format(tmp.t.nextAt, 3) + " h0nde discord accounts" + `<br>` +
         "(Estimate h0nde power require: " + format(Decimal.pow(10, getInvInfSqrt(tmp.t.nextAt, tmp.h.getAccmult))) + ")" + `<br>(` + format(tmp.t.nextAt.sub(player.points).max(0), 3) + " left)"
       },
-      instant: true,
+      instant: false,
       unlocked(){
         return tmp.t.layerShown
       },
