@@ -113,9 +113,9 @@ addLayer("a", {
       tooltip(){return "Get 69 Multiplier buyable level. Reward: reduce the cost scaling of Multiplier and Divider buyable cost scaling by 10%."},
     },
     24: {
-      name: "Faster than a potato",
-      done(){return tmp.h.getResetGain.gte(1e29) || !isNaN(tmp.h.getResetGain)},
-      tooltip(){return "Reach " + format(1e29) + " h0nde power per second. Reward: unlock a buyable, Divider buyable level boost h0nde power gain. (" + format(achievementEffect("a", 24)) + "x)"},
+      name: "NONILLION POWER",
+      done(){return player.h.points.gte(1e30)},
+      tooltip(){return "Reach " + format(1e30) + " h0nde power. Reward: unlock a buyable, Divider buyable level boost h0nde power gain. (" + format(achievementEffect("a", 24)) + "x)"},
       effect(){
         let eff = tmp.h.buyables[13].totalLevel.add(1)
         return eff
