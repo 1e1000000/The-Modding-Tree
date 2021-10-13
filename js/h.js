@@ -264,7 +264,7 @@ addLayer("h", {
           return x
         },
         effectCap(){
-          if (player.dev.uncapProduction) return new Decimal(Infinity)
+          if (player.dev.uncapProduction) return new Decimal(10).tetrate(Number.MAX_VALUE)
           let tetr = new Decimal(5)
           if (hasUpgrade("t",75)) tetr = tetr.add(0.0125)
           let x = Decimal.tetrate(2, tetr)
