@@ -13,7 +13,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0822",
+	num: "0.083",
 	name: "h0nde second social media II",
 }
 
@@ -21,6 +21,10 @@ let changelog = `
 Credit to pg132, for the design of first layer on Incrementreeverse.<br>
 Credit to Vorona, for "Every Xx amount square rooted" calculation, then I make it for inverse calculation.<br><br>
     <h1>Changelog:</h1><br><br>
+	<h3>v0.083</h3><br>
+	- Changed and Fixed Achievement 24, you will lost this achievement when you load it.<br>
+	- Endgame remain same.<br>
+	<br>
 	<h3>v0.082</h3><br>
 	- When you Shift-click, all buyables cost, all upgrades boost, h0nde super power boost and prestige points boost formula will show.<br>
 	- All details on Generator buyable are moved to Statistic node.<br>
@@ -176,7 +180,12 @@ function getPointGen() {
 function addedPlayerData() { return {
 	bestPoints: new Decimal(0),
 	bestEverh0ndePower: new Decimal(0),
-	showAllStory: false
+	showAllStory: false,
+	dev:{
+		uncapProduction: false,
+		autoAllBuyables: false,
+		autoResourceGain: false,
+	}
 }}
 
 // Display extra things at the top of the page

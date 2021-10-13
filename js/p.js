@@ -75,7 +75,7 @@ addLayer("p", {
       return strength
     },
     passiveGeneration(){
-      return 0
+      return false || player.dev.autoResourceGain ? 1 : 0
     },
     getNextAt(){
       return ""
@@ -227,6 +227,10 @@ addLayer("p", {
     doReset(resettingLayer) {
       let keep = [];
       if (layers[resettingLayer].row > this.row) layerDataReset("p", keep)
+    },
+    automate(){
+      if (false || player.dev.autoAllBuyables) tmp.p.buyables[11].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.p.buyables[12].buyMax()
     },
     milestones: {
       1: {

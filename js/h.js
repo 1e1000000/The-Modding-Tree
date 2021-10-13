@@ -115,12 +115,13 @@ addLayer("h", {
       return mul
     },
     automate(){
-      if (hasMilestone("p",2) && player.h.autoBuyable11 && tmp.h.buyables[11].unlocked) tmp.h.buyables[11].buyMax()
-      if (hasMilestone("p",3) && player.h.autoBuyable12 && tmp.h.buyables[12].unlocked) tmp.h.buyables[12].buyMax()
-      if (hasMilestone("p",3) && player.h.autoBuyable13 && tmp.h.buyables[13].unlocked) tmp.h.buyables[13].buyMax()
-      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[21].unlocked) tmp.h.buyables[21].buyMax()
-      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[22].unlocked) tmp.h.buyables[22].buyMax()
-      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[23].unlocked) tmp.h.buyables[23].buyMax()
+      if (hasMilestone("p",2) && player.h.autoBuyable11 && tmp.h.buyables[11].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[11].buyMax()
+      if (hasMilestone("p",3) && player.h.autoBuyable12 && tmp.h.buyables[12].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[12].buyMax()
+      if (hasMilestone("p",3) && player.h.autoBuyable13 && tmp.h.buyables[13].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[13].buyMax()
+      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[21].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[21].buyMax()
+      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[22].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[22].buyMax()
+      if (hasMilestone("p",4) && player.h.autoBuyable21 && tmp.h.buyables[23].unlocked || player.dev.autoAllBuyables) tmp.h.buyables[23].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.h.buyables[31].buyMax()
     },
     buyables: {
       11: {
@@ -263,6 +264,7 @@ addLayer("h", {
           return x
         },
         effectCap(){
+          if (player.dev.uncapProduction) return new Decimal(Infinity)
           let tetr = new Decimal(5)
           if (hasUpgrade("t",75)) tetr = tetr.add(0.0125)
           let x = Decimal.tetrate(2, tetr)

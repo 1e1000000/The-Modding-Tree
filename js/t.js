@@ -92,10 +92,13 @@ addLayer("t", {
       (tmp.t.canBuyMax ? "Next: " : "Req: ") + format(player.points, 3) + " / " + format(tmp.t.nextAt, 3) + " h0nde discord accounts"
     },
     canBuyMax(){
-      return false
+      return false || player.dev.autoResourceGain
+    },
+    autoPrestige(){
+      return false || player.dev.autoResourceGain
     },
     resetsNothing(){
-      return false
+      return false || player.dev.autoResourceGain
     },
     tabFormat: {
       "Milestones": {
@@ -208,6 +211,14 @@ addLayer("t", {
     },
     tooltip(){
       return player.t.showTwitterPower ? (format(player.t.power) + " twitter powers") : (formatWhole(player.t.points) + " h0nde twitter accounts")
+    },
+    automate(){
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[11].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[12].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[13].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[21].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[22].buyMax()
+      if (false || player.dev.autoAllBuyables) tmp.t.buyables[23].buyMax()
     },
     milestones: {
       1: {

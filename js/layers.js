@@ -397,7 +397,7 @@ addLayer("s", {
       }],
       "blank",
       ["display-text", function(){
-        return "Production cap: " + format(tmp.h.buyables[11].effectCap) + " (2^^" + format(tmp.h.buyables[11].effectCap.slog(2),4) + ")/s"
+        return player.dev.uncapProduction ? "Production cap: Infinity/s" : "Production cap: " + format(tmp.h.buyables[11].effectCap) + " (2^^" + format(tmp.h.buyables[11].effectCap.slog(2),4) + ")/s"
       }],
       ["display-text", function(){
         return "Total production: " + format(tmp.h.getResetGain) + "/s"
