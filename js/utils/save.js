@@ -210,9 +210,8 @@ function load() {
 	setupModInfo();
 
 	setupTemp();
-	updateTemp();
-	updateTemp();
-	updateTabFormats()
+	for (let i=1;i<=20;i++){updateTemp()};
+	updateTabFormats();
 	loadVue();
 }
 

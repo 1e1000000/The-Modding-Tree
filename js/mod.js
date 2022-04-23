@@ -1,26 +1,27 @@
 let modInfo = {
-	name: "The ??? Tree",
-	id: "mymod",
-	author: "nobody",
+	name: "Infinity Game Tree",
+	id: "InfGame",
+	author: "F1e308 (aka 1e1000000)",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
-	offlineLimit: 1,  // In hours
+	initialStartPoints: new Decimal (5), // Used for hard resets and new players
+	offlineLimit: 168,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.003",
+	name: "Initial Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+	<h3>v0.003</h3><br>
+		- Initial release.<br>
+		- Content up to 3 infinites.<br>
+`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -42,7 +43,9 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1)
+	let gain = buyableEffect("p",11)
+	if (IPreached(2)) gain = gain.mul(buyableEffect("p",13))
+	if (hasUpgrade("p",14)) gain = gain.mul(upgradeEffect("p",14))
 	return gain
 }
 
@@ -52,11 +55,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"Endgame: 1.80e308 points with 3 infinites"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return player.points.gte(Decimal.pow(2,1024)) && player.i.points.gte(3)
 }
 
 
