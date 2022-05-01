@@ -51,7 +51,7 @@ function format(decimal, precision = 2, small) {
     if (decimal.mag == Number.POSITIVE_INFINITY) return "Infinity"
     if (decimal.gte("10^^5")) {
         var slog = decimal.slog()
-        if (slog.gte(1e6)) return "F" + format(slog.floor())
+        if (slog.gte(1e9)) return "F" + format(slog.floor())
         else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
     }
     else if (decimal.gte("e1e9")) return exponentialFormat(decimal, precision, false)
@@ -62,7 +62,7 @@ function format(decimal, precision = 2, small) {
 
     decimal = invertOOM(decimal)
     let val = ""
-    if (decimal.lt("1e1000")){
+    if (decimal.lt("e1e9")){
         val = exponentialFormat(decimal, precision)
         return val.replace(/([^(?:e|F)]*)$/, '-$1')
     }

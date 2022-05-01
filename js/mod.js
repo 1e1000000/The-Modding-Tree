@@ -13,14 +13,20 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.003",
-	name: "Initial Release",
+	num: "0.004",
+	name: "Prestige",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.003</h3><br>
+<br>
+	<h3>v0.004</h3> (2022/5/1)<br>
+		- Added 4th infinites.<br>
+		- Added Prestige.<br>
+		- Advanced the node tooltip display.<br>
+	<h3>v0.003</h3> (2022/4/23)<br>
 		- Initial release.<br>
 		- Content up to 3 infinites.<br>
+		<br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -44,8 +50,6 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = buyableEffect("p",11)
-	if (IPreached(2)) gain = gain.mul(buyableEffect("p",13))
-	if (hasUpgrade("p",14)) gain = gain.mul(upgradeEffect("p",14))
 	return gain
 }
 
@@ -55,12 +59,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-	"Endgame: 1.80e308 points with 3 infinites"
+	"Endgame: 1.80e308 points with 4 infinites"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(Decimal.pow(2,1024)) && player.i.points.gte(3)
+	return player.points.gte(Decimal.pow(2,1024)) && player.i.points.gte(4)
 }
 
 
