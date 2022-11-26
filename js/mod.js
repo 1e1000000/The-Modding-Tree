@@ -1,26 +1,26 @@
 let modInfo = {
-	name: "The ??? Tree",
-	id: "mymod",
-	author: "nobody",
-	pointsName: "points",
+	name: "The Money & Time Tree",
+	id: "money_ee6mod",
+	author: "WongTingHo05",
+	pointsName: "money",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "1.0",
+	name: "Initial Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+	<h3>v1.0</h3><br>
+		- Added money.<br>
+		- Added years.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -42,7 +42,13 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 
-	let gain = new Decimal(1)
+	let gain = new Decimal(0)
+	if (hasUpgrade('y',11)) gain = gain.add(upgradeEffect('y',11))
+	if (hasAchievement('y',11)) gain = gain.add(buyableEffect('y',11))
+
+	gain = gain.mul(tmp.y.effect.money)
+	if (hasAchievement('y',23)) gain = gain.mul(achievementEffect('y',23))
+	if (hasAchievement('y',24)) gain = gain.mul(achievementEffect('y',24))
 	return gain
 }
 
@@ -52,11 +58,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"Endgame: 1e15 points and 15 years"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return player.y.points.gte(15) && player.points.gte(1e15)
 }
 
 
