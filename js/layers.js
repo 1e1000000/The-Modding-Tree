@@ -169,7 +169,7 @@ addLayer("y", {
     },
     upgrades:{
         11:{
-            fullDisplay(){return "Generate " + format(this.effect()) + " money per second<br><br>Cost: " + formatWhole(this.getCost) + " points"},
+            fullDisplay(){return "Generate " + format(this.effect()) + " money per second<br><br>Cost: " + formatWhole(this.getCost) + " money"},
             effect(){
                 let eff = new Decimal(1)
                 if (hasAchievement('y',12)) eff = eff.add(4)
@@ -186,7 +186,7 @@ addLayer("y", {
             unlocked(){return true},
         },
         12:{
-            fullDisplay(){return "Square Buyable 11 base effect<br><br>Cost: " + formatWhole(this.getCost) + " points"},
+            fullDisplay(){return "Square Buyable 11 base effect<br><br>Cost: " + formatWhole(this.getCost) + " money"},
             effect(){
                 let eff = new Decimal(1)
                 return eff
@@ -197,7 +197,7 @@ addLayer("y", {
             unlocked(){return hasAchievement('y',12)},
         },
         13:{
-            fullDisplay(){return "Raise Upgrade 11 base effect by " + format(this.effect(),3) + " (based on "+(hasAchievement('y',34)?"total ":"non-extra ")+"Buyable 11 level)<br><br>Cost: " + formatWhole(this.getCost) + " points"},
+            fullDisplay(){return "Raise Upgrade 11 base effect by " + format(this.effect(),3) + " (based on "+(hasAchievement('y',34)?"total ":"non-extra ")+"Buyable 11 level)<br><br>Cost: " + formatWhole(this.getCost) + " money"},
             effect(){
                 let amt = getBuyableAmount('y',11)
                 if (hasAchievement('y',34)) amt = amt.add(tmp.y.buyables[11].freeLevel)
@@ -215,14 +215,14 @@ addLayer("y", {
             unlocked(){return hasAchievement('y',15)},
         },
         14:{
-            fullDisplay(){return "Raise Buyable 12 effect by 1.6<br><br>Cost: " + formatWhole(this.getCost) + " points"},
+            fullDisplay(){return "Raise Buyable 12 effect by 1.6<br><br>Cost: " + formatWhole(this.getCost) + " money"},
             getCost: new Decimal(2e9),
             canAfford(){return player.points.gte(this.getCost)},
             pay(){player.points = player.points.sub(this.getCost)},
             unlocked(){return hasAchievement('y',24)},
         },
         15:{
-            fullDisplay(){return "Buyable 12 effect affect Upgrade 11 effect with reduced rate, currently: x" + format(this.effect()) + "<br><br>Cost: " + formatWhole(this.getCost) + " points"},
+            fullDisplay(){return "Buyable 12 effect affect Upgrade 11 effect with reduced rate, currently: x" + format(this.effect()) + "<br><br>Cost: " + formatWhole(this.getCost) + " money"},
             effect(){
                 let eff = buyableEffect('y',12).max(1).pow(0.5)
                 return eff
@@ -239,7 +239,7 @@ addLayer("y", {
             display(){
                 return "Increase money production.<br>" + 
                 "Currently: " + format(this.effect()) + "<br><br>" +
-                "Cost: " + format(this.cost()) + "<br>" + 
+                "Cost: " + format(this.cost()) + " money<br>" + 
                 "Level " + formatWhole(getBuyableAmount(this.layer,this.id)) + (this.freeLevel().gt(0)?" + " + format(this.freeLevel()):"")
             },
             costScaling(){
@@ -302,7 +302,7 @@ addLayer("y", {
             display(){
                 return "Multiply Buyable 11 effect.<br>" + 
                 "Currently: x" + format(this.effect()) + "<br><br>" +
-                "Cost: " + format(this.cost()) + "<br>" + 
+                "Cost: " + format(this.cost()) + " money<br>" + 
                 "Level " + formatWhole(getBuyableAmount(this.layer,this.id)) + (this.freeLevel().gt(0)?" + " + format(this.freeLevel()):"")
             },
             costScaling(){
