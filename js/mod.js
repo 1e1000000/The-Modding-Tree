@@ -13,14 +13,17 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
+	num: "1.0.1",
 	name: "Initial Release",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v1.0</h3><br>
+	<h2>v1.0.1</h2><br>
+		- Fixed Achievement 13 reward applied at Achievement 5.<br>
+		- Fixed All Upgrades display currency as points instead of money.<br>
+	<h2>v1.0</h2><br>
 		- Added money.<br>
-		- Added years.`
+		- Added years.<br>`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
