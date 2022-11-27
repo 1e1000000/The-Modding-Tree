@@ -230,7 +230,7 @@ addLayer("y", {
             getCost: new Decimal(2e13),
             canAfford(){return player.points.gte(this.getCost)},
             pay(){player.points = player.points.sub(this.getCost)},
-            unlocked(){return hasAchievement('y',15)},
+            unlocked(){return hasAchievement('y',33)},
         },
     },
     buyables:{
