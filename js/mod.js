@@ -1,26 +1,28 @@
 let modInfo = {
-	name: "The ??? Tree",
-	id: "mymod",
-	author: "nobody",
-	pointsName: "points",
+	name: "The Infinity Tree",
+	id: "infinite-ee6",
+	author: "1e1000000",
+	pointsName: "antimatter",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
-	offlineLimit: 1,  // In hours
+	initialStartPoints: new Decimal (1), // Used for hard resets and new players
+	offlineLimit: 1/0,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "230208",
+	name: "Initial Release",
 }
 
-let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+let changelog = `
+    <h1>Changelog:</h1><br>
+	<h3>230208 build</h3><br>
+		- Added 6 antimatter buyables.<br>
+		- Endgame: 1.80e308 antimatter.<br>
+`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -34,7 +36,7 @@ function getStartPoints(){
 
 // Determines if it should show points/sec
 function canGenPoints(){
-	return true
+	return false
 }
 
 // Calculate points/sec!
@@ -52,11 +54,12 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"Endgame: 1.80e308 antimatter"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return false
 }
 
 

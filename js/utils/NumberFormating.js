@@ -6,7 +6,7 @@ function exponentialFormat(num, precision, mantissa = true) {
         m = decimalOne
         e = e.add(1)
     }
-    e = (e.gte(1e9) ? format(e, 3) : (e.gte(10000) ? commaFormat(e, 0) : e.toStringWithDecimalPlaces(0)))
+    e = (e.gte(1e9) ? format(e, 3) : (e.gte(1000) ? commaFormat(e, 0) : e.toStringWithDecimalPlaces(0)))
     if (mantissa)
         return m.toStringWithDecimalPlaces(precision) + "e" + e
     else return "e" + e
@@ -26,7 +26,7 @@ function commaFormat(num, precision) {
 function regularFormat(num, precision) {
     if (num === null || num === undefined) return "NaN"
     if (num.mag < 0.0001) return (0).toFixed(precision)
-    if (num.mag < 0.1 && precision !==0) precision = Math.max(precision, 4)
+    if (num.mag < 0.1 && precision !==0) precision = Math.max(precision, 2)
     return num.toStringWithDecimalPlaces(precision)
 }
 
@@ -49,13 +49,13 @@ function format(decimal, precision = 2, small) {
     }
     if (decimal.sign < 0) return "-" + format(decimal.neg(), precision, small)
     if (decimal.mag == Number.POSITIVE_INFINITY) return "Infinity"
-    if (decimal.gte("eeee1000")) {
+    if (decimal.gte("eeeee1")) {
         var slog = decimal.slog()
         if (slog.gte(1e6)) return "F" + format(slog.floor())
         else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
     }
     else if (decimal.gte("1e1000000")) return exponentialFormat(decimal, 0, false)
-    else if (decimal.gte("1e10000")) return exponentialFormat(decimal, 0)
+    else if (decimal.gte("1e1000")) return exponentialFormat(decimal, precision)
     else if (decimal.gte(1e9)) return exponentialFormat(decimal, precision)
     else if (decimal.gte(1e3)) return commaFormat(decimal, 0)
     else if (decimal.gte(0.0001) || !small) return regularFormat(decimal, precision)
@@ -79,12 +79,27 @@ function formatWhole(decimal) {
     return format(decimal, 0)
 }
 
-function formatTime(s) {
-    if (s < 60) return format(s) + "s"
-    else if (s < 3600) return formatWhole(Math.floor(s / 60)) + "m " + format(s % 60) + "s"
-    else if (s < 86400) return formatWhole(Math.floor(s / 3600)) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else if (s < 31536000) return formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else return formatWhole(Math.floor(s / 31536000)) + "y " + formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+function formatTime(t) {
+    t = new Decimal(t)
+    if (t.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
+    if (isNaN(t.sign) || isNaN(t.layer) || isNaN(t.mag)) return "Infinite Time"
+    let y2 = t.div(31536000)
+    let y = t.div(31536000).floor()
+    let d = t.sub(y.mul(31536000)).div(86400).floor()
+    let h = t.sub(y.mul(31536000)).sub(d.mul(86400)).div(3600).floor()
+    let m = t.sub(y.mul(31536000)).sub(d.mul(86400)).sub(h.mul(3600)).div(60).floor()
+    let s = t.sub(y.mul(31536000)).sub(d.mul(86400)).sub(h.mul(3600)).sub(m.mul(60))
+    if (y.gte(1)){
+        if (y.gte(10)) return format(y2) + "y"
+        else return formatWhole(y) + "y " + formatWhole(d) + "d"
+    } else if (d.gte(1)){
+        if (d.gte(7)) return formatWhole(d) + "d " + formatWhole(h) + "h"
+        else return formatWhole(d) + "d " + formatWhole(h) + "h " + formatWhole(m) + "m " + formatWhole(s.floor()) + "s"
+    } else if (h.gte(1)) return formatWhole(h) + "h " + formatWhole(m) + "m " + formatWhole(s.floor()) + "s"
+    else if (m.gte(1)) return formatWhole(m) + "m " + format(s,1) + "s"
+    else if (s.gte(10)) return format(s,2) + "s"
+    else if (s.gte(1)) return format(s,3) + "s"
+    else return formatWhole(s.mul(1000).floor()) + "ms"
 }
 
 function toPlaces(x, precision, maxAccepted) {
