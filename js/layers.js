@@ -17,39 +17,54 @@ addLayer("ach", {
     achievements:{
         11:{
             name: "Muscler",
-            tooltip(){return "Purchase first antimatter buyable"},
+            tooltip(){return "Purchase first " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',11).gte(1)},
         },
         12:{
             name: "Is that Antimatter Dimension reference?",
-            tooltip(){return "Purchase second antimatter buyable"},
+            tooltip(){return "Purchase second " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',12).gte(1)},
         },
         13:{
             name: "Antimatter Amplifier",
-            tooltip(){return "Purchase third antimatter buyable"},
+            tooltip(){return "Purchase third " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',13).gte(1)},
         },
         14:{
             name: "Stronger",
-            tooltip(){return "Purchase fourth antimatter buyable"},
+            tooltip(){return "Purchase fourth " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',21).gte(1)},
         },
         15:{
             name: "Self Boost",
-            tooltip(){return "Purchase fifth antimatter buyable"},
+            tooltip(){return "Purchase fifth " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',22).gte(1)},
         },
         16:{
             name: "Antimatter Intensifier",
-            tooltip(){return "Purchase sixth antimatter buyable"},
+            tooltip(){return "Purchase sixth " + modInfo.pointsName + " buyable"},
             done(){return getBuyableAmount('am',23).gte(1)},
+        },
+        21:{
+            name: "To Infinity!",
+            tooltip(){return "Perform an Infinity Reset (Not Implemented yet)"},
+            done(){return false},
+        },
+        22:{
+            name: "5 hours till the update",
+            tooltip(){return "Play for 5 hours"},
+            done(){return player.timePlayed >= 18000},
+        },
+        23:{
+            name: "The 9th Dimension is a lie",
+            tooltip(){return "Reach 8 " + modInfo.pointsName + " Exponent (Not Possible yet)"},
+            done(){return tmp.am.getAMExp.gte(8)},
         },
     },
 })
 
 addLayer("am", {
-    name: "antimatter", // This is optional, only used in a few places, If absent it just uses the layer id.
+    name(){return modInfo.pointsName}, // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "AM", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
@@ -57,21 +72,30 @@ addLayer("am", {
     }},
     color: "#ff0000",
     requires: new Decimal(1), // Can be a function that takes requirement increases into account
-    resource: "antimatter", // Name of prestige currency
-    baseResource: "antimatter", // Name of resource prestige is based on
+    resource(){return modInfo.pointsName}, // Name of prestige currency
+    baseResource(){return modInfo.pointsName}, // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    tooltip(){return format(player.points) + " antimatter^" + format(tmp.am.getAMExp)},
+    tooltip(){return format(player.points) + " " + modInfo.pointsName + "^" + format(tmp.am.getAMExp)},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 0, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     tabFormat:[
-        ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> antimatter<sup>" + format(tmp.am.getAMExp) + "</sup>"}],
-        ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> antimatter before exp (+" + format(tmp.am.getAMProd) + "/s)"}],
+        ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> " + modInfo.pointsName + "<sup>" + format(tmp.am.getAMExp) + "</sup>"}],
+        ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> " + modInfo.pointsName + " before exp (+" + format(tmp.am.getAMProd) + "/s)"}],
         ["bar","progressBar"],
         "blank","buyables"
     ],
     update(diff){
         player.points = player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).min(Decimal.pow(2,1024))
+        player.bestAM = player.bestAM.max(player.points)
+    },
+    automate(){
+
+    },
+    doReset(resettingLayer){
+        let keep = []
+        if (resettingLayer.row == this.row) return
+        layerDataReset(this.layer, keep)
     },
     getAMProd(){
         let prod = buyableEffect('am', 11)
@@ -111,8 +135,8 @@ addLayer("am", {
                 player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
                 addBuyables(this.layer,this.id,bulk)
             },
-            display() {return "Produce antimatter<br>Currently: +" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            display() {return "Produce " + modInfo.pointsName + "<br>Currently: +" + format(buyableEffect(this.layer,this.id))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
@@ -150,8 +174,8 @@ addLayer("am", {
                 player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
                 addBuyables(this.layer,this.id,bulk)
             },
-            display() {return "Increase antimatter exponent<br>Currently: +" + format(buyableEffect(this.layer,this.id).sub(1))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            display() {return "Increase " + modInfo.pointsName + " exponent<br>Currently: +" + format(buyableEffect(this.layer,this.id).sub(1))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
@@ -188,8 +212,8 @@ addLayer("am", {
                 player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
                 addBuyables(this.layer,this.id,bulk)
             },
-            display() {return "Multiply base antimatter production<br>Currently: x" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            display() {return "Multiply base " + modInfo.pointsName + " production<br>Currently: x" + format(buyableEffect(this.layer,this.id))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let b = new Decimal(2).add(buyableEffect('am', 23))
@@ -228,7 +252,7 @@ addLayer("am", {
                 addBuyables(this.layer,this.id,bulk)
             },
             display() {return "Increase <b>Producer</b> exponent<br>Currently: ^" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
@@ -265,8 +289,8 @@ addLayer("am", {
                 player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
                 addBuyables(this.layer,this.id,bulk)
             },
-            display() {return "Multiply base antimatter production based on antimatter<br>Currently: x" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            display() {return "Multiply base " + modInfo.pointsName + " production based on itself<br>Currently: x" + format(buyableEffect(this.layer,this.id))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
@@ -304,7 +328,7 @@ addLayer("am", {
                 addBuyables(this.layer,this.id,bulk)
             },
             display() {return "Increase <b>Multiplier</b> base<br>Currently: +" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " antimatter<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
+            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)

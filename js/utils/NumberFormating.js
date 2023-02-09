@@ -79,7 +79,7 @@ function formatWhole(decimal) {
     return format(decimal, 0)
 }
 
-function formatTime(t) {
+function formatTime(t, full = false) {
     t = new Decimal(t)
     if (t.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
     if (isNaN(t.sign) || isNaN(t.layer) || isNaN(t.mag)) return "Infinite Time"
@@ -90,10 +90,11 @@ function formatTime(t) {
     let m = t.sub(y.mul(31536000)).sub(d.mul(86400)).sub(h.mul(3600)).div(60).floor()
     let s = t.sub(y.mul(31536000)).sub(d.mul(86400)).sub(h.mul(3600)).sub(m.mul(60))
     if (y.gte(1)){
-        if (y.gte(10)) return format(y2) + "y"
-        else return formatWhole(y) + "y " + formatWhole(d) + "d"
+        if (y.gte(full?1e9:10)) return format(y2) + "y"
+        else if (!full) return formatWhole(y) + "y " + formatWhole(d) + "d"
+        else return formatWhole(y) + "y " + formatWhole(d) + "d " + formatWhole(h) + "h " + formatWhole(m) + "m " + formatWhole(s.floor()) + "s"
     } else if (d.gte(1)){
-        if (d.gte(7)) return formatWhole(d) + "d " + formatWhole(h) + "h"
+        if (d.gte(7) && !full) return formatWhole(d) + "d " + formatWhole(h) + "h"
         else return formatWhole(d) + "d " + formatWhole(h) + "h " + formatWhole(m) + "m " + formatWhole(s.floor()) + "s"
     } else if (h.gte(1)) return formatWhole(h) + "h " + formatWhole(m) + "m " + formatWhole(s.floor()) + "s"
     else if (m.gte(1)) return formatWhole(m) + "m " + format(s,1) + "s"

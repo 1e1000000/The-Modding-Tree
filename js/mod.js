@@ -1,5 +1,5 @@
 let modInfo = {
-	name: "The Infinity Tree",
+	name: "The Unnamed Tree",
 	id: "infinite-ee6",
 	author: "1e1000000",
 	pointsName: "antimatter",
@@ -13,15 +13,21 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230208",
-	name: "Initial Release",
+	num: "230209",
+	name: "Initial Release (Patch 1)",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
-	<h3>230208 build</h3><br>
-		- Added 6 antimatter buyables.<br>
-		- Endgame: 1.80e308 antimatter.<br>
+	<h3>2023-02-09 build (Update 1b)</h3><br>
+	- Added 3 achievements (only 1 is possible yet).<br>
+	- Added best antimatter.<br>
+	- Added full display option for Time.<br>
+	- Added a secret.<br>
+	- Endgame unchanged.<br><br>
+	<h3>2023-02-08 build (Update 1a)</h3><br>
+	- Initial Release.<br>
+	- Endgame: 1.80e308 antimatter.<br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -50,11 +56,12 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	bestAM: new Decimal(1),
 }}
 
 // Display extra things at the top of the page
 var displayThings = [
-	"Endgame: 1.80e308 antimatter"
+	function(){return "Endgame: 1.80e308 " + modInfo.pointsName}
 ]
 
 // Determines when the game "ends"
