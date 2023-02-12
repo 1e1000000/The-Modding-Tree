@@ -3,7 +3,7 @@ let modInfo = {
 	id: "infinite-ee6",
 	author: "1e1000000",
 	pointsName: "antimatter",
-	modFiles: ["layers.js", "tree.js"],
+	modFiles: ["maths.js", "layers.js", "am.js", "inf.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,12 +13,30 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230209",
-	name: "Initial Release (Patch 1)",
+	num: "230212",
+	name: "Infinity Update",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3>2023-02-12 build (Update 2a)</h3><br>
+	- Balanced remaining challenges debuff.<br>
+	- You need previous Infinity upgrade in that column to bought the next Infinity upgrade.<br>
+	- Make antimatter production after exp show.<br>
+	- Added Autobuyer for Infinity reset.<br>
+	- Endgame: 1000 Total Infinity Points with all Infinity Upgrades bought and all Challenges completed.<br><br>
+	<h3>2023-02-11 build (Priate: Infinity update Beta 2)</h3><br>
+	- Balanced 5 out of 8 challenges debuff.<br>
+	- Added Buy Max Button.<br>
+	- Added another 3 Achievements.<br>
+	- Softcapped all antimatter buyables past 1.80e308 AM, except 'Producer'. (58,52,38,10,3)<br>
+	- Softcapped antimatter exponent at 9.<br>
+	- Balanced up to: 5/8 Challenges.<br><br>
+	<h3>2023-02-10 build (Priate: Infinity update Beta 1)</h3><br>
+	- Added Infinity, include upgrade and challenges.<br>
+	- Added Buy Max Hotkey, require Infinity once.<br>
+	- Added Autobuyers.<br>
+	- Balanced up to: 8/12 Infinity Upgrades.<br><br>
 	<h3>2023-02-09 build (Update 1b)</h3><br>
 	- Added 3 achievements (only 1 is possible yet).<br>
 	- Added best antimatter.<br>
@@ -27,7 +45,7 @@ let changelog = `
 	- Endgame unchanged.<br><br>
 	<h3>2023-02-08 build (Update 1a)</h3><br>
 	- Initial Release.<br>
-	- Endgame: 1.80e308 antimatter.<br>
+	- Endgame: 1.80e308 antimatter.<br><br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -61,7 +79,11 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
-	function(){return "Endgame: 1.80e308 " + modInfo.pointsName}
+	function(){return "Endgame: " + 
+		formatWhole(player.inf.total) + "/1,000 total Infinity Points<br>" + 
+		formatWhole(player.inf.upgrades.length) + "/12 Infinity Upgrades<br>" + 
+		formatWhole(tmp.inf.totalComp) + "/8 Challenges completion"
+	}
 ]
 
 // Determines when the game "ends"

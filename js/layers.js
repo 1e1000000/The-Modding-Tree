@@ -47,8 +47,8 @@ addLayer("ach", {
         },
         21:{
             name: "To Infinity!",
-            tooltip(){return "Perform an Infinity Reset (Not Implemented yet)"},
-            done(){return false},
+            tooltip(){return "Perform an Infinity Reset<br><i>Reward: Unlock Buy Max for Antimatter Buyables</i>"},
+            done(){return player.inf.total.gte(1)},
         },
         22:{
             name: "5 hours till the update",
@@ -57,306 +57,178 @@ addLayer("ach", {
         },
         23:{
             name: "The 9th Dimension is a lie",
-            tooltip(){return "Reach 8 " + modInfo.pointsName + " Exponent (Not Possible yet)"},
+            tooltip(){return "Reach 8 " + modInfo.pointsName + " Exponent"},
             done(){return tmp.am.getAMExp.gte(8)},
         },
+        24:{
+            name: "Challenged",
+            tooltip(){return "Complete a Challenge"},
+            done(){return tmp.inf.totalComp >= 1},
+        },
+        25:{
+            name: "The 9th Challenge is a lie",
+            tooltip(){return "Complete 8 Challenges"},
+            done(){return tmp.inf.totalComp >= 8},
+        },
+        26:{
+            name: "Upgraded",
+            tooltip(){return "Bought 12 Infinity Upgrades"},
+            done(){return player.inf.upgrades.length >= 12},
+        },
     },
 })
 
-addLayer("am", {
-    name(){return modInfo.pointsName}, // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "AM", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+addLayer("auto", {
+    name: "autobuyers", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "AB", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
+        am:{
+            am11: false,
+            am12: false,
+            am13: false,
+            am21: false,
+            am22: false,
+            am23: false,
+        },
+        inf:{
+            infReset: false
+        }
     }},
-    color: "#ff0000",
-    requires: new Decimal(1), // Can be a function that takes requirement increases into account
-    resource(){return modInfo.pointsName}, // Name of prestige currency
-    baseResource(){return modInfo.pointsName}, // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    tooltip(){return format(player.points) + " " + modInfo.pointsName + "^" + format(tmp.am.getAMExp)},
+    color: "#ffff00",
+    tooltip(){return "Autobuyers"},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    row: 0, // Row the layer is in on the tree (0 is the first row)
-    layerShown(){return true},
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return hasUpgrade('inf',13)},
     tabFormat:[
-        ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> " + modInfo.pointsName + "<sup>" + format(tmp.am.getAMExp) + "</sup>"}],
-        ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> " + modInfo.pointsName + " before exp (+" + format(tmp.am.getAMProd) + "/s)"}],
-        ["bar","progressBar"],
-        "blank","buyables"
+        ["display-text",function(){return "<h2>Antimatter</h2>"}],
+        ["row",[["clickable","am11"],["clickable","am12"],["clickable","am13"],["clickable","am21"],["clickable","am22"],["clickable","am23"],]],
+        "blank",
+        ["display-text",function(){return "<h2>Infinity</h2>"}],
+        ["row",[["clickable","infReset"],]],
+        "blank",
     ],
-    update(diff){
-        player.points = player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).min(Decimal.pow(2,1024))
-        player.bestAM = player.bestAM.max(player.points)
-    },
-    automate(){
-
-    },
-    doReset(resettingLayer){
-        let keep = []
-        if (resettingLayer.row == this.row) return
-        layerDataReset(this.layer, keep)
-    },
-    getAMProd(){
-        let prod = buyableEffect('am', 11)
-        prod = prod.mul(buyableEffect('am', 13))
-        prod = prod.mul(buyableEffect('am', 22))
-        return prod
-    },
-    getAMExp(){
-        let exp = buyableEffect('am', 12)
-        return exp
-    },
-    buyables:{
-        11:{
+    clickables:{
+        am11:{
+            set: "am",
             title: "Producer",
-            costScaling(){
-                let scaling = [new Decimal(1),new Decimal(2),new Decimal(1.5)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',1)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = this.costScaling()[0].mul(this.costScaling()[1].pow(x.pow(this.costScaling()[2])))
-                return cost
-            },
-            canAfford(){
-                return player.points.gte(this.cost())
-            },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Produce " + modInfo.pointsName + "<br>Currently: +" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = amount
-                eff = eff.pow(buyableEffect('am', 21))
-                return eff
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
+            },
         },
-        12:{
+        am12:{
+            set: "am",
             title: "AM Exp",
-            costScaling(){
-                let scaling = [new Decimal(100),new Decimal(5),new Decimal(1.5)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',2)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = Decimal.pow(this.costScaling()[1],x.pow(this.costScaling()[2])).mul(this.costScaling()[0])
-                return cost
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
-            canAfford(){
-                return player.points.gte(this.cost())
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
             },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Increase " + modInfo.pointsName + " exponent<br>Currently: +" + format(buyableEffect(this.layer,this.id).sub(1))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = amount.add(1).pow(0.5)
-                return eff
-            },
-            unlocked(){return getBuyableAmount('am', 11).gte(4)},
         },
-        13:{
+        am13:{
+            set: "am",
             title: "Multiplier",
-            costScaling(){
-                let scaling = [new Decimal(1e6),new Decimal(10),new Decimal(1.5)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',3)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = Decimal.pow(this.costScaling()[1],x.pow(this.costScaling()[2])).mul(this.costScaling()[0])
-                return cost
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
-            canAfford(){
-                return player.points.gte(this.cost())
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
             },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Multiply base " + modInfo.pointsName + " production<br>Currently: x" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let b = new Decimal(2).add(buyableEffect('am', 23))
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = Decimal.pow(b,amount)
-                return eff
-            },
-            unlocked(){return getBuyableAmount('am', 12).gte(4)},
         },
-        21:{
+        am21:{
+            set: "am",
             title: "Producer Exp",
-            costScaling(){
-                let scaling = [new Decimal(1e9),new Decimal(20),new Decimal(1.5)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',4)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = Decimal.pow(this.costScaling()[1],x.pow(this.costScaling()[2])).mul(this.costScaling()[0])
-                return cost
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
-            canAfford(){
-                return player.points.gte(this.cost())
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
             },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Increase <b>Producer</b> exponent<br>Currently: ^" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = amount.add(1).pow(0.5)
-                return eff
-            },
-            unlocked(){return getBuyableAmount('am', 13).gte(3)},
         },
-        22:{
+        am22:{
+            set: "am",
             title: "Condenser",
-            costScaling(){
-                let scaling = [new Decimal(1e30),new Decimal(1e10),new Decimal(1.5)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',5)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = Decimal.pow(this.costScaling()[1],x.pow(this.costScaling()[2])).mul(this.costScaling()[0])
-                return cost
+            canRun(){
+                if (inChallenge('inf',31)) return true
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
-            canAfford(){
-                return player.points.gte(this.cost())
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
             },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Multiply base " + modInfo.pointsName + " production based on itself<br>Currently: x" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = Decimal.pow(player.points.max(10).log10(),amount.root(2))
-                return eff
-            },
-            unlocked(){return getBuyableAmount('am', 21).gte(7)},
         },
-        23:{
+        am23:{
+            set: "am",
             title: "Multiplier Boost",
-            costScaling(){
-                let scaling = [new Decimal(1e135),new Decimal(1e25),new Decimal(2)] // base cost, cost scaling, scaling exp
-                return scaling
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',6)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
-            cost(x){
-                let cost = Decimal.pow(this.costScaling()[1],x.pow(this.costScaling()[2])).mul(this.costScaling()[0])
-                return cost
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
-            canAfford(){
-                return player.points.gte(this.cost())
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
             },
-            buy(){
-                player.points = player.points.sub(this.cost())
-                addBuyables(this.layer, this.id, new Decimal(1))
-            },
-            bulk(){
-                if (!this.canAfford) return new Decimal(0)
-                return player.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
-            },
-            buyMax(){
-                if (!this.canAfford) return
-                let bulk = this.bulk()
-                player.points = player.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
-                addBuyables(this.layer,this.id,bulk)
-            },
-            display() {return "Increase <b>Multiplier</b> base<br>Currently: +" + format(buyableEffect(this.layer,this.id))
-            + "<br><br>Cost: " + format(this.cost()) + " " + modInfo.pointsName + "<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.cost(),tmp.am.getAMExp))
-            + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
-            effect(x = getBuyableAmount(this.layer,this.id)){
-                let strength = new Decimal(1)
-                let amount = x.mul(strength)
-                let eff = amount.mul(0.16)
-                return eff
-            },
-            unlocked(){return getBuyableAmount('am', 22).gte(5)},
         },
-    },
-    bars: {
-        progressBar: {
-            direction: RIGHT,
-            width: 500,
-            height: 25,
-            progress(){return player.points.max(1).log2().div(1024)},
-            display(){return "Percentage to Infinity: " + format(this.progress().mul(100),3) + "% (ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,Decimal.pow(2,1024),tmp.am.getAMExp)) + ")"},
-            fillStyle(){return {"background-color": "green"}},
+        infReset:{
+            set: "inf",
+            title: "Infinity Reset",
+            display(){return Boolean(player.auto[this.set][this.id])},
+            canClick(){return hasMilestone('inf',7)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
+            },
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
+            },
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "yellow"}
+                else return {"background-color": "#BF8F8F"}
+            },
         },
     },
 })
-
-function getAMUpgETA(curr, prod, goal, exp=new Decimal(1)){
-    curr = new Decimal(curr)
-    prod = new Decimal(prod)
-    goal = new Decimal(goal)
-    let currRT = curr.root(exp)
-    let goalRT = goal.root(exp)
-    let t = goalRT.sub(currRT).div(prod)
-    return t.max(0)
-}
