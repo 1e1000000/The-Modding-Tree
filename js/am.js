@@ -68,7 +68,7 @@ addLayer("am", {
     hotkeys:[
         {
             key: "m",
-            description(){return "m: max all " + modInfo.pointsName + " buyables (require ach21)"},
+            description: "m: max all " + modInfo.pointsName + " buyables (require ach21)",
             onPress(){
                 if (hasAchievement('ach',21)){
                     tmp.am.buyables[11].buyMax()
