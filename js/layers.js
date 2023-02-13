@@ -285,8 +285,8 @@ function getRepresentation(res = player.points){
     } else {
         if (res.gte(pLcube.recip().mul(Decimal.pow(2,1024)))) s = format(res.mul(pLcube).div(Decimal.pow(2,1024))) + " Infinity Dimensions"
         else if (res.gte(pLcube.recip().mul(3.4e80))) s = format(res.mul(pLcube).div(3.4e80)) + " observable universes"
-        else if (res.gte(pLcube.recip())) s = format(res.mul(pLcube)) + "m<sub>3</sub>"
-        else s = format(res) + "pL<sub>3</sub>"
+        else if (res.gte(pLcube.recip())) s = format(res.mul(pLcube)) + "m<sup>3</sup>"
+        else s = format(res) + "pL<sup>3</sup>"
     }
     return p+s
 }
