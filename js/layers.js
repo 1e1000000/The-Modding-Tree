@@ -1,17 +1,42 @@
-addLayer("ach", {
-    name: "achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
+addLayer("stat", {
+    name: "statistics", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "ST", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
     }},
-    color: "#ffff00",
+    color: "#ffffff",
+    tooltip(){return "Statistics"},
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    row: "side", // Row the layer is in on the tree (0 is the first row)
+    layerShown(){return true},
+    tabFormat:[
+        ["display-text",function(){return "<h2 style='color: red'>Antimatter</h2>"}],
+        ["display-text",function(){return "You have " + format(player.points) + " " + modInfo.pointsName}],"blank",
+        ["display-text",function(){return "Your best " + modInfo.pointsName + " was " + format(player.bestAM)}],"blank",
+        ["display-text",function(){return "<h2 style='color: yellow'>Infinity</h2>"}],
+        ["display-text",function(){return "You have " + formatWhole(player.inf.points) + " Infinity Points (" + formatWhole(player.inf.total) + " total)"}],"blank",
+        ["display-text",function(){return "You have spent " + formatTime(player.inf.resetTime, true) + " in this Infinity"}],"blank",
+        ["display-text",function(){return "<h2>Main</h2>"}],
+        ["display-text",function(){return "You have played for " + formatTime(player.timePlayed, true)}],"blank",
+        ["display-text",function(){return getRepresentation(player.points)}],"blank",
+    ],
+})
+
+addLayer("ach", {
+    name: "achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+    }},
+    color: "gold",
     tooltip(){return "Achievements"},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: "side", // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     tabFormat:[
-        ["display-text",function(){return "You have completed <h2 style='color: yellow'>" + formatWhole(player.ach.achievements.length) + "</h2> achievements"}],
+        ["display-text",function(){return "You have completed <h2 style='color: gold'>" + formatWhole(player.ach.achievements.length) + "</h2> achievements"}],
         ["blank","34px"],"achievements"
     ],
     achievements:{
@@ -75,13 +100,18 @@ addLayer("ach", {
             tooltip(){return "Bought 12 Infinity Upgrades"},
             done(){return player.inf.upgrades.length >= 12},
         },
+        31:{
+            name: "Limit Break",
+            tooltip(){return "Break Infinity<br><i>Reward: Unlock IP multiplier Buyables</i>"},
+            done(){return player.inf.break},
+        },
     },
 })
 
 addLayer("auto", {
     name: "autobuyers", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "AB", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
         am:{
@@ -93,10 +123,11 @@ addLayer("auto", {
             am23: false,
         },
         inf:{
-            infReset: false
-        }
+            infReset: false,
+        },
+        infResetOpt: new Decimal(1),
     }},
-    color: "#ffff00",
+    color: "#ffff3f",
     tooltip(){return "Autobuyers"},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: "side", // Row the layer is in on the tree (0 is the first row)
@@ -106,7 +137,7 @@ addLayer("auto", {
         ["row",[["clickable","am11"],["clickable","am12"],["clickable","am13"],["clickable","am21"],["clickable","am22"],["clickable","am23"],]],
         "blank",
         ["display-text",function(){return "<h2>Infinity</h2>"}],
-        ["row",[["clickable","infReset"],]],
+        ["row",[["column",[["clickable","infReset"], function(){return player.inf.break?["text-input","infResetOpt"]:[]}]],]],
         "blank",
     ],
     clickables:{
@@ -232,3 +263,30 @@ addLayer("auto", {
         },
     },
 })
+
+function getRepresentation(res = player.points){
+    res = new Decimal(res)
+
+    var pLcube = new Decimal(4.22419e-105)
+    let time = res.log10().floor().add(1).div(3)
+    let yrs = time.div(31556952)
+
+    let p = "Your " + modInfo.pointsName + " is making up " + (res.gte(pLcube.mul(Decimal.pow(2,1024)))?"":"with a size of ")
+    if (res.gte("1e10799")) p = "If you " + (yrs.gte(new Date().getFullYear()) && yrs.lte(1.38e8)?"wanted to finish writing":"write") + " your " + modInfo.pointsName + " amount at a rate of 3 digits per second, you would "
+    let s 
+
+    if (res.gte("1e10799")){
+        if (yrs.gte(1.38e10)) s = "span " + format(yrs.div(1.38e10), 3) + "x the age of the universe"
+        else if (yrs.gte(1.38e8)) s = "span " + format(yrs.div(1.38e8), 3) + "% of the age of the universe"
+        else if (yrs.gte(new Date().getFullYear())) s = "need to start it in " + formatWhole(yrs.sub(new Date().getFullYear())) + " BCE"
+        else if (yrs.gte(79.3)) s = "be a ghost for " + format(yrs.sub(79.3).div(yrs).mul(100), 3) + "% of the session"
+        else if (yrs.gte(7.93)) s = "waste " + format(yrs.div(0.793), 3) + "% of your projected average lifespan"
+        else s = "take " + formatTime(time, true) + " to write it"
+    } else {
+        if (res.gte(pLcube.recip().mul(Decimal.pow(2,1024)))) s = format(res.mul(pLcube).div(Decimal.pow(2,1024))) + " Infinity Dimensions"
+        else if (res.gte(pLcube.recip().mul(3.4e80))) s = format(res.mul(pLcube).div(3.4e80)) + " observable universes"
+        else if (res.gte(pLcube.recip())) s = format(res.mul(pLcube)) + "m<sub>3</sub>"
+        else s = format(res) + "pL<sub>3</sub>"
+    }
+    return p+s
+}

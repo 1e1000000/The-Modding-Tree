@@ -13,37 +13,50 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230212",
-	name: "Infinity Update",
+	num: "230213",
+	name: "Break Infinity Update",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
-	<h3>2023-02-12 build (Update 2a)</h3><br>
+	<h3 style='color: #ffff00'>2023-02-13 build (Update 2.1a)</h3><br>
+	- Added Break Infinity.<br>
+	- Added an achievement.<br>
+	- Added Statistics node.<br>
+	- Added Infinity reset Option.<br>
+	- Added IP multiplier buyable.<br>
+	- Added notification for past endgame.<br>
+	- Number past 1.80e308 will display as Infinite if Infinity isn't broken.<br>
+	- Changed m hotkey display to after first Infinity.<br>
+	- Changed the color of Achievements and Autobuyer node.<br>
+	- Multiplication of AM change rate happen much earlier (1e10 -> 10).<br>
+	- Extended Time formatting by a bit.<br>
+	- Endgame: 1e4 total IP.<br><br>
+	<h3 style='color: #ffff00'>2023-02-12 build (Update 2a)</h3><br>
 	- Balanced remaining challenges debuff.<br>
 	- You need previous Infinity upgrade in that column to bought the next Infinity upgrade.<br>
 	- Make antimatter production after exp show.<br>
 	- Added Autobuyer for Infinity reset.<br>
 	- Endgame: 1000 Total Infinity Points with all Infinity Upgrades bought and all Challenges completed.<br><br>
-	<h3>2023-02-11 build (Priate: Infinity update Beta 2)</h3><br>
+	<h3 style='color: #ffff00'>2023-02-11 build (Priate: Infinity update Beta 2)</h3><br>
 	- Balanced 5 out of 8 challenges debuff.<br>
 	- Added Buy Max Button.<br>
 	- Added another 3 Achievements.<br>
 	- Softcapped all antimatter buyables past 1.80e308 AM, except 'Producer'. (58,52,38,10,3)<br>
 	- Softcapped antimatter exponent at 9.<br>
 	- Balanced up to: 5/8 Challenges.<br><br>
-	<h3>2023-02-10 build (Priate: Infinity update Beta 1)</h3><br>
+	<h3 style='color: #ffff00'>2023-02-10 build (Priate: Infinity update Beta 1)</h3><br>
 	- Added Infinity, include upgrade and challenges.<br>
 	- Added Buy Max Hotkey, require Infinity once.<br>
 	- Added Autobuyers.<br>
 	- Balanced up to: 8/12 Infinity Upgrades.<br><br>
-	<h3>2023-02-09 build (Update 1b)</h3><br>
+	<h3 style='color: #ff0000'>2023-02-09 build (Update 1b)</h3><br>
 	- Added 3 achievements (only 1 is possible yet).<br>
 	- Added best antimatter.<br>
 	- Added full display option for Time.<br>
 	- Added a secret.<br>
 	- Endgame unchanged.<br><br>
-	<h3>2023-02-08 build (Update 1a)</h3><br>
+	<h3 style='color: #ff0000'>2023-02-08 build (Update 1a)</h3><br>
 	- Initial Release.<br>
 	- Endgame: 1.80e308 antimatter.<br><br>
 `
@@ -80,9 +93,7 @@ function addedPlayerData() { return {
 // Display extra things at the top of the page
 var displayThings = [
 	function(){return "Endgame: " + 
-		formatWhole(player.inf.total) + "/1,000 total Infinity Points<br>" + 
-		formatWhole(player.inf.upgrades.length) + "/12 Infinity Upgrades<br>" + 
-		formatWhole(tmp.inf.totalComp) + "/8 Challenges completion"
+		formatWhole(player.inf.total) + "/" + format(1e4) + " total Infinity Points" + (player.inf.total.gte(1e4)?"<br><text style='color: #007fff'>You are past endgame,<br>and the game might break here.</text>":"")
 	}
 ]
 

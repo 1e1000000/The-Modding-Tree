@@ -60,6 +60,6 @@ function getRateChangewithExp(curr,prod,exp,time=1){
     prod = new Decimal(prod)
 	exp = new Decimal(exp)
 	let next = curr.root(exp).add(prod.mul(time)).pow(exp)
-	if (next.div(curr).gte(1e10)) return {multi: true, value: next.div(curr)}
+	if (next.div(curr).gte(10)) return {multi: true, value: next.div(curr)}
 	else return {multi: false, value: next.sub(curr)}
 }

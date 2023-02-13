@@ -6,6 +6,7 @@ addLayer("inf", {
         unlocked: false,
         points: new Decimal(0),
         total: new Decimal(0),
+        break: false,
     }},
     color: "#ffff00",
     requires: new Decimal(2).pow(1024), // Can be a function that takes requirement increases into account
@@ -16,6 +17,7 @@ addLayer("inf", {
     exponent: 1/1024,
     gainMult(){
         let mult = new Decimal(1)
+        if (hasAchievement('ach',31)) mult = mult.mul(buyableEffect('inf',11))
         return mult
     },
     gainExp(){
@@ -35,6 +37,20 @@ addLayer("inf", {
             key: "i",
             description: "i: reset for Infinity Points",
             onPress(){if (canReset(this.layer)) doReset(this.layer)}
+        },
+        {
+            key: "m",
+            description: "m: max all " + modInfo.pointsName + " buyables",
+            onPress(){
+                if (hasAchievement('ach',21)){
+                    tmp.am.buyables[11].buyMax()
+                    tmp.am.buyables[12].buyMax()
+                    tmp.am.buyables[13].buyMax()
+                    tmp.am.buyables[21].buyMax()
+                    tmp.am.buyables[22].buyMax()
+                    tmp.am.buyables[23].buyMax()
+                }
+            }
         }
     ],
     tabFormat:{
@@ -45,7 +61,8 @@ addLayer("inf", {
                 "resource-display",
                 ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b> "}],
                 "blank",["display-text",function(){return "You need previous Infinity upgrade in that column to bought the next Infinity upgrade"}],
-                "upgrades"
+                ["buyable","11"],
+                ["upgrades",[1,2,3,4]]
             ],
             unlocked(){return true},
         },
@@ -71,18 +88,45 @@ addLayer("inf", {
             ],
             unlocked(){return hasUpgrade('inf',13)},
         },
+        "Break Infinity":{
+            content:[
+                "main-display",
+                "prestige-button",
+                "resource-display",
+                ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b> "}],
+                "blank",
+                ["clickable",[11]],
+            ],
+            unlocked(){return hasUpgrade('inf',43)},
+        },
     },
     update(diff){
 
     },
     automate(){
-        if (tmp.auto.clickables.infReset.canRun && true) doReset('inf') // nothing to toggle yet, the true will be turned to something later, only reset when possible
+        if (tmp.auto.clickables.infReset.canRun && !player.inf.break) doReset('inf') // nothing to toggle at pre-break stage, only reset when possible
+        if (tmp.auto.clickables.infReset.canRun && player.inf.break && tmp.inf.resetGain.gte(player.auto.infResetOpt)) doReset('inf') // the only toggle at post-break stage
     },
     doReset(resettingLayer){
         if (layers[resettingLayer].row>this.row){
             let keep = []
             layerDataReset(this.layer, keep)
         }
+    },
+    clickables:{
+        11:{
+            title(){return (player.inf.break?"Fix" : "Break") + " Infinity"},
+            display(){return "Require:<br>" + formatWhole(player.inf.total) + "/1,000 total Infinity Points<br>" + 
+            formatWhole(player.inf.upgrades.length) + "/12 Infinity Upgrades<br>" + 
+            formatWhole(tmp.inf.totalComp) + "/8 Challenges completion"},
+            canClick(){return (player.inf.total.gte(1000) && player.inf.upgrades.length>=12 && tmp.inf.totalComp>=8) || player.inf.break},
+            onClick(){
+                player.inf.break = Boolean(1-player.inf.break)
+            },
+            style(){return {'height': '180px', 'width': '240px'}},
+            tooltip(){return "When you break Infinity, you will be allowed to go past 1.80e308 AM, resulting more IP gain on reset, "+
+            "but most " + modInfo.pointsName + " buyables and " + modInfo.pointsName + " exponent are softcapped past 1.80e308 AM."},
+        },
     },
     upgrades:{
         11:{
@@ -205,10 +249,55 @@ addLayer("inf", {
         },
         43:{
             title: "inf43",
-            description(){return "<b>Condenser</b> and <b>Multiplier Boost</b> buyable are always show"},
+            description(){return "<b>Condenser</b> and <b>Multiplier Boost</b> buyable are always show, unlock the ability to Break Infinity"},
             cost: new Decimal(377),
             unlocked(){return true},
             canAfford(){return hasUpgrade('inf',33)},
+        },
+    },
+    buyables:{
+        11:{
+            title: "IP multiplier",
+            costScaling(){
+                let scaling = [new Decimal(10),new Decimal(10),new Decimal(1)] // base cost, cost scaling, scaling exp
+                return scaling
+            },
+            cost(x){
+                let cost = this.costScaling()[0].mul(this.costScaling()[1].pow(x.pow(this.costScaling()[2])))
+                return cost
+            },
+            canAfford(){
+                return player.inf.points.gte(this.cost()) && tmp[this.layer].buyables[this.id].unlocked
+            },
+            buy(){
+                player.inf.points = player.inf.points.sub(this.cost())
+                addBuyables(this.layer, this.id, new Decimal(1))
+                player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase())
+            },
+            bulk(){
+                if (!this.canAfford) return new Decimal(0)
+                return player.inf.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).min(this.purchaseLimit).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
+            },
+            buyMax(){
+                if (!this.canAfford) return
+                let bulk = this.bulk()
+                if (!hasMilestone('inf',8)) player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
+                addBuyables(this.layer,this.id,bulk)
+                player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase().pow(bulk))
+            },
+            display() {return "Multiply IP gain by " + format(this.effectBase()) + "<br>Currently: " + format(buyableEffect(this.layer,this.id))
+            + "x<br><br>Cost: " + format(this.cost()) + " Infinity Points"
+            + "<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
+            effectBase(){
+                let b = new Decimal(2)
+                return b
+            },
+            effect(x = getBuyableAmount(this.layer,this.id)){
+                let b = this.effectBase()
+                let eff = b.pow(x)
+                return eff
+            },
+            unlocked(){return hasAchievement('ach',31)},
         },
     },
     milestones:{

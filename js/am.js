@@ -18,11 +18,12 @@ addLayer("am", {
         ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> " + modInfo.pointsName + "<sup>" + format(tmp.am.getAMExp,3) + "</sup> " + (getRateChangewithExp(player.points,tmp.am.getAMProd,tmp.am.getAMExp).multi?"(x":"(+") + format(getRateChangewithExp(player.points,tmp.am.getAMProd,tmp.am.getAMExp).value) + "/s)"}],
         ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> " + modInfo.pointsName + " before exp (+" + format(tmp.am.getAMProd) + "/s)"}],
         ["bar","progressBar"],
+        ["display-text",function(){return player.inf.break?"Your best ever " + modInfo.pointsName + " was <b style='color: red'>" + format(player.bestAM) + "</b>":""}],
         "blank",["clickable",[11]],"buyables"
     ],
     update(diff){
-        player.points = player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).max(0).min(Decimal.pow(2,1024))
-        player.bestAM = player.bestAM.max(player.points).min(Decimal.pow(2,1024))
+        player.points = player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).max(0).min(player.inf.break?1/0:Decimal.pow(2,1024))
+        player.bestAM = player.bestAM.max(player.points)
     },
     automate(){
         if (tmp.auto.clickables.am11.canRun) tmp.am.buyables[11].buyMax()
@@ -379,10 +380,12 @@ addLayer("am", {
             height: 25,
             target(){
                 let goal = Decimal.pow(2,1024)
+                let step = player.points.log(Decimal.pow(2,1024)).max(1).log(2).ceil()
+                if (player.inf.break) goal = goal.pow(Decimal.pow(2, step))
                 return goal
             },
             progress(){return player.points.max(1).log(this.target())},
-            display(){return "Percentage to " + format(this.target()) + " " + modInfo.pointsName + ": " + format(this.progress().mul(100),3) + "% (ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.target(),tmp.am.getAMExp)) + ")"},
+            display(){return "Percentage to " + (player.inf.break?format(this.target())+" " +modInfo.pointsName:"Infinity") + ": " + format(this.progress().mul(100),3) + "% (ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.target(),tmp.am.getAMExp)) + ")"},
             fillStyle(){return {"background-color": "green"}},
         },
     },
