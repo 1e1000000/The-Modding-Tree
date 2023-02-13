@@ -155,7 +155,7 @@ addLayer("inf", {
         },
         13:{
             title: "inf13",
-            description(){return "<b>AM Exp</b> buyable is always show, unlock Challenges"},
+            description(){return "<b>AM Exp</b> buyable is always shown, unlock Challenges"},
             cost: new Decimal(89),
             unlocked(){return true},
             canAfford(){return true},
@@ -186,7 +186,7 @@ addLayer("inf", {
         },
         23:{
             title: "inf23",
-            description(){return "<b>Multiplier</b> buyable is always show"},
+            description(){return "<b>Multiplier</b> buyable is always shown"},
             cost: new Decimal(144),
             unlocked(){return true},
             canAfford(){return hasUpgrade('inf',13)},
@@ -217,7 +217,7 @@ addLayer("inf", {
         },
         33:{
             title: "inf33",
-            description(){return "<b>Producer Exp</b> buyable is always show"},
+            description(){return "<b>Producer Exp</b> buyable is always shown"},
             cost: new Decimal(233),
             unlocked(){return true},
             canAfford(){return hasUpgrade('inf',23)},
@@ -249,7 +249,7 @@ addLayer("inf", {
         },
         43:{
             title: "inf43",
-            description(){return "<b>Condenser</b> and <b>Multiplier Boost</b> buyable are always show, unlock the ability to Break Infinity"},
+            description(){return "<b>Condenser</b> and <b>Multiplier Boost</b> buyable are always shown, unlock the ability to Break Infinity"},
             cost: new Decimal(377),
             unlocked(){return true},
             canAfford(){return hasUpgrade('inf',33)},
