@@ -13,12 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230213",
-	name: "Break Infinity Update",
+	num: "230213.2",
+	name: "Break Infinity Update Patch 1",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3 style='color: #ffff00'>2023-02-13 build 2 (Update 2.1b)</h3><br>
+	- Fixed Infinity stage resource on statistics node shows too early.<br>
 	<h3 style='color: #ffff00'>2023-02-13 build (Update 2.1a)</h3><br>
 	- Added Break Infinity.<br>
 	- Added an achievement.<br>

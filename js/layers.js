@@ -11,15 +11,7 @@ addLayer("stat", {
     row: "side", // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     tabFormat:[
-        ["display-text",function(){return "<h2 style='color: red'>Antimatter</h2>"}],
-        ["display-text",function(){return "You have " + format(player.points) + " " + modInfo.pointsName}],"blank",
-        ["display-text",function(){return "Your best " + modInfo.pointsName + " was " + format(player.bestAM)}],"blank",
-        ["display-text",function(){return "<h2 style='color: yellow'>Infinity</h2>"}],
-        ["display-text",function(){return "You have " + formatWhole(player.inf.points) + " Infinity Points (" + formatWhole(player.inf.total) + " total)"}],"blank",
-        ["display-text",function(){return "You have spent " + formatTime(player.inf.resetTime, true) + " in this Infinity"}],"blank",
-        ["display-text",function(){return "<h2>Main</h2>"}],
-        ["display-text",function(){return "You have played for " + formatTime(player.timePlayed, true)}],"blank",
-        ["display-text",function(){return getRepresentation(player.points)}],"blank",
+        ["display-text",function(){return getStatTab()}],
     ],
 })
 
@@ -289,4 +281,31 @@ function getRepresentation(res = player.points){
         else s = format(res) + "pL<sup>3</sup>"
     }
     return p+s
+}
+
+function getStatTab(){
+    let br = "<br>"
+    let x = "<h2 style='color: red'>Antimatter</h2>"
+    x += br
+    x += "You have " + format(player.points) + " " + modInfo.pointsName
+    x += br
+    x += "Your best " + modInfo.pointsName + " was " + format(player.bestAM)
+    x += br
+    if (player.inf.unlocked){
+        x += br
+        x += "<h2 style='color: yellow'>Infinity</h2>"
+        x += br
+        x += "You have " + formatWhole(player.inf.points) + " Infinity Points (" + formatWhole(player.inf.total) + " total)"
+        x += br
+        x += "You have spent " + formatTime(player.inf.resetTime, true) + " in this Infinity"
+        x += br
+    }
+    x += br
+    x += "<h2>Main</h2>"
+    x += br
+    x += "You have played for " + formatTime(player.timePlayed, true)
+    x += br
+    x += getRepresentation(player.points)
+
+    return x
 }
