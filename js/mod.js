@@ -13,12 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230215",
-	name: "Infinity Power Update",
+	num: "230216",
+	name: "Infinity Power Update (Patch 1)",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3 style='color: #ffff00'>2023-02-16 build (Update 2.2b)</h3><br>
+	- Added a button for quick Infinity reset. (better for mobile device)<br>
+	- Added Really Antimatter Dimension (not quite accurate).<br>
+	- Updated the wording of Break Infinity tooltip.<br><br>
 	<h3 style='color: #ffff00'>2023-02-15 build (Update 2.2a)</h3><br>
 	- Added another Infinity Power buyable.<br>
 	- Added another Antimatter Buyable.<br>
@@ -72,7 +76,6 @@ let changelog = `
 	- Added best antimatter.<br>
 	- Added full display option for Time.<br>
 	- Added a secret.<br>
-	- Endgame unchanged.<br><br>
 	<h3 style='color: #ff0000'>2023-02-08 build (Update 1a)</h3><br>
 	- Initial Release.<br>
 	- Endgame: 1.80e308 antimatter.<br><br>

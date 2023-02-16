@@ -167,7 +167,7 @@ addLayer("inf", {
             },
             style(){return {'height': '180px', 'width': '240px'}},
             tooltip(){return "When you break Infinity, you will be allowed to go past 1.80e308 AM, resulting more IP gain on reset, "+
-            "but most " + modInfo.pointsName + " buyables and " + modInfo.pointsName + " exponent are softcapped past 1.80e308 AM."},
+            "but most " + modInfo.pointsName + " buyables are softcapped past 1.80e308 AM. By default, AM exponent is softcapped at 9."},
         },
     },
     upgrades:{

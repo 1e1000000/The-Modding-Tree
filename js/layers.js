@@ -10,9 +10,18 @@ addLayer("stat", {
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: "side", // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
-    tabFormat:[
-        ["display-text",function(){return getStatTab()}],
-    ],
+    tabFormat:{
+        "Main":{
+            content:[
+                ["display-text",function(){return getStatTab()}]
+            ]
+        },
+        "Really Antimatter Dimensions":{
+            content:[
+                ["display-text",function(){return getDimensionsDisplay(player.points,tmp.am.getAMProd,tmp.am.getAMExp)}]
+            ]
+        },
+    },
 })
 
 addLayer("ach", {
@@ -64,7 +73,7 @@ addLayer("ach", {
         },
         21:{
             name: "To Infinity!",
-            tooltip(){return "Perform an Infinity Reset<br><i>Reward: Unlock Buy Max for Antimatter Buyables</i>"},
+            tooltip(){return "Perform an Infinity Reset<br><i>Reward: Unlock Buy Max for Antimatter Buyables, you can also perform Infinity reset on Antimatter node</i>"},
             done(){return player.inf.total.gte(1)},
         },
         22:{
@@ -375,4 +384,52 @@ function getStatTab(){
     x += getRepresentation(player.points)
 
     return x
+}
+
+function getDimensionsDisplay(res,prod,exp){
+    res = new Decimal(res)
+    prod = new Decimal(prod)
+    exp = new Decimal(exp)
+    let dims = exp.ceil().max(1)
+    let opt = ""
+    if(dims.lte(8)){
+        for (let i = new Decimal(1); i.lte(dims); i = i.add(1)){
+            if (i.gte(exp)) opt += "<h2>" + ordNum(i) + " Antimatter Dimension</h2> x" + format(prod.pow(exp.sub(i).add(1))) + ": " + format(1) + "<br><br>"
+            else opt += "<h2>" + ordNum(i) + " Antimatter Dimension</h2> x" + format(prod) + ": " + format(res.root(exp).pow(exp.sub(i))) + "<br><br>"
+        }
+    } else {
+        for (let i = new Decimal(1); i.lte(3); i = i.add(1)){
+            opt += "<h2>" + ordNum(i) + " Antimatter Dimension</h2> x" + format(prod) + ": " + format(res.root(exp).pow(exp.sub(i))) + "<br><br>"
+        }
+        opt += "...<br>"
+        for (let i = new Decimal(3); i.gte(0); i = i.sub(1)){
+            if (i.eq(0)) opt += "<h2>" + ordNum(dims) + " Antimatter Dimension</h2> x" + format(prod.pow(exp.sub(dims).add(1))) + ": " + format(1) + "<br><br>"
+            else opt += "<h2>" + ordNum(dims.sub(i)) + " Antimatter Dimension</h2> x" + format(prod) + ": " + format(res.root(exp).pow(exp.sub(dims).add(i))) + "<br><br>"
+        }
+    }
+    return opt
+}
+
+function ordNum(num){
+    num = new Decimal(num)
+    let div100 = num.div(100)
+    let mod100 = Math.round(div100.sub(div100.floor()).mul(100).toNumber())
+    let ord = ""
+    if (Math.floor(mod100 / 10) == 1 || num.gte(1e9)) ord = "th"
+    else {
+        switch(mod100%10){
+            case 1:
+                ord = "st"
+                break;
+            case 2:
+                ord = "nd"
+                break;
+            case 3:
+                ord = "rd"
+                break;
+            default:
+                ord = "th"
+        }
+    }
+    return formatWhole(num) + ord
 }

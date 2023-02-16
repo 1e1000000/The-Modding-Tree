@@ -19,7 +19,7 @@ addLayer("am", {
         ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> " + modInfo.pointsName + " before exp (" + getRateChangewithExp(player.points.root(tmp.am.getAMExp),tmp.am.getAMProd) + "/s)"}],
         ["bar","progressBar"],
         ["display-text",function(){return player.inf.break?"Your best ever " + modInfo.pointsName + " was <b style='color: red'>" + format(player.bestAM) + "</b>":""}],
-        "blank",["clickable",[11]],"buyables"
+        "blank","clickables","buyables"
     ],
     update(diff){
         player.points = tmp.am.getAMProd.eq(0)?new Decimal(1):player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).max(0).min(player.inf.break?1/0:Decimal.pow(2,1024))
@@ -109,6 +109,16 @@ addLayer("am", {
                 tmp.am.buyables[31].buyMax()
             },
             onHold(){this.onClick()},
+        },
+        12:{
+            title:"Perform an Infinity reset",
+            unlocked(){return hasAchievement('ach',21)},
+            canClick(){return tmp.inf.canReset},
+            onClick(){
+                doReset('inf')
+            },
+            display(){return "+" + formatWhole(tmp.inf.resetGain) + " IP"},
+            style(){return {"background-color": "yellow"}},
         },
     },
     buyables:{
