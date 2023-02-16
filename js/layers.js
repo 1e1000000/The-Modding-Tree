@@ -391,7 +391,7 @@ function getDimensionsDisplay(res,prod,exp){
     prod = new Decimal(prod)
     exp = new Decimal(exp)
     let dims = exp.ceil().max(1)
-    let opt = ""
+    let opt = "You have <h2>" + format(res) + "</h2> antimatter<br><br>"
     if(dims.lte(8)){
         for (let i = new Decimal(1); i.lte(dims); i = i.add(1)){
             if (i.gte(exp)) opt += "<h2>" + ordNum(i) + " Antimatter Dimension</h2> x" + format(prod.pow(exp.sub(i).add(1))) + ": " + format(1) + "<br><br>"
