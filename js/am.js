@@ -118,7 +118,10 @@ addLayer("am", {
                 doReset('inf')
             },
             display(){return "+" + formatWhole(tmp.inf.resetGain) + " IP"},
-            style(){return {"background-color": "yellow"}},
+            style(){
+                if (this.canClick()) return {"background-color": "yellow"}
+                else return {"background-color": "#BF8F8F"}
+            },
         },
     },
     buyables:{
