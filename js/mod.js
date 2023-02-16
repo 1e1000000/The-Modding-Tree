@@ -13,14 +13,29 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230213.2",
-	name: "Break Infinity Update Patch 1",
+	num: "230215",
+	name: "Infinity Power Update",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3 style='color: #ffff00'>2023-02-15 build (Update 2.2a)</h3><br>
+	- Added another Infinity Power buyable.<br>
+	- Added another Antimatter Buyable.<br>
+	- Added another 3 achievements.<br>
+	- Added another 3 post-break Infinity Upgrades.<br>
+	- Hidden the literally impossible infinity challenge (for now).<br>
+	- Endgame: 1e10 IP with 8 post-break Upgrades bought.<br><br>
+	<h3 style='color: #ffff00'>2023-02-14 build (Priate: Infinity Power update Beta 1)</h3><br>
+	- Added Infinity Power.<br>
+	- Added an Antimatter Buyable.<br>
+	- Added 2 achievements.<br>
+	- Added 5 post-break Infinity Upgrades.<br>
+	- Added an Infinity Challenge that is literally impossible now.<br>
+	- Added IP/min display if your resource/pending resource is high enough.<br>
+	- Balanced up to: 2e6 IP with 5 post-break Upgrades bought.<br><br>
 	<h3 style='color: #ffff00'>2023-02-13 build 2 (Update 2.1b)</h3><br>
-	- Fixed Infinity stage resource on statistics node shows too early.<br>
+	- Fixed Infinity stage resource on statistics node shows too early.<br><br>
 	<h3 style='color: #ffff00'>2023-02-13 build (Update 2.1a)</h3><br>
 	- Added Break Infinity.<br>
 	- Added an achievement.<br>
@@ -95,7 +110,8 @@ function addedPlayerData() { return {
 // Display extra things at the top of the page
 var displayThings = [
 	function(){return "Endgame: " + 
-		formatWhole(player.inf.total) + "/" + format(1e4) + " total Infinity Points" + (player.inf.total.gte(1e4)?"<br><text style='color: #007fff'>You are past endgame,<br>and the game might break here.</text>":"")
+		formatWhole(player.inf.best) + "/" + format(1e10) + " best Infinity Points" + 
+		(player.inf.best.gte(1e10)?"<br><text style='color: #007fff'>You are past endgame,<br>and the game might break here.</text>":"")
 	}
 ]
 

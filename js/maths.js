@@ -55,11 +55,12 @@ function getAMUpgETA(curr, prod, goal, exp=new Decimal(1)){
     return t.max(0)
 }
 
-function getRateChangewithExp(curr,prod,exp,time=1){
+function getRateChangewithExp(curr,prod,exp=new Decimal(1),time=1){
     curr = new Decimal(curr)
     prod = new Decimal(prod)
 	exp = new Decimal(exp)
 	let next = curr.root(exp).add(prod.mul(time)).pow(exp)
-	if (next.div(curr).gte(10)) return {multi: true, value: next.div(curr)}
-	else return {multi: false, value: next.sub(curr)}
+	if (next.log(curr).gte(10) && curr.gte(10)) return "^" + format(next.log(curr))
+	else if (next.div(curr).gte(10) && curr.gte(1)) return "x" + format(next.div(curr))
+	else return "+" + format(next.sub(curr))
 }

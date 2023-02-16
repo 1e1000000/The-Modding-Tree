@@ -7,6 +7,7 @@ addLayer("inf", {
         points: new Decimal(0),
         total: new Decimal(0),
         break: false,
+        power: new Decimal(0),
     }},
     color: "#ffff00",
     requires: new Decimal(2).pow(1024), // Can be a function that takes requirement increases into account
@@ -14,15 +15,24 @@ addLayer("inf", {
     baseResource(){return modInfo.pointsName}, // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 1/1024,
+    exponent(){
+        let exp = 1/1024
+        if (hasUpgrade('inf',52)) exp *= 2
+        return exp
+    },
     gainMult(){
         let mult = new Decimal(1)
         if (hasAchievement('ach',31)) mult = mult.mul(buyableEffect('inf',11))
+        if (hasUpgrade('inf',62)) mult = mult.mul(upgradeEffect('inf',62))
         return mult
     },
     gainExp(){
         let exp = new Decimal(1)
         return exp
+    },
+    directMult(){
+        let mult = new Decimal(1)
+        return mult
     },
     effect(){
         let eff = player.inf.total.max(0).add(1)
@@ -49,6 +59,8 @@ addLayer("inf", {
                     tmp.am.buyables[21].buyMax()
                     tmp.am.buyables[22].buyMax()
                     tmp.am.buyables[23].buyMax()
+                    tmp.am.buyables[31].buyMax()
+                    tmp.am.buyables[32].buyMax()
                 }
             }
         }
@@ -61,8 +73,8 @@ addLayer("inf", {
                 "resource-display",
                 ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b> "}],
                 "blank",["display-text",function(){return "You need previous Infinity upgrade in that column to bought the next Infinity upgrade"}],
-                ["buyable","11"],
-                ["upgrades",[1,2,3,4]]
+                ["buyable",[11]],
+                ["upgrades",[1,2,3,4]],
             ],
             unlocked(){return true},
         },
@@ -73,7 +85,7 @@ addLayer("inf", {
                 "resource-display",
                 ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b>"}],
                 "blank",["display-text",function(){return "You don't have to complete Challenges in order<br>Each completion multiply base " + modInfo.pointsName + " production by 2"}],
-                "challenges"
+                "challenges",
             ],
             unlocked(){return hasUpgrade('inf',13)},
         },
@@ -84,7 +96,7 @@ addLayer("inf", {
                 "resource-display",
                 ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b>"}],
                 "blank",
-                "milestones"
+                "milestones",
             ],
             unlocked(){return hasUpgrade('inf',13)},
         },
@@ -96,12 +108,26 @@ addLayer("inf", {
                 ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b> "}],
                 "blank",
                 ["clickable",[11]],
+                ["upgrades",[5,6]],
             ],
             unlocked(){return hasUpgrade('inf',43)},
         },
+        "Infinity Power":{
+            content:[
+                "main-display",
+                "prestige-button",
+                "resource-display",
+                ["display-text",function(){return "Your total Infinity Points multiply base " + modInfo.pointsName + " production by <b style='color: yellow'>" + format(tmp.inf.effect) + "</b> "}],
+                "blank",
+                ["display-text",function(){return "You have <h2 style='color: yellow'>" + format(player.inf.power) + "</h2> infinity power<sup>" + format(tmp.inf.getIPowExp,3) + "</sup> (" + getRateChangewithExp(player.inf.power,tmp.inf.getIPowProd,tmp.inf.getIPowExp) + "/s), which multiply base " + modInfo.pointsName + " production by " + format(tmp.inf.getIPowEff)}],
+                ["display-text",function(){return "You have <b style='color: yellow'>" + format(player.inf.power.root(tmp.inf.getIPowExp)) + "</b> infinity power before exp (" + getRateChangewithExp(player.inf.power.root(tmp.inf.getIPowExp),tmp.inf.getIPowProd) + "/s)"}],
+                ["buyables",[2]],
+            ],
+            unlocked(){return hasUpgrade('inf',51)},
+        },
     },
     update(diff){
-
+        player.inf.power = tmp.inf.getIPowProd.eq(0)?new Decimal(0):player.inf.power.root(tmp.inf.getIPowExp).add(tmp.inf.getIPowProd.mul(diff)).pow(tmp.inf.getIPowExp).max(0)
     },
     automate(){
         if (tmp.auto.clickables.infReset.canRun && !player.inf.break) doReset('inf') // nothing to toggle at pre-break stage, only reset when possible
@@ -112,6 +138,22 @@ addLayer("inf", {
             let keep = []
             layerDataReset(this.layer, keep)
         }
+    },
+    onPrestige(gain){
+        player.inf.power = new Decimal(0)
+    },
+    getIPowProd(){
+        let prod = buyableEffect('inf',21)
+        prod = prod.mul(buyableEffect('inf',23))
+        return prod
+    },
+    getIPowExp(){
+        let exp = buyableEffect('inf', 22)
+        return exp
+    },
+    getIPowEff(){
+        let eff = player.inf.power.add(1).max(1)
+        return eff
     },
     clickables:{
         11:{
@@ -254,6 +296,72 @@ addLayer("inf", {
             unlocked(){return true},
             canAfford(){return hasUpgrade('inf',33)},
         },
+        51:{
+            title: "binf11",
+            description(){return "Unlock Infinity Power"},
+            cost: new Decimal(5e3),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        52:{
+            title: "binf12",
+            description(){return "Unlock an Infinity Power buyable, Base IP gain is squared"},
+            cost: new Decimal(2e4),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        53:{
+            title: "binf13",
+            description(){return "Infinity Points increase " + modInfo.pointsName + " exponent, it's softcap is weaker"},
+            cost: new Decimal(1e5),
+            effect(){
+                let eff = player.inf.points.log10().pow(0.5).div(5)
+                return eff
+            },
+            effectDisplay(){return "+" + format(this.effect(), 3)},
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        54:{
+            title: "binf14",
+            description(){return "Unlock a new " + modInfo.pointsName + " buyable that raise base " + modInfo.pointsName + " production"},
+            cost: new Decimal(3e5),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        61:{
+            title: "binf21",
+            description(){return "Reduce the softcap of Multiplier and Multiplier Boost"},
+            cost: new Decimal(8e5),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        62:{
+            title: "binf22",
+            description(){return "Unlock a new Infinity Power buyable, " + (hasUpgrade('inf',54)?"Exponent":"???") + " multiply IP gain"},
+            cost: new Decimal(2e6),
+            effect(){
+                let eff = getBuyableAmount('am',31).max(1)
+                return eff
+            },
+            effectDisplay(){return format(this.effect()) + "x"},
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        63:{
+            title: "binf23",
+            description(){return "AM Exp uses a better formula, " + modInfo.pointsName + " exponent softcap is weaker again"},
+            cost: new Decimal(2.5e7),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
+        64:{
+            title: "binf24",
+            description(){return "Unlock a new " + modInfo.pointsName + " buyable that increase " + modInfo.pointsName + " exponent based on itself"},
+            cost: new Decimal(1e8),
+            unlocked(){return hasAchievement('ach',31)},
+            canAfford(){return player.inf.break},
+        },
     },
     buyables:{
         11:{
@@ -281,7 +389,7 @@ addLayer("inf", {
             buyMax(){
                 if (!this.canAfford) return
                 let bulk = this.bulk()
-                if (!hasMilestone('inf',8)) player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
+                player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
                 addBuyables(this.layer,this.id,bulk)
                 player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase().pow(bulk))
             },
@@ -298,6 +406,131 @@ addLayer("inf", {
                 return eff
             },
             unlocked(){return hasAchievement('ach',31)},
+        },
+        21:{
+            title: "IPow Producer",
+            costScaling(){
+                let scaling = [new Decimal(2e3),new Decimal(2),new Decimal(1.25)] // base cost, cost scaling, scaling exp
+                return scaling
+            },
+            cost(x){
+                let cost = this.costScaling()[0].mul(this.costScaling()[1].pow(x.pow(this.costScaling()[2])))
+                return cost
+            },
+            canAfford(){
+                return player.inf.points.gte(this.cost()) && tmp[this.layer].buyables[this.id].unlocked
+            },
+            buy(){
+                player.inf.points = player.inf.points.sub(this.cost())
+                addBuyables(this.layer, this.id, new Decimal(1))
+            },
+            bulk(){
+                if (!this.canAfford) return new Decimal(0)
+                return player.inf.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).min(this.purchaseLimit).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
+            },
+            buyMax(){
+                if (!this.canAfford) return
+                let bulk = this.bulk()
+                player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
+                addBuyables(this.layer,this.id,bulk)
+                player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase().pow(bulk))
+            },
+            display() {return "Producer Infinity Power which multiply base " + modInfo.pointsName + " production<br>Currently: +" + format(buyableEffect(this.layer,this.id))
+            + "<br><br>Cost: " + format(this.cost()) + " Infinity Points"
+            + "<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
+            effect(x = getBuyableAmount(this.layer,this.id)){
+                let strength = new Decimal(1)
+                let free = new Decimal(0)
+                let total = x.add(free)
+                let amount = total.mul(strength)
+                let eff = amount
+                return eff
+            },
+            unlocked(){return hasUpgrade('inf',51)},
+        },
+        22:{
+            title: "IPow Exp",
+            costScaling(){
+                let scaling = [new Decimal(5e4),new Decimal(3),new Decimal(1.25)] // base cost, cost scaling, scaling exp
+                return scaling
+            },
+            cost(x){
+                let cost = this.costScaling()[0].mul(this.costScaling()[1].pow(x.pow(this.costScaling()[2])))
+                return cost
+            },
+            canAfford(){
+                return player.inf.points.gte(this.cost()) && tmp[this.layer].buyables[this.id].unlocked
+            },
+            buy(){
+                player.inf.points = player.inf.points.sub(this.cost())
+                addBuyables(this.layer, this.id, new Decimal(1))
+            },
+            bulk(){
+                if (!this.canAfford) return new Decimal(0)
+                return player.inf.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).min(this.purchaseLimit).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
+            },
+            buyMax(){
+                if (!this.canAfford) return
+                let bulk = this.bulk()
+                player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
+                addBuyables(this.layer,this.id,bulk)
+                player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase().pow(bulk))
+            },
+            display() {return "Increase infinity power exponent<br>Currently: +" + format(buyableEffect(this.layer,this.id).sub(1), 3)
+            + "<br><br>Cost: " + format(this.cost()) + " Infinity Points"
+            + "<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
+            effect(x = getBuyableAmount(this.layer,this.id)){
+                let strength = new Decimal(1)
+                let free = new Decimal(0)
+                let total = x.add(free)
+                let amount = total.mul(strength)
+                let e = new Decimal(0.5)
+                let eff = amount.add(1).pow(e)
+                return eff
+            },
+            unlocked(){return hasUpgrade('inf',52)},
+        },
+        23:{
+            title: "IPow Multiplier",
+            costScaling(){
+                let scaling = [new Decimal(5e6),new Decimal(5),new Decimal(1.25)] // base cost, cost scaling, scaling exp
+                return scaling
+            },
+            cost(x){
+                let cost = this.costScaling()[0].mul(this.costScaling()[1].pow(x.pow(this.costScaling()[2])))
+                return cost
+            },
+            canAfford(){
+                return player.inf.points.gte(this.cost()) && tmp[this.layer].buyables[this.id].unlocked
+            },
+            buy(){
+                player.inf.points = player.inf.points.sub(this.cost())
+                addBuyables(this.layer, this.id, new Decimal(1))
+            },
+            bulk(){
+                if (!this.canAfford) return new Decimal(0)
+                return player.inf.points.div(this.costScaling()[0]).max(1).log(this.costScaling()[1]).root(this.costScaling()[2]).add(1).min(this.purchaseLimit).sub(getBuyableAmount(this.layer,this.id)).max(0).floor()
+            },
+            buyMax(){
+                if (!this.canAfford) return
+                let bulk = this.bulk()
+                player.inf.points = player.inf.points.sub(this.cost(getBuyableAmount(this.layer,this.id).add(bulk).sub(1)))
+                addBuyables(this.layer,this.id,bulk)
+                player.auto.infResetOpt = player.auto.infResetOpt.mul(this.effectBase().pow(bulk))
+            },
+            display() {return "Multiply base infinity power production<br>Currently: x" + format(buyableEffect(this.layer,this.id))
+            + "<br><br>Cost: " + format(this.cost()) + " Infinity Points"
+            + "<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
+            effect(x = getBuyableAmount(this.layer,this.id)){
+                let b = new Decimal(2)
+                let strength = new Decimal(1)
+                let free = new Decimal(0)
+                let total = x.add(free)
+                let amount = total.mul(strength)
+                let eff = Decimal.pow(b,amount)
+                return eff
+            },
+            unlocked(){return hasUpgrade('inf',62)},
         },
     },
     milestones:{
@@ -354,60 +587,119 @@ addLayer("inf", {
     challenges:{
         11:{
             name: "Hardened Producer",
-            challengeDescription(){return "You can only bought up to 1 Producers"},
+            challengeDescription(){
+                return "You can only bought up to 1 Producers"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Producer scaling is weaker (-0.1 to scaling exp)"
+            rewardDescription: "Producer scaling is weaker (-0.1 to scaling exp)",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         12:{
             name: "Reduced Exponent",
-            challengeDescription(){return modInfo.pointsName + " exponent is rooted by 1.24 or divided by 1.5, whenever which is lower"},
+            challengeDescription(){
+                if (inChallenge('inf',51)) return modInfo.pointsName + " exponent is rooted by 1.5 and divided by 2"
+                else return modInfo.pointsName + " exponent is rooted by 1.24 or divided by 1.5, whenever which is lower"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Multiply AM Exp by 1.05"
+            rewardDescription: "Multiply AM Exp by 1.05",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         21:{
             name: "Weakened Multiplier",
-            challengeDescription(){return "Multiplier level amount to effect is rooted by 1.4"},
+            challengeDescription(){
+                if (inChallenge('inf',51)) return "Multiplier base is divided by 2 and the level amount to effect is rooted by 1.4"
+                else return "Multiplier level amount to effect is rooted by 1.4"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Multiplier base is multiplied 1.1"
+            rewardDescription: "Multiplier base is multiplied 1.1",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         22:{
             name: "Reduced Producer",
-            challengeDescription(){return "The exponent of Producer effect is rooted by 1.6 and divided by 2"},
+            challengeDescription(){
+                if (inChallenge('inf',51)) return "The exponent of Producer effect is raised by 1.6 and multiplied by 2 (this is a debuff as you can only bought a 50% strength of Producer buyable), Producer Exp autobuyer will be forced to be active even when locked."
+                else return "The exponent of Producer effect is rooted by 1.6 and divided by 2"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Producer exp is stronger (^0.5 -> ^0.53)"
+            rewardDescription: "Producer exp is stronger (^0.5 -> ^0.53)",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         31:{
             name: "Anti-Condenser",
-            challengeDescription(){return "Condenser effect exponent become -0.7*level, the autobuyer will be forced to be active even when locked, Condenser at Level 10+ gives 20x base " + modInfo.pointsName + " production"},
+            challengeDescription(){
+                if (inChallenge('inf',51)) return "Condenser effect exponent become -1*level, Condenser autobuyer will be forced to be active even when locked"
+                else return "Condenser effect exponent become -0.7*level, Condenser autobuyer will be forced to be active even when locked, Condenser at Level 10+ gives 20x base " + modInfo.pointsName + " production"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Condenser level amount to effect is multiplied 1.5"
+            rewardDescription: "Condenser level amount to effect is multiplied 1.5",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         32:{
             name: "Multiplier Anti-Boost",
-            challengeDescription(){return "Multiplier Boost have no effect, Multiplier effect is square rooted"},
+            challengeDescription(){
+                return "Multiplier Boost have no effect, Multiplier effect is square rooted"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Each Multiplier Boost gives 2 free Multiplier Levels"
+            rewardDescription: "Each Multiplier Boost gives 2 free Multiplier Levels",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         41:{
             name: "Weakened Buyables",
-            challengeDescription(){return "All Buyables will only have 71% of amount taken into effect"},
+            challengeDescription(){
+                return "All Buyables will only have " + formatWhole(this.nerf()*100) + "% of amount taken into effect"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
             rewardDescription: "inf31 base is increased by 0.01",
-            nerf: 0.71
+            nerf(){
+                return inChallenge('inf',51)?0.5:0.71
+            },
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
         42:{
             name: "Reduced production",
-            challengeDescription(){return "Base " + modInfo.pointsName + " production is rooted by 1.65 or divided by 1e6, whenever which is lower"},
+            challengeDescription(){
+                if (inChallenge('inf',51)) return "Base " + modInfo.pointsName + " production is rooted by 1.65 and divided by 1e6"
+                else return "Base " + modInfo.pointsName + " production is rooted by 1.65 or divided by 1e6, whenever which is lower"
+            },
             goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
             canComplete(){return player.points.gte(Decimal.pow(2,1024))},
-            rewardDescription: "Base AM production from IP ^1.5"
+            rewardDescription: "Base AM production from IP ^1.5",
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
         },
+        51:{
+            name: "All in one",
+            challengeDescription(){return "All previous challenges at once, with debuff being stronger"},
+            goalDescription(){return format(Decimal.pow(2,1024)) + " " + modInfo.pointsName},
+            canComplete(){return player.points.gte(1/0)},
+            countsAs: [11,12,21,22,31,32,41,42],
+            rewardDescription: "???",
+            unlocked(){return false},
+            onEnter(){player.inf.power = new Decimal(0)},
+            onExit(){player.inf.power = new Decimal(0)},
+            onComplete(){player.inf.power = new Decimal(0)},
+        }
     },
 })

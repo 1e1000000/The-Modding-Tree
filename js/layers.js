@@ -94,8 +94,33 @@ addLayer("ach", {
         },
         31:{
             name: "Limit Break",
-            tooltip(){return "Break Infinity<br><i>Reward: Unlock IP multiplier Buyables</i>"},
+            tooltip(){return "Break Infinity<br><i>Reward: Unlock IP multiplier Buyable</i>"},
             done(){return player.inf.break},
+        },
+        32:{
+            name: "New Dimensions?",
+            tooltip(){return "Begin the generation of Infinity Power"},
+            done(){return getBuyableAmount('inf',21).gte(1)},
+        },
+        33:{
+            name: "New Buyable?",
+            tooltip(){return "Purchase seventh " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            done(){return getBuyableAmount('am',31).gte(1)},
+        },
+        34:{
+            name: "Another Amplifier?",
+            tooltip(){return "Purchase third Infinity Power buyable<br>"},
+            done(){return getBuyableAmount('inf',23).gte(1)},
+        },
+        35:{
+            name: "How this boost can even be a thing?",
+            tooltip(){return "Purchase eighth " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            done(){return getBuyableAmount('am',32).gte(1)},
+        },
+        36:{
+            name: "That's a lot of Infinity",
+            tooltip(){return "Reach " + format(1e10) + " Infinity Points<br><i>Reward: ???</i>"},
+            done(){return player.inf.points.gte(1e10)},
         },
     },
 })
@@ -113,6 +138,8 @@ addLayer("auto", {
             am21: false,
             am22: false,
             am23: false,
+            am31: false,
+            am32: false,
         },
         inf:{
             infReset: false,
@@ -126,7 +153,8 @@ addLayer("auto", {
     layerShown(){return hasUpgrade('inf',13)},
     tabFormat:[
         ["display-text",function(){return "<h2>Antimatter</h2>"}],
-        ["row",[["clickable","am11"],["clickable","am12"],["clickable","am13"],["clickable","am21"],["clickable","am22"],["clickable","am23"],]],
+        ["row",[["clickable","am11"],["clickable","am12"],["clickable","am13"],["clickable","am21"],["clickable","am22"],]],
+        ["row",[["clickable","am23"],["clickable","am31"],["clickable","am32"],]],
         "blank",
         ["display-text",function(){return "<h2>Infinity</h2>"}],
         ["row",[["column",[["clickable","infReset"], function(){return player.inf.break?["text-input","infResetOpt"]:[]}]],]],
@@ -136,7 +164,7 @@ addLayer("auto", {
         am11:{
             set: "am",
             title: "Producer",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',1)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
@@ -153,7 +181,7 @@ addLayer("auto", {
         am12:{
             set: "am",
             title: "AM Exp",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',2)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
@@ -170,7 +198,7 @@ addLayer("auto", {
         am13:{
             set: "am",
             title: "Multiplier",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',3)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
@@ -187,12 +215,13 @@ addLayer("auto", {
         am21:{
             set: "am",
             title: "Producer Exp",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',4)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',51)) return true
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
@@ -204,7 +233,7 @@ addLayer("auto", {
         am22:{
             set: "am",
             title: "Condenser",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',5)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
@@ -222,7 +251,7 @@ addLayer("auto", {
         am23:{
             set: "am",
             title: "Multiplier Boost",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
             canClick(){return hasMilestone('inf',6)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
@@ -236,10 +265,48 @@ addLayer("auto", {
                 else return {"background-color": "#BF8F8F"}
             },
         },
+        am31:{
+            set: "am",
+            title: "Exponent",
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
+            canClick(){return hasAchievement('ach',33)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
+            },
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
+            },
+            unlocked(){return player.inf.break},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
+            },
+        },
+        am32:{
+            set: "am",
+            title: "Exp Condenser",
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
+            canClick(){return hasAchievement('ach',35)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
+            },
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
+            },
+            unlocked(){return player.inf.break},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
+            },
+        },
         infReset:{
             set: "inf",
             title: "Infinity Reset",
-            display(){return Boolean(player.auto[this.set][this.id])},
+            display(){
+                let a = "reset when it is possible"
+                if (player.inf.break) a = "reset when you can get " + formatWhole(player.auto.infResetOpt) + " IP on reset"
+                return Boolean(player.auto[this.set][this.id]) ? ("On, " + a)  :"Off"
+            },
             canClick(){return hasMilestone('inf',7)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
