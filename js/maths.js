@@ -62,5 +62,5 @@ function getRateChangewithExp(curr,prod,exp=new Decimal(1),time=1){
 	let next = curr.root(exp).add(prod.mul(time)).pow(exp)
 	if (next.log(curr).gte(10) && curr.gte(10)) return "^" + format(next.log(curr))
 	else if (next.div(curr).gte(10) && curr.gte(1)) return "x" + format(next.div(curr))
-	else return "+" + format(next.sub(curr))
+	else return "+" + format(exp.eq(1)?prod:next.sub(curr))
 }

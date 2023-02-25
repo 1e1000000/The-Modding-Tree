@@ -26,6 +26,7 @@ function getResetGain(layer, useType = null) {
 		if (tmp[layer].baseAmount.lt(tmp[layer].requires)) return decimalZero
 		let gain = tmp[layer].baseAmount.div(tmp[layer].requires).pow(tmp[layer].exponent).times(tmp[layer].gainMult).pow(tmp[layer].gainExp)
 		if (gain.gte(tmp[layer].softcap)) gain = gain.pow(tmp[layer].softcapPower).times(tmp[layer].softcap.pow(decimalOne.sub(tmp[layer].softcapPower)))
+		if (gain.gte(tmp[layer].overflow)) gain = Decimal.pow(10,gain.log10().pow(tmp[layer].overflowPower).times(tmp[layer].overflow.log10().pow(decimalOne.sub(tmp[layer].overflowPower))))
 		gain = gain.times(tmp[layer].directMult)
 		return gain.floor().max(0);
 	} else if (type=="custom"){
@@ -70,9 +71,19 @@ function getNextAt(layer, canMax=false, useType = null) {
 	}}
 
 function softcap(value, cap, power = 0.5) {
+	value = new Decimal(value)
+	cap = new Decimal(cap)
 	if (value.lte(cap)) return value
 	else
 		return value.pow(power).times(cap.pow(decimalOne.sub(power)))
+}
+
+function overflow(value, cap, power = 0.5) {
+	value = new Decimal(value)
+	cap = new Decimal(cap)
+	if (value.lte(cap)) return value
+	else
+		return Decimal.pow(10,value.log10().pow(power).times(cap.log10().pow(decimalOne.sub(power))))
 }
 
 // Return true if the layer should be highlighted. By default checks for upgrades only.
@@ -224,6 +235,7 @@ function doReset(layer, force=false) {
 
 	player[layer].resetTime = 0
 
+	updateTemp()
 	updateTemp()
 	updateTemp()
 }
@@ -416,6 +428,7 @@ var interval = setInterval(function() {
 		needCanvasUpdate = false;
 	}
 	tmp.scrolled = document.getElementById('treeTab') && document.getElementById('treeTab').scrollTop > 30
+	updateTemp();
 	updateTemp();
 	updateOomps(diff);
 	updateWidth()

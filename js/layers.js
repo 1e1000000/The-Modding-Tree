@@ -82,9 +82,9 @@ addLayer("ach", {
             done(){return player.timePlayed >= 18000},
         },
         23:{
-            name: "The 9th Dimension is a lie",
+            name: "9th Dimension?",
             tooltip(){return "Reach 8 " + modInfo.pointsName + " Exponent"},
-            done(){return tmp.am.getAMExp.gte(8)},
+            done(){return tmp.am.getAMExp.gt(8)},
         },
         24:{
             name: "Challenged",
@@ -128,8 +128,39 @@ addLayer("ach", {
         },
         36:{
             name: "That's a lot of Infinity",
-            tooltip(){return "Reach " + format(1e10) + " Infinity Points<br><i>Reward: ???</i>"},
+            tooltip(){return "Reach " + format(1e10) + " Infinity Points<br><i>Reward: Unlock a new challenge</i>"},
             done(){return player.inf.points.gte(1e10)},
+        },
+        41:{
+            name: "Infinitely Challenging",
+            tooltip(){return "Complete Infinity Challenge 1 once"},
+            done(){return challengeCompletions('inf',51)>=1},
+        },
+        42:{
+            name: "Can't hold all these Infinites",
+            tooltip(){return "Reach " + format(Decimal.pow(2,1024)) + " base " + modInfo.pointsName + " production per second"},
+            done(){return tmp.am.getAMProd.gte(Decimal.pow(2,1024))},
+        },
+        43:{
+            name: "Truely Infinitely Challenging",
+            tooltip(){return "Complete Infinity Challenge 1 8 times"},
+            done(){return challengeCompletions('inf',51)>=8},
+        },
+        44:{
+            name: "1 hour of writing",
+            tooltip(){return "Reach 1000...0000 (10,799 zeroes) "+ modInfo.pointsName},
+            done(){return player.points.gte("1e10799")},
+        },
+        45:{
+            name: "Stacked Boost?",
+            tooltip(){return "Purchase ninth " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            done(){return getBuyableAmount('am',33).gte(1)},
+        },
+        46:{
+            name: "Producer is OP",
+            tooltip(){return "Reach " + format(Decimal.pow(2,2048)) + " " + modInfo.pointsName + " with only Producer buyable<br><i>Reward: Normal Producer multiply base Infinity Power production (" + format(achievementEffect(this.layer,this.id)) + "x)</i>"},
+            done(){return player.points.gte(Decimal.pow(2,2048)) && tmp.am.totalLevel.eq(getBuyableAmount('am',11))},
+            effect(){return getBuyableAmount('am',11).add(2).log(2).pow(1/3)},
         },
     },
 })
@@ -149,9 +180,11 @@ addLayer("auto", {
             am23: false,
             am31: false,
             am32: false,
+            am33: false,
         },
         inf:{
             infReset: false,
+            infResetDynamic: true,
         },
         infResetOpt: new Decimal(1),
     }},
@@ -159,14 +192,14 @@ addLayer("auto", {
     tooltip(){return "Autobuyers"},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: "side", // Row the layer is in on the tree (0 is the first row)
-    layerShown(){return hasUpgrade('inf',13)},
+    layerShown(){return player.inf.unlocked},
     tabFormat:[
         ["display-text",function(){return "<h2>Antimatter</h2>"}],
         ["row",[["clickable","am11"],["clickable","am12"],["clickable","am13"],["clickable","am21"],["clickable","am22"],]],
-        ["row",[["clickable","am23"],["clickable","am31"],["clickable","am32"],]],
+        ["row",[["clickable","am23"],["clickable","am31"],["clickable","am32"],["clickable","am33"],]],
         "blank",
         ["display-text",function(){return "<h2>Infinity</h2>"}],
-        ["row",[["column",[["clickable","infReset"], function(){return player.inf.break?["text-input","infResetOpt"]:[]}]],]],
+        ["row",[["column",[["clickable","infReset"], function(){return player.inf.break?["text-input","infResetOpt"]:[]}]],["clickable","infResetDynamic"]]],
         "blank",
     ],
     clickables:{
@@ -179,6 +212,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
@@ -196,6 +230,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
@@ -213,6 +248,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
@@ -230,6 +266,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 if (inChallenge('inf',51)) return true
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
@@ -248,6 +285,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 if (inChallenge('inf',31)) return true
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
@@ -266,6 +304,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return true},
@@ -283,6 +322,7 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return player.inf.break},
@@ -300,6 +340,25 @@ addLayer("auto", {
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
             canRun(){
+                if (inChallenge('inf',71)) return false
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
+            },
+            unlocked(){return player.inf.break},
+            style(){
+                if (this.canClick()) return {"background-color": "red"}
+                else return {"background-color": "#BF8F8F"}
+            },
+        },
+        am33:{
+            set: "am",
+            title: "Multiplier Superboost",
+            display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
+            canClick(){return hasAchievement('ach',35)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
+            },
+            canRun(){
+                if (inChallenge('inf',71)) return false
                 return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
             },
             unlocked(){return player.inf.break},
@@ -317,6 +376,26 @@ addLayer("auto", {
                 return Boolean(player.auto[this.set][this.id]) ? ("On, " + a)  :"Off"
             },
             canClick(){return hasMilestone('inf',7)},
+            onClick(){
+                player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
+            },
+            canRun(){
+                return player.auto[this.set][this.id] && tmp.auto.clickables[this.id].canClick
+            },
+            unlocked(){return true},
+            style(){
+                if (this.canClick()) return {"background-color": "yellow"}
+                else return {"background-color": "#BF8F8F"}
+            },
+        },
+        infResetDynamic:{
+            set: "inf",
+            title: "Infinity Reset Option",
+            display(){
+                let a = "Double requirement when bought IP multiplier: "
+                return a + (Boolean(player.auto[this.set][this.id]) ? "On" :"Off")
+            },
+            canClick(){return hasAchievement('ach',31) && hasMilestone('inf',7)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
