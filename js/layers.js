@@ -353,7 +353,7 @@ addLayer("auto", {
             set: "am",
             title: "Multiplier Superboost",
             display(){return Boolean(player.auto[this.set][this.id])?"On":"Off"},
-            canClick(){return hasAchievement('ach',35)},
+            canClick(){return hasAchievement('ach',45)},
             onClick(){
                 player.auto[this.set][this.id] = Boolean(1-player.auto[this.set][this.id])
             },
