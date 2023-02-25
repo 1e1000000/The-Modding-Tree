@@ -13,12 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230224",
-	name: "Infinity Challenge Update (Phase 1)",
+	num: "230225",
+	name: "Infinity Challenge Update (Phase 1) Patch 1",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3 style='color: #ffff00'>2023-02-25 build (Update 2.3b)</h3><br>
+	- Added many notations.<br>
+	- Removed the secret.<br><br>
+
 	<h3 style='color: #ffff00'>2023-02-24 build (Update 2.3a)</h3><br>
 	- Added a post-break Infinity Upgrade.<br>
 	- Added a antimatter Buyable.<br>
@@ -164,7 +168,7 @@ function addedPlayerData() { return {
 // Display extra things at the top of the page
 var displayThings = [
 	function(){return "Endgame: " + 
-		formatWhole(player.inf.best) + "/1.00e53 best Infinity Points<br>" + 
+		formatWhole(player.inf.best) + "/" + format(1e53) + " best Infinity Points<br>" + 
 		formatWhole(challengeCompletions('inf',51)) + "/11 IC1 completion<br>" + 
 		(player.inf.best.gte(1e53) && challengeCompletions('inf',51)>=11?"<text style='color: #007fff'>You are past endgame,<br>and the game might break here.</text>":"")
 	}

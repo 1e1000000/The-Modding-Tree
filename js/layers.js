@@ -43,32 +43,32 @@ addLayer("ach", {
     achievements:{
         11:{
             name: "Muscler",
-            tooltip(){return "Purchase first " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase first antimatter buyable"},
             done(){return getBuyableAmount('am',11).gte(1)},
         },
         12:{
             name: "Is that Antimatter Dimension reference?",
-            tooltip(){return "Purchase second " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase second antimatter buyable"},
             done(){return getBuyableAmount('am',12).gte(1)},
         },
         13:{
             name: "Antimatter Amplifier",
-            tooltip(){return "Purchase third " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase third antimatter buyable"},
             done(){return getBuyableAmount('am',13).gte(1)},
         },
         14:{
             name: "Stronger",
-            tooltip(){return "Purchase fourth " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase fourth antimatter buyable"},
             done(){return getBuyableAmount('am',21).gte(1)},
         },
         15:{
             name: "Self Boost",
-            tooltip(){return "Purchase fifth " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase fifth antimatter buyable"},
             done(){return getBuyableAmount('am',22).gte(1)},
         },
         16:{
             name: "Antimatter Intensifier",
-            tooltip(){return "Purchase sixth " + modInfo.pointsName + " buyable"},
+            tooltip(){return "Purchase sixth antimatter buyable"},
             done(){return getBuyableAmount('am',23).gte(1)},
         },
         21:{
@@ -83,7 +83,7 @@ addLayer("ach", {
         },
         23:{
             name: "9th Dimension?",
-            tooltip(){return "Reach 8 " + modInfo.pointsName + " Exponent"},
+            tooltip(){return "Reach 8 antimatter Exponent"},
             done(){return tmp.am.getAMExp.gt(8)},
         },
         24:{
@@ -113,7 +113,7 @@ addLayer("ach", {
         },
         33:{
             name: "New Buyable?",
-            tooltip(){return "Purchase seventh " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            tooltip(){return "Purchase seventh antimatter buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
             done(){return getBuyableAmount('am',31).gte(1)},
         },
         34:{
@@ -123,7 +123,7 @@ addLayer("ach", {
         },
         35:{
             name: "How this boost can even be a thing?",
-            tooltip(){return "Purchase eighth " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            tooltip(){return "Purchase eighth antimatter buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
             done(){return getBuyableAmount('am',32).gte(1)},
         },
         36:{
@@ -138,7 +138,7 @@ addLayer("ach", {
         },
         42:{
             name: "Can't hold all these Infinites",
-            tooltip(){return "Reach " + format(Decimal.pow(2,1024)) + " base " + modInfo.pointsName + " production per second"},
+            tooltip(){return "Reach " + format(Decimal.pow(2,1024)) + " base antimatter production per second"},
             done(){return tmp.am.getAMProd.gte(Decimal.pow(2,1024))},
         },
         43:{
@@ -148,17 +148,17 @@ addLayer("ach", {
         },
         44:{
             name: "1 hour of writing",
-            tooltip(){return "Reach 1000...0000 (10,799 zeroes) "+ modInfo.pointsName},
+            tooltip(){return "Reach 1000...0000 (10,799 zeroes) "+ "antimatter"},
             done(){return player.points.gte("1e10799")},
         },
         45:{
             name: "Stacked Boost?",
-            tooltip(){return "Purchase ninth " + modInfo.pointsName + " buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
+            tooltip(){return "Purchase ninth antimatter buyable<br><i>Reward: Unlock autobuyer for this Buyable</i>"},
             done(){return getBuyableAmount('am',33).gte(1)},
         },
         46:{
             name: "Producer is OP",
-            tooltip(){return "Reach " + format(Decimal.pow(2,2048)) + " " + modInfo.pointsName + " with only Producer buyable<br><i>Reward: Normal Producer multiply base Infinity Power production (" + format(achievementEffect(this.layer,this.id)) + "x)</i>"},
+            tooltip(){return "Reach " + format(Decimal.pow(2,2048)) + " antimatter with only Producer buyable<br><i>Reward: Normal Producer multiply base Infinity Power production (" + format(achievementEffect(this.layer,this.id)) + "x)</i>"},
             done(){return player.points.gte(Decimal.pow(2,2048)) && tmp.am.totalLevel.eq(getBuyableAmount('am',11))},
             effect(){return getBuyableAmount('am',11).add(2).log(2).pow(1/3)},
         },
@@ -418,8 +418,8 @@ function getRepresentation(res = player.points){
     let time = res.log10().floor().add(1).div(3)
     let yrs = time.div(31556952)
 
-    let p = "Your " + modInfo.pointsName + " is making up " + (res.gte(pLcube.mul(Decimal.pow(2,1024)))?"":"with a size of ")
-    if (res.gte("1e10799")) p = "If you " + (yrs.gte(new Date().getFullYear()) && yrs.lte(1.38e8)?"wanted to finish writing":"write") + " your " + modInfo.pointsName + " amount at a rate of 3 digits per second, you would "
+    let p = "Your antimatter is making up " + (res.gte(pLcube.mul(Decimal.pow(2,1024)))?"":"with a size of ")
+    if (res.gte("1e10799")) p = "If you " + (yrs.gte(new Date().getFullYear()) && yrs.lte(1.38e8)?"wanted to finish writing":"write") + " your antimatter amount at a rate of 3 digits per second, you would "
     let s 
 
     if (res.gte("1e10799")){
@@ -442,9 +442,9 @@ function getStatTab(){
     let br = "<br>"
     let x = "<h2 style='color: red'>Antimatter</h2>"
     x += br
-    x += "You have " + format(player.points) + " " + modInfo.pointsName
+    x += "You have " + format(player.points) + " antimatter"
     x += br
-    x += "Your best " + modInfo.pointsName + " was " + format(player.bestAM)
+    x += "Your best antimatter was " + format(player.bestAM)
     x += br
     if (player.inf.unlocked){
         x += br
