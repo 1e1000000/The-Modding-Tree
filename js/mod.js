@@ -21,7 +21,8 @@ let changelog = `
     <h1>Changelog:</h1><br>
 	<h3 style='color: #ffff00'>2023-02-25 build (Update 2.3b)</h3><br>
 	- Added many notations.<br>
-	- Removed the secret.<br><br>
+	- Removed the secret.<br>
+	- Fixed 9th antimatter buyable autobuyer unlocked when 8th antimatter buyable is unlocked.<br><br>
 
 	<h3 style='color: #ffff00'>2023-02-24 build (Update 2.3a)</h3><br>
 	- Added a post-break Infinity Upgrade.<br>
