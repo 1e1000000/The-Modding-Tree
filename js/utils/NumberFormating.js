@@ -228,6 +228,12 @@ function letter(decimal, precision, str) { //AD NG+++
 
 function format(decimal, precision=3) {
 	decimal = new Decimal(decimal)
+	if (decimal.sign < 0) return "-"+format(decimal.neg(), precision)
+	if (decimal.mag<0) {
+		if (decimal.layer > 3 || (decimal.mag < -1e10 && decimal.layer == 3)) return "1/" + format(decimal.recip(), precision)
+		else exponentialFormat(decimal, precision)
+	}
+	if (decimal.mag == Number.POSITIVE_INFINITY) return "Infinity"
 	if (options.notation == 'Standard') {
 		return standard(decimal, precision)
 	}
@@ -247,8 +253,6 @@ function formatSciEng(decimal, precision) {
 	decimal = new Decimal(decimal)
 	if (isNaN(decimal.sign)||isNaN(decimal.layer)||isNaN(decimal.mag)) {
 		player.hasNaN = true;
-		console.log(decimal)
-		Decimal(0)
 		for (i in player){
 			if (player[i] == undefined) continue
 			if (player[i].points != undefined) {
@@ -296,7 +300,8 @@ function formatWhole(decimal) {
 }
 
 function formatTime(s) {
-    s = new Decimal(s)
+	s = new Decimal(s)
+	if (!isFinite(s)) return "Infinite Time"
     let m = new Decimal(0)
     let h = new Decimal(0)
     let d = new Decimal(0)
@@ -355,6 +360,7 @@ function verseTime(years) {
 
 function formatTimeLong(s, short = true) {
 	s = new Decimal(s)
+	if (!isFinite(s)) return "Infinite Time"
 	let years = s.div(31556952)
 	let mlt = verseTime(years)
 	let arv1 = [1,1e15,1e30,1e45,1e60,1e75,1e90,1e105]
@@ -396,6 +402,7 @@ function formatTimeLong(s, short = true) {
 
 function formatSize(s) {
 	s = new Decimal(s)
+	if (!isFinite(s)) return "Infinite Length"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" Planck Lengths"," yoctometers"," zeptometers"," attometers"," femtometers"
 	," picometers"," nanometers"," micrometers"," millimeters"," centimeters"," meters"," kilometers"
@@ -411,6 +418,7 @@ function formatSize(s) {
 
 function distShort(s) {
 	s = new Decimal(s)
+	if (!isFinite(s)) return "Inf uni"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" PL"," ym"," zm"," am"," fm"
 	," pm"," nm"," um"," mm"," cm"," m"," km"
