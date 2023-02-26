@@ -10,18 +10,18 @@ addLayer("am", {
     resource(){return "antimatter"}, // Name of prestige currency
     baseResource(){return "antimatter"}, // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    tooltip(){return format(player.points) + " antimatter^" + format(tmp.am.getAMExp,3)},
+    tooltip(){return format(player.points) + " " + getAMname()[0] + "^" + format(tmp.am.getAMExp,3)},
     type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     row: 0, // Row the layer is in on the tree (0 is the first row)
     layerShown(){return true},
     tabFormat:[
-        ["display-text",function(){return inChallenge('inf',72) ? "There is " + format(player.matter) + " matter" : ""}],
-        ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> antimatter<sup>" + format(tmp.am.getAMExp,3) + "</sup> (" + getRateChangewithExp(player.points,tmp.am.getAMProd,tmp.am.getAMExp) + "/s)"}],
-        ["display-text",function(){return (tmp.am.getAMExp.gte(tmp.am.getAMExpSoftcaps.start)) ? "Due to the softcap of antimatter exponent at " + format(tmp.am.getAMExpSoftcaps.start,3) + ", AM exponent is divided by " + format(tmp.am.getPreSCAMExp.div(tmp.am.getAMExp), 3) : ""}],
+        ["display-text",function(){return inChallenge('inf',72) ? "There is " + format(player.matter) + " " + getAMname()[1] : ""}],
+        ["display-text",function(){return "You have <h2 style='color: red'>" + format(player.points) + "</h2> " + getAMname()[0] + "<sup>" + format(tmp.am.getAMExp,3) + "</sup> (" + getRateChangewithExp(player.points,tmp.am.getAMProd,tmp.am.getAMExp) + "/s)"}],
+        ["display-text",function(){return (tmp.am.getAMExp.gte(tmp.am.getAMExpSoftcaps.start)) ? "Due to the softcap of " + getAMname()[0] + " exponent at " + format(tmp.am.getAMExpSoftcaps.start,3) + ", AM exponent is divided by " + format(tmp.am.getPreSCAMExp.div(tmp.am.getAMExp), 3) : ""}],
         "blank",
-        ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> antimatter before exp (" + getRateChangewithExp(player.points.root(tmp.am.getAMExp),tmp.am.getAMProd) + "/s)"}],
+        ["display-text",function(){return "You have <b style='color: red'>" + format(player.points.root(tmp.am.getAMExp)) + "</b> " + getAMname()[0] + " before exp (" + getRateChangewithExp(player.points.root(tmp.am.getAMExp),tmp.am.getAMProd) + "/s)"}],
         ["bar","progressBar"],
-        ["display-text",function(){return player.inf.break?"Your best ever antimatter was <b style='color: red'>" + format(player.bestAM) + "</b>":""}],
+        ["display-text",function(){return player.inf.break?"Your best ever " + getAMname()[0] + " was <b style='color: red'>" + format(player.bestAM) + "</b>":""}],
         "blank","clickables",
         ["display-text",function(){return "Total Buyable level: " + formatWhole(tmp.am.totalLevel)}],
         "buyables",
@@ -30,6 +30,8 @@ addLayer("am", {
         player.points = tmp.am.getAMProd.eq(0)?new Decimal(1):player.points.root(tmp.am.getAMExp).add(tmp.am.getAMProd.mul(diff)).pow(tmp.am.getAMExp).max(0).min(player.inf.break?1/0:Decimal.pow(2,1024))
         player.bestAM = player.bestAM.max(player.points)
         if (inChallenge('inf',72)) player.matter = player.matter.mul(Decimal.pow(10,getBuyableAmount('am',11).pow(0.5)).pow(diff))
+
+        modInfo.pointsName = getAMname()[0]
     },
     automate(){
         if (tmp.auto.clickables.am11.canRun) tmp.am.buyables[11].buyMax()
@@ -561,6 +563,7 @@ addLayer("am", {
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let b = new Decimal(0.01)
                 let strength = new Decimal(1)
+                if (inChallenge('inf',41)) strength = strength.mul(tmp.inf.challenges[41].nerf)
                 let free = new Decimal(0)
                 let total = x.add(free)
                 let amount = total.mul(strength)
@@ -612,6 +615,7 @@ addLayer("am", {
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
+                if (inChallenge('inf',41)) strength = strength.mul(tmp.inf.challenges[41].nerf)
                 let free = new Decimal(0)
                 let total = x.add(free)
                 let amount = total.mul(strength)
@@ -662,6 +666,7 @@ addLayer("am", {
             + ")<br><br>Level " + formatWhole(getBuyableAmount(this.layer,this.id))},
             effect(x = getBuyableAmount(this.layer,this.id)){
                 let strength = new Decimal(1)
+                if (inChallenge('inf',41)) strength = strength.mul(tmp.inf.challenges[41].nerf)
                 let free = new Decimal(0)
                 let total = x.add(free)
                 let amount = total.mul(strength)
@@ -684,8 +689,13 @@ addLayer("am", {
                 return goal
             },
             progress(){return player.points.max(1).log(this.target()).min(1)},
-            display(){return "Percentage to " + (player.inf.break?format(this.target())+" " +"antimatter":"Infinity") + ": " + format(this.progress().mul(100),3) + "%<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.target(),tmp.am.getAMExp)) + ")"},
+            display(){return "Percentage to " + (player.inf.break?format(this.target())+ " " + getAMname()[0] :"Infinity") + ": " + format(this.progress().mul(100),3) + "%<br>(ETA: " + formatTime(getAMUpgETA(player.points,tmp.am.getAMProd,this.target(),tmp.am.getAMExp)) + ")"},
             fillStyle(){return {"background-color": "green"}},
         },
     },
 })
+
+function getAMname(){
+    if (player.secret.bass) return ["antibasser","basser"]
+    else return ["antimatter","matter"]
+}

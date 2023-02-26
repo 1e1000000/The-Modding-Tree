@@ -13,12 +13,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "230225",
-	name: "Infinity Challenge Update (Phase 1) Patch 1",
+	num: "230226",
+	name: "Infinity Challenge Update (Phase 1) Patch 2",
 }
 
 let changelog = `
     <h1>Changelog:</h1><br>
+	<h3 style='color: #ffff00'>2023-02-26 build (Update 2.3c)</h3><br>
+	- Readded a secret and added a new secret.<br>
+	- Fixed in 'Weakened Buyable' Challenge, the antimatter buyables in 3rd row are not affected.<br>
+	- Fixed error when you format Time or Size with an unit of Infinite.<br>
+	- Fixed error when you format Time with an unit between 3.1536e6 - 3.1536e7 and 3.1536e9 - 3.1536e10.<br><br>
+
 	<h3 style='color: #ffff00'>2023-02-25 build (Update 2.3b)</h3><br>
 	- Added many notations.<br>
 	- Removed the secret.<br>
@@ -162,6 +168,10 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	secret:{
+		bass: false,
+		ohio: false,
+	},
 	matter: new Decimal(1),
 	bestAM: new Decimal(1),
 }}

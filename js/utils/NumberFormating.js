@@ -47,8 +47,10 @@ function exponentialFormat(num, precision) {
 	}
 	
 	let end = e.toStringWithDecimalPlaces(0)
-	if (!end.includes("e")) end = addCommas(end.replace(/-/g, ''))
-	if (e.lt(0)) end = "-"+end
+	if (!player.secret.ohio) {
+		if (!end.includes("e")) end = addCommas(end.replace(/-/g, ''))
+		if (e.lt(0)) end = "-"+end
+	}
 	return start + "e" + end
 }
 
@@ -57,7 +59,7 @@ function commaFormat(num, precision) {
     if (num.mag < 0.001) return (0).toFixed(precision)
     let init = num.toStringWithDecimalPlaces(precision)
     let portions = init.split(".")
-    portions[0] = portions[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
+    if (!player.secret.ohio) portions[0] = portions[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
     if (portions.length == 1) return portions[0]
     return portions[0] + "." + portions[1]
 }
@@ -138,7 +140,7 @@ function standard(decimal, precision){
 	if (decimal.sign < 0) return "-"+standard(decimal.neg(), precision)
 	if (decimal.layer > 4 || (decimal.mag > Math.log10(3e45) && decimal.layer == 4)) {
 		var slog = decimal.slog()
-		if (slog.gte(1e9)) return "F" + formatWhole(slog.floor())
+		if (slog.gte(player.secret.ohio?1e15:1e9)) return "F" + formatWhole(slog.floor())
 		if (slog.gte(100)) return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
 		else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(4) + "F" + commaFormat(slog.floor(), 0)
 	}
@@ -148,7 +150,7 @@ function standard(decimal, precision){
 		m = new Decimal(1)
 		illion = illion.add(1)
 	}
-	if (decimal.log10().lt(1e9)) m = m.toStringWithDecimalPlaces(precision)+' '
+	if (decimal.log10().lt(player.secret.ohio?1e15:1e9)) m = m.toStringWithDecimalPlaces(precision)+' '
 	else m = ''
 	let t2illion = illion.max(1).log10().div(3).floor()
 	let t3illion = t2illion.max(1).log10().div(3).floor()
@@ -167,7 +169,7 @@ function standard(decimal, precision){
 	if (t2illion.gte(1e6)) st += ((t2%1e3>0)?("a'-"+t2format(t2%1e3,true,t3-2)+t3format(t3-2)):'')
 	if (t3illion.gte(1e3)) st = t3format(Math.floor(t3/1e6),true,t4)+t4format(t4,Math.floor(t3/1e6))+((Math.floor(t3/1e3)%1e3>0)?("`-"+t3format(Math.floor(t3/1e3)%1e3,true,t4-1,t3)+t4format(t4-1,Math.floor(t3/1e3)%1e3)):'')
 	if (t3illion.gte(1e6)) st += ((t3%1e3>0)?("`-"+t3format(t3%1e3,true,t4-2,t3)+t4format(t4-2,t3%1e3)):'')
-	if (decimal.mag >= 1e9 || (decimal.layer>0 && decimal.mag>=0))return m+st
+	if (decimal.mag >= (player.secret.ohio?1e15:1e9) || (decimal.layer>0 && decimal.mag>=0))return m+st
 	if (decimal.mag >= 1e3) return commaFormat(decimal, 0)
 	if (decimal.mag >= 0.001) return regularFormat(decimal, precision)
 	if (decimal.sign!=0) return '1/'+standard(decimal.recip(),precision)
@@ -181,10 +183,10 @@ function hyperEformat(decimal, precision) {
 	let m = commaFormat(mag,precision)
 	if (mag.gte(1e6)) m = commaFormat(mag,0)
 	let e = commaFormat(s.floor().sub(1),0)
-	if (s.gte(1e9)) e = formatWhole(s.floor())
-	if (decimal.layer >= 1e10) return hyperEformat(s,precision)+'#2'
-	if (decimal.layer >= 1e9) return 'E1#'+e
-	if ((decimal.layer > 0 && decimal.mag>0) || decimal.mag >= 1e10) return 'E'+m+'#'+e
+	if (s.gte(player.secret.ohio?1e15:1e9)) e = formatWhole(s.floor())
+	if (decimal.layer >= (player.secret.ohio?1e15:1e10)) return hyperEformat(s,precision)+'#2'
+	if (!player.secret.ohio) if (decimal.layer >= 1e9) return 'E1#'+e
+	if ((decimal.layer > 0 && decimal.mag>0) || decimal.mag >= (player.secret.ohio?1e15:1e10)) return 'E'+m+'#'+e
 	if (decimal.mag >= 1e3) return commaFormat(decimal, 0)
 	if (decimal.mag >= 0.001) return regularFormat(decimal, precision)
 	if (decimal.mag >= 1/9e15) return '1/'+standard(decimal.recip(),precision)
@@ -211,15 +213,15 @@ function letter(decimal, precision, str) { //AD NG+++
 	}
 	if (isNaN(skipped.sign)||isNaN(skipped.layer)||isNaN(skipped.mag)) skipped = new Decimal(0)
 	skipped = skipped.add(7)
-	let lett = Decimal.mul(1e9,Decimal.log10(len))
+	let lett = Decimal.mul((player.secret.ohio?1e15:1e9),Decimal.log10(len))
 	let s = slog(skipped).sub(slog(lett)).div(2).floor().add(1)
 	let sl = tet10(slog(skipped).sub(slog(skipped).sub(slog(lett)).div(2).floor().mul(2))).mul(Decimal.log(10,len))
-	if (decimal.layer >= 1e9) return '{'+formatWhole(s)+'}'
+	if (decimal.layer >= (player.secret.ohio?1e15:1e9)) return '{'+formatWhole(s)+'}'
 	if (decimal.gte(tet10(slog(lett).add(8)))) return format(sl)+'{'+formatWhole(s)+'}'
-	if (skipped.gte(1e9)) return "["+letter(skipped, precision, str)+"]"
+	if (skipped.gte(player.secret.ohio?1e15:1e9)) return "["+letter(skipped, precision, str)+"]"
 	if (skipped.gt(7)) ret += "[" + commaFormat(skipped, 0) + "]"
-	if (decimal.gte("ee9")) return ret
-	if (decimal.gte(1e9)) return m.toStringWithDecimalPlaces(precision)+' '+ret
+	if (decimal.gte(player.secret.ohio?"ee15":"ee9")) return ret
+	if (decimal.gte(player.secret.ohio?1e15:1e9)) return m.toStringWithDecimalPlaces(precision)+' '+ret
 	if (decimal.mag >= 1e3) return commaFormat(decimal, 0)
 	if (decimal.mag >= 0.001) return regularFormat(decimal, precision)
 	if (decimal.sign!=0) return '1/'+letter(decimal.recip(),precision,str)
@@ -263,7 +265,7 @@ function formatSciEng(decimal, precision) {
 		return "NaN"
 	}
 	if (options.notation == 'Mixed Scientific' || options.notation == 'Mixed Engineering'){
-		if (decimal.layer < 1 || (Math.abs(decimal.mag) < 63 && decimal.layer == 1)) return standard(decimal,precision)
+		if (decimal.layer < 1 || (Math.abs(decimal.mag) < (player.secret.ohio?3003:63) && decimal.layer == 1)) return standard(decimal,precision)
 	}
 	if (decimal.sign < 0) return "-"+format(decimal.neg(), precision)
 	if (decimal.mag<0) {
@@ -273,14 +275,14 @@ function formatSciEng(decimal, precision) {
 	if (decimal.mag == Number.POSITIVE_INFINITY) return "Infinity"
 	if (decimal.layer > 3 || (decimal.mag > 1e10 && decimal.layer == 3)) {
 		var slog = decimal.slog()
-		if (slog.gte(1e9)) return "F" + formatWhole(slog.floor())
+		if (slog.gte(player.secret.ohio?1e15:1e9)) return "F" + formatWhole(slog.floor())
 		if (slog.gte(100)) return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
 		else return Decimal.pow(10, slog.sub(slog.floor())).toStringWithDecimalPlaces(3) + "F" + commaFormat(slog.floor(), 0)
-	} else if (decimal.layer > 2 || (Math.abs(decimal.mag) > 308 && decimal.layer == 2)) {
+	} else if (decimal.layer > 2 || (Math.abs(decimal.mag) >= (player.secret.ohio?1e15:1e9) && decimal.layer == 2)) {
 		return "e" + format(decimal.log10(), precision)
-	} else if (decimal.layer > 1 || (Math.abs(decimal.mag) >= 1e9 && decimal.layer == 1)) {
+	} else if (decimal.layer > 1 || (Math.abs(decimal.mag) >= (player.secret.ohio?1e15:1e9) && decimal.layer == 1)) {
 		return "e" + format(decimal.log10(), 3)
-	} else if (decimal.layer > 0 || decimal.mag >= 1e9) {
+	} else if (decimal.layer > 0 || decimal.mag >= (player.secret.ohio?1e15:1e9)) {
 		return exponentialFormat(decimal, precision)
 	} else if (decimal.mag >= 1000) {
 		return commaFormat(decimal, 0)
@@ -294,14 +296,15 @@ function formatSciEng(decimal, precision) {
 
 function formatWhole(decimal) {
     decimal = new Decimal(decimal)
-    if (decimal.gte(1e9)) return format(decimal, 3)
+    if (decimal.gte(player.secret.ohio?1e15:1e9)) return format(decimal, 3)
     if (decimal.lte(0.99) && !decimal.eq(0)) return format(decimal, 3)
     return format(decimal, 0)
 }
 
 function formatTime(s) {
 	s = new Decimal(s)
-	if (!isFinite(s)) return "Infinite Time"
+	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
+	if (player.secret.ohio) return format(s) + " s"
     let m = new Decimal(0)
     let h = new Decimal(0)
     let d = new Decimal(0)
@@ -321,7 +324,7 @@ function formatTime(s) {
         s = s.sub(m.mul(60))
         return formatWhole(h) + "h " + formatWhole(m) + "m " + format(s,0) + "s"
     }
-    else if (s.lte(3153600)){
+    else if (s.lte(31536000)){
         d = s.div(86400).floor()
         s = s.sub(d.mul(86400))
         h = s.div(3600).floor()
@@ -330,7 +333,7 @@ function formatTime(s) {
         s = s.sub(m.mul(60))
         return formatWhole(d) + "d " + formatWhole(h) + "h " + formatWhole(m) + "m " + format(s,0) + "s"
     }
-    else if (s.lte(3153600000)){
+    else if (s.lte(31536000000)){
         y = s.div(3.1536e7).floor()
         s = s.sub(y.mul(3.1536e7))
         d = s.div(86400).floor()
@@ -358,9 +361,10 @@ function verseTime(years) {
 	return [mag,verse2[id]]
 }
 
-function formatTimeLong(s, short = true) {
+function formatTimeLong(s) {
 	s = new Decimal(s)
-	if (!isFinite(s)) return "Infinite Time"
+	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
+	if (player.secret.ohio) return format(s) + " seconds"
 	let years = s.div(31556952)
 	let mlt = verseTime(years)
 	let arv1 = [1,1e15,1e30,1e45,1e60,1e75,1e90,1e105]
@@ -402,7 +406,8 @@ function formatTimeLong(s, short = true) {
 
 function formatSize(s) {
 	s = new Decimal(s)
-	if (!isFinite(s)) return "Infinite Length"
+	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Length"
+	if (player.secret.ohio) return format(s) + " meters"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" Planck Lengths"," yoctometers"," zeptometers"," attometers"," femtometers"
 	," picometers"," nanometers"," micrometers"," millimeters"," centimeters"," meters"," kilometers"
@@ -418,7 +423,8 @@ function formatSize(s) {
 
 function distShort(s) {
 	s = new Decimal(s)
-	if (!isFinite(s)) return "Inf uni"
+	if (s.mag == Number.POSITIVE_INFINITY) return "Inf uni"
+	if (player.secret.ohio) return format(s) + " m"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" PL"," ym"," zm"," am"," fm"
 	," pm"," nm"," um"," mm"," cm"," m"," km"
