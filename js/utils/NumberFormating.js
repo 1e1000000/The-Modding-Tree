@@ -304,7 +304,6 @@ function formatWhole(decimal) {
 function formatTime(s) {
 	s = new Decimal(s)
 	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
-	if (isNaN(decimal.sign)||isNaN(decimal.layer)||isNaN(decimal.mag)) return "Infinite Time"
 	if (player.secret.ohio) return format(s) + " s"
     let m = new Decimal(0)
     let h = new Decimal(0)
@@ -365,7 +364,6 @@ function verseTime(years) {
 function formatTimeLong(s) {
 	s = new Decimal(s)
 	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Time"
-	if (isNaN(decimal.sign)||isNaN(decimal.layer)||isNaN(decimal.mag)) return "Infinite Time"
 	if (player.secret.ohio) return format(s) + " seconds"
 	let years = s.div(31556952)
 	let mlt = verseTime(years)
@@ -408,8 +406,7 @@ function formatTimeLong(s) {
 
 function formatSize(s) {
 	s = new Decimal(s)
-	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Length"
-	if (isNaN(decimal.sign)||isNaN(decimal.layer)||isNaN(decimal.mag)) return "Infinite Length"
+	if (s.mag == Number.POSITIVE_INFINITY) return "Infinite Size"
 	if (player.secret.ohio) return format(s) + " meters"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" Planck Lengths"," yoctometers"," zeptometers"," attometers"," femtometers"
@@ -427,7 +424,6 @@ function formatSize(s) {
 function distShort(s) {
 	s = new Decimal(s)
 	if (s.mag == Number.POSITIVE_INFINITY) return "Inf uni"
-	if (isNaN(decimal.sign)||isNaN(decimal.layer)||isNaN(decimal.mag)) return "Inf uni"
 	if (player.secret.ohio) return format(s) + " m"
 	let scale1 = [1.616255e-35,1e-24,1e-21,1e-18,1e-15,1e-12,1e-9,1e-6,0.001,0.01,1,1e3,1e6,1e9,1.495978707e11,9.46e15,8.8e26]
 	let scale2 = [" PL"," ym"," zm"," am"," fm"
