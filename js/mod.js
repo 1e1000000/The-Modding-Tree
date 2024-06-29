@@ -18,7 +18,12 @@ let VERSION = {
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.1 - Null (2024-6-29)</h3><br>
+	<h3>v0.1 patch 1 (2024-6-29)</h3><br>
+		- You can now actually reach the endgame screen.<br>
+		- Null Points requirement display when locked is now updated based on your ranks.<br>
+		- Rank node tooltip is now cycle through current Rank/Prestige/Ascension/Aperion Rank (all if unlocked) every second.<br>
+		- Split the Null milestones into "Bulking" and "Automation" section.<br><br>
+	<h1>v0.1 - Null (2024-6-29)</h1><br>
 		- Added Rank, Tier, Tetr.<br>
 		- Added Prestige, Honor, Glory.<br>
 		- Added Ascension, Transcension.<br>
@@ -73,6 +78,8 @@ function getPointGen() {
 
 // You can add non-layer related variables that should to into "player" and be saved here, along with default values
 function addedPlayerData() { return {
+	updateCooldown: 1,
+	displaying: 0,
 }}
 
 // Display extra things at the top of the page
@@ -82,7 +89,7 @@ var displayThings = [
 
 // Determines when the game "ends"
 function isEndgame() {
-	return false
+	return player.n.buyables['null'].gte(12) && player.ach.achievements.length >= 20
 }
 
 

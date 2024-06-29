@@ -38,7 +38,16 @@ addLayer("r", {
         //{key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     update(diff){
-        //player.devSpeed = (options.pause?1e-300:1)
+        let arrayLength = 1
+        if (hasAchievement('ach',21)) arrayLength++
+        if (hasAchievement('ach',33)) arrayLength++
+        if (hasAchievement('ach',25)) arrayLength++
+
+        player.updateCooldown -= diff
+        if (player.updateCooldown <= 0){
+            player.updateCooldown = 1
+            player.displaying = (player.displaying+1)%arrayLength
+        }
     },
     automate(){
         if (tmp.r.clickables[11].unlocked && tmp.r.clickables['a11'].unlocked && player.auto.ranks[0][1][1]) tmp.r.clickables[11].onClick(true)
@@ -64,7 +73,13 @@ addLayer("r", {
         layerDataReset(this.layer, keep);
     },
     layerShown(){return true},
-    tooltip(){return "Ranks"},
+    tooltip(){
+        let array = ["Rank " + formatWhole(player.r.ranks[0][1][1])]
+        if (hasAchievement('ach',21)) array.push("Prestige " + formatWhole(player.r.ranks[0][2][1]))
+        if (hasAchievement('ach',33)) array.push("Ascension " + formatWhole(player.r.ranks[0][3][1]))
+        if (hasAchievement('ach',25)) array.push("Aperion Rank " + formatWhole(player.r.ranks[1][1][1]))
+        return array[player.displaying]
+    },
     tabFormat:{
         "Maximize":{
             content:[
@@ -1026,6 +1041,10 @@ addLayer("n", {
     hotkeys: [
         {key: "n", description: "N: Reset for null points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
+    tooltipLocked(){
+        let req = new Decimal(500).div(player.r.ranks[0][1][1]).pow(10).max(1e10)
+        return 'Reach ' + formatWhole(req) + ' points to unlock (Decrease with more ranks you have, until Rank 50)'
+    },
     update(diff){
 
     },
@@ -1082,11 +1101,25 @@ addLayer("n", {
                 "resource-display",
                 "blank",
                 ["display-text",function(){return "Null Points gain is based on your points and current Rank.<br>Aperion Rank 1 is required to reset."}],
-                "milestones",
+                ["microtabs", "milestones"],
                 "blank","blank",
             ],
             style(){return {"background-color": "#000000"}},
             unlocked(){return true},
+        },
+    },
+    microtabs: {
+        milestones: {
+            Bulking: {
+                content: [
+                    ['milestones',['1','2','3','4','5','6']]
+                ]
+            },
+            Automation: {
+                content: [
+                    ['milestones',['101','102','103','104','105','106','107','108','109']]
+                ]
+            },
         },
     },
     milestones:{
