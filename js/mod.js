@@ -21,6 +21,7 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.1 patch 1 (2024-6-29)</h3><br>
 		- You can now actually reach the endgame screen.<br>
 		- Null Points requirement display when locked is now updated based on your ranks.<br>
+		- Null reset requirement is highlighted lime when you have Aperion Rank 1.<br>
 		- Rank node tooltip is now cycle through current Rank/Prestige/Ascension/Aperion Rank (all if unlocked) every second.<br>
 		- Split the Null milestones into "Bulking" and "Automation" section.<br><br>
 	<h1>v0.1 - Null (2024-6-29)</h1><br>

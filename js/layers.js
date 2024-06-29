@@ -1072,7 +1072,10 @@ addLayer("n", {
                 "prestige-button",
                 "resource-display",
                 "blank",
-                ["display-text",function(){return "Null Points gain is based on your points and current Rank.<br>Aperion Rank 1 is required to reset."}],
+                ["display-text",function(){
+                    let color = player.r.ranks[1][1][1].gte(1)?"lime":"white"
+                    return "Null Points gain is based on your points and current Rank.<br>" + "<text style='color:" + color + "'>" + "Aperion Rank 1 is required to reset.</text>"
+                }],
                 "buyables",
                 "blank","blank",
             ],
@@ -1085,7 +1088,10 @@ addLayer("n", {
                 "prestige-button",
                 "resource-display",
                 "blank",
-                ["display-text",function(){return "Null Points gain is based on your points and current Rank.<br>Aperion Rank 1 is required to reset."}],
+                ["display-text",function(){
+                    let color = player.r.ranks[1][1][1].gte(1)?"lime":"white"
+                    return "Null Points gain is based on your points and current Rank.<br>" + "<text style='color:" + color + "'>" + "Aperion Rank 1 is required to reset.</text>"
+                }],
                 ["buyable",'null'],
                 "blank",
                 ["display-text",function(){return "Current Effects:<br>" + tmp.n.buyables['null'].effectText}],
@@ -1100,7 +1106,10 @@ addLayer("n", {
                 "prestige-button",
                 "resource-display",
                 "blank",
-                ["display-text",function(){return "Null Points gain is based on your points and current Rank.<br>Aperion Rank 1 is required to reset."}],
+                ["display-text",function(){
+                    let color = player.r.ranks[1][1][1].gte(1)?"lime":"white"
+                    return "Null Points gain is based on your points and current Rank.<br>" + "<text style='color:" + color + "'>" + "Aperion Rank 1 is required to reset.</text>"
+                }],
                 ["microtabs", "milestones"],
                 "blank","blank",
             ],
