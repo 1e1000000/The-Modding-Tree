@@ -1,26 +1,30 @@
 let modInfo = {
-	name: "The ??? Tree",
-	id: "mymod",
-	author: "nobody",
+	name: "The Rank Tree II",
+	id: "rank2",
+	author: "F1e308",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.1",
+	name: "Null",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+	<h3>v0.1 - Null (2024-6-29)</h3><br>
+		- Added Rank, Tier, Tetr.<br>
+		- Added Prestige, Honor, Glory.<br>
+		- Added Ascension, Transcension.<br>
+		- Added Aperion Rank, Aperion Tier. (Aperion Tetr is also added, but it's currently impossible)<br>
+		- Added Null reset, Null points, Null.<br>
+`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -39,10 +43,31 @@ function canGenPoints(){
 
 // Calculate points/sec!
 function getPointGen() {
-	if(!canGenPoints())
-		return new Decimal(0)
+	if(!canGenPoints()) return new Decimal(0)
 
 	let gain = new Decimal(1)
+
+	gain = gain.mul(clickableEffect('r',11))
+	gain = gain.mul(clickableEffect('r',12))
+	gain = gain.mul(clickableEffect('r',13))
+
+	gain = gain.mul(clickableEffect('r',21))
+	gain = gain.mul(clickableEffect('r',22))
+	gain = gain.mul(clickableEffect('r',23))
+
+	gain = gain.mul(clickableEffect('r',31))
+	gain = gain.mul(clickableEffect('r',32))
+	
+	gain = gain.mul(clickableEffect('r',111))
+	gain = gain.mul(clickableEffect('r',112))
+	gain = gain.mul(clickableEffect('r',113))
+
+	if (player.n.unlocked){
+		gain = gain.mul(tmp.n.effect)
+		gain = gain.mul(buyableEffect('n',11))
+		if (getBuyableAmount('n','null').gte(7)) gain = gain.mul(buyableEffect('n','null')[5])
+	}
+
 	return gain
 }
 
@@ -52,20 +77,28 @@ function addedPlayerData() { return {
 
 // Display extra things at the top of the page
 var displayThings = [
+	"Current Endgame: Null 12, 20 Achievements"
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return false
 }
 
 
 
 // Less important things beyond this point!
 
-// Style for the background, can be a function
-var backgroundStyle = {
+function getBGColor(){
+	let c = "#000000"
+	if (player.tab=='n') c = "#1f0000"
+	if (player.tab=='ach') c = "#1f1f00"
+	return c
+}
 
+// Style for the background, can be a function
+function backgroundStyle(){
+	return {'background-color':getBGColor()}
 }
 
 // You can change this if you have things that can be messed up by long tick lengths
