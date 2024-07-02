@@ -18,6 +18,8 @@ let VERSION = {
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+	<h3>v0.1 patch 2 (2024-7-2)</h3><br>
+		- Reduce all automation milestones requirement by one.<br><br>
 	<h3>v0.1 patch 1 (2024-6-29)</h3><br>
 		- You can now actually reach the endgame screen.<br>
 		- Null Points requirement display when locked is now updated based on your ranks.<br>
@@ -30,6 +32,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Added Ascension, Transcension.<br>
 		- Added Aperion Rank, Aperion Tier. (Aperion Tetr is also added, but it's currently impossible)<br>
 		- Added Null reset, Null points, Null.<br>
+		- Endgame: Null 12, 20 Achievements.<br><br>
 `
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
